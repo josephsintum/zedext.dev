@@ -144,7 +144,7 @@ We started with Supabase (Postgres), then simplified to SQLite, then asked: what
 | **Search** | Algolia (free tier) | Client-side, typo-tolerant, faceted filtering — same pattern as npmx.dev |
 | **Search fallback** | Zed API (`api.zed.dev/extensions?filter=...`) | Free, no infrastructure, graceful degradation |
 | **Markdown** | marked + DOMPurify + shiki | Fast parsing, safe HTML output, syntax highlighting |
-| **Hosting** | Vercel or Cloudflare Pages | Free tier, edge network, zero config |
+| **Hosting** | Vercel | Free tier, edge CDN caching via `Cache-Control` headers, zero config SvelteKit deploy |
 | **Package manager** | pnpm | Fast, disk-efficient |
 
 No database. No Redis. No Meilisearch. No separate backend.
@@ -242,17 +242,68 @@ interface AlgoliaExtension {
 }
 ```
 
-### 10.2 In-Memory Caches (SvelteKit server)
+### 10.2 Multi-Layer Caching (following npmx.dev pattern)
 
-No database — just `Map` objects with TTL eviction in the SvelteKit server process.
+Caching works differently in development vs production. We use a layered strategy inspired by npmx.dev:
 
-| Cache | Key | Value | TTL | Purpose |
-|-------|-----|-------|-----|---------|
-| **README cache** | extension id | Rendered HTML string | 24 hours | Avoid re-fetching + re-rendering README on every detail page visit |
-| **GitHub metadata cache** | `{owner}/{repo}` | `{ stars, forks, license, pushed_at, ... }` | 1 hour | Avoid hitting GitHub API on every detail page visit |
-| **Version history cache** | extension id | `ZedExtension[]` (all versions) | 1 hour | Avoid hitting Zed API on every detail page visit |
+```
+Layer 1: In-memory Map        (fastest, lost on server restart)
+Layer 2: Filesystem (.cache/)  (survives restarts, used in dev)
+Layer 3: Vercel CDN edge       (production only, caches full SSR responses)
+```
 
-At ~1,600 extensions with maybe 100-200 hot in cache at any time, memory usage is negligible (< 50MB even with large READMEs).
+#### Layer 1 + 2: Fetch Cache (`src/lib/server/cache.ts`)
+
+A generic cache wrapper used by `zed-api.ts` and `github-api.ts` to avoid redundant API calls:
+
+```typescript
+async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+  // L1: in-memory Map (instant, lost on restart)
+  if (memoryCache.has(key) && !expired(key)) return memoryCache.get(key);
+
+  // L2: filesystem — dev only (survives restarts, gitignored)
+  if (dev) {
+    const file = `.cache/${hash(key)}.json`;
+    if (existsSync(file) && !fileExpired(file, ttlMs)) {
+      const data = JSON.parse(readFileSync(file));
+      memoryCache.set(key, { data, expiry: Date.now() + ttlMs });
+      return data;
+    }
+  }
+
+  // L3: fetch from source (Zed API, GitHub API)
+  const data = await fetcher();
+  memoryCache.set(key, { data, expiry: Date.now() + ttlMs });
+  if (dev) writeFileSync(`.cache/${hash(key)}.json`, JSON.stringify(data));
+  return data;
+}
+```
+
+| Cache Key Pattern | TTL | What |
+|-------------------|-----|------|
+| `zed:ext:{id}` | 1 hour | Extension metadata + all versions from Zed API |
+| `gh:meta:{owner}/{repo}` | 1 hour | GitHub stars, forks, license, pushed_at |
+| `gh:readme:{owner}/{repo}` | 24 hours | Rendered README HTML (most expensive to produce) |
+
+In development, the `.cache/` directory means you can restart the dev server freely without re-fetching from GitHub on every page load.
+
+#### Layer 3: Vercel CDN Edge (Production)
+
+In production, `Cache-Control` headers on SSR responses let Vercel's CDN cache the entire rendered page at the edge. The server function (and fetch cache) only runs on CDN cache miss.
+
+```typescript
+// In +page.server.ts
+setHeaders({
+  'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+});
+```
+
+| Page | `s-maxage` | `stale-while-revalidate` | Cold fetch time |
+|------|-----------|--------------------------|-----------------|
+| **Browse page** (`/`) | 5 min | 1 hour | ~200ms (Zed API for SEO content) |
+| **Detail page** (`/extensions/:id`) | 1 hour | 24 hours | ~1-1.5s (3 API calls in parallel + markdown rendering) |
+
+After the first visitor triggers a cold fetch, subsequent visitors get the cached page in < 50ms from the nearest Vercel edge node. Stale-while-revalidate ensures no visitor ever waits for a refresh — they get the stale page instantly while Vercel re-runs the function in the background.
 
 ### 10.3 Search Fallback (Zed API)
 
@@ -350,10 +401,12 @@ src/lib/components/
 
 **Data flow in `+page.server.ts`:**
 
-1. **Extension metadata:** Check in-memory cache → miss: fetch `GET api.zed.dev/extensions/{id}` → returns all versions. Cache the latest version's metadata + full version list (1h TTL)
-2. **GitHub metadata:** Check in-memory cache → miss: fetch `GET api.github.com/repos/{owner}/{repo}` → stars, forks, license, pushed_at. Cache (1h TTL)
-3. **README:** Check in-memory cache → miss: fetch `GET api.github.com/repos/{owner}/{repo}/readme` → decode base64 → rewrite image URLs → render with marked + shiki → sanitize with DOMPurify → cache rendered HTML (24h TTL)
-4. If any fetch fails: gracefully degrade (show description instead of README, hide GitHub stats)
+1. **Set cache headers:** `Cache-Control: public, s-maxage=3600, stale-while-revalidate=86400` — Vercel CDN caches the entire response. Most visitors never trigger this function.
+2. **Extension metadata + versions:** Fetch `GET api.zed.dev/extensions/{id}` → returns all published versions. Use latest version for metadata.
+3. **GitHub metadata:** Fetch `GET api.github.com/repos/{owner}/{repo}` → stars, forks, license, pushed_at.
+4. **README:** Fetch `GET api.github.com/repos/{owner}/{repo}/readme` → decode base64 → rewrite image URLs → render with marked + shiki → sanitize with DOMPurify.
+5. Fetch steps 2-4 **in parallel** (`Promise.all`) to minimize cold fetch time.
+6. If any fetch fails: gracefully degrade (show description instead of README, hide GitHub stats).
 
 **Two-column layout (70/30 split):**
 
@@ -377,25 +430,29 @@ src/lib/components/
 
 ### 12.5 Caching Strategy
 
-| Layer | TTL | What |
-|-------|-----|------|
-| **In-memory (README HTML)** | 24 hours | Rendered README — most expensive to produce |
-| **In-memory (GitHub metadata)** | 1 hour | Stars, forks, license |
-| **In-memory (version history)** | 1 hour | All versions from Zed API |
-| **SvelteKit HTTP headers** | `s-maxage=300, stale-while-revalidate=600` (browse) / `s-maxage=600, stale-while-revalidate=3600` (detail) | CDN edge caching |
+Three layers (see section 10.2 for full details):
+
+1. **In-memory Map** — fastest, used within a single serverless invocation
+2. **Filesystem `.cache/`** — dev only, survives server restarts
+3. **Vercel CDN edge** — production, `Cache-Control` headers cache full SSR responses
+
+In production, most visitors hit the CDN cache and never trigger the server function. On CDN miss, the server function uses the fetch cache (L1/L2) to avoid redundant API calls within the same invocation, then sets `Cache-Control` headers so the response is cached at the edge for subsequent visitors.
 
 ---
 
 ## 13. Markdown Rendering Pipeline
 
-README rendering is the core differentiator. Fetched on-demand from GitHub, rendered server-side, cached in memory.
+README rendering is the core differentiator. Fetched on-demand from GitHub, rendered server-side. The full page response is cached at the Vercel CDN edge — the rendering pipeline only runs on cache miss.
 
 ```
 User visits /extensions/catppuccin
   │
-  ├── Cache hit → return cached HTML (< 1ms)
+  ▼
+Vercel CDN edge
   │
-  └── Cache miss:
+  ├── Cached → return instantly (< 50ms, rendering doesn't run)
+  │
+  └── Cache miss → run +page.server.ts:
         │
         ▼
       GET github.com/repos/{owner}/{repo}/readme → base64 markdown
@@ -413,7 +470,7 @@ User visits /extensions/catppuccin
       Sanitize with `DOMPurify` (remove XSS vectors, keep safe HTML)
         │
         ▼
-      Store in cache (TTL: 24h) → return HTML
+      Return page with Cache-Control header → Vercel caches for next visitor
 ```
 
 **Image URL rewriting:**
@@ -436,10 +493,9 @@ zedext/
 │   ├── app.css                     # Tailwind v4 entry
 │   ├── lib/
 │   │   ├── server/
-│   │   │   ├── cache.ts            # Generic in-memory TTL cache (Map wrapper)
+│   │   │   ├── cache.ts            # Multi-layer cache: in-memory + filesystem (dev) + CDN (prod)
 │   │   │   ├── zed-api.ts          # Zed API client (fetch extensions, versions)
 │   │   │   ├── github-api.ts       # GitHub API client (repo metadata, README)
-│   │   │   ├── readme.ts           # On-demand README fetch + render + cache
 │   │   │   ├── markdown.ts         # marked + shiki + DOMPurify + image URL rewrite
 │   │   │   ├── parse-author.ts     # "Name <email>" → { name, email }
 │   │   │   └── parse-repo-url.ts   # GitHub URL → { owner, repo }
@@ -453,6 +509,7 @@ zedext/
 │   └── routes/                     # See section 12.1
 ├── scripts/
 │   └── sync.ts                     # Cron: Zed API + GitHub API → Algolia index
+├── .cache/                         # Filesystem cache (dev only, gitignored)
 ├── static/
 │   └── favicon.ico
 ├── svelte.config.js
@@ -515,11 +572,10 @@ PUBLIC_SITE_URL=https://zedext.dev
 
 ### Phase 3: Frontend — Detail Page
 
-- [ ] `src/lib/server/cache.ts` — generic in-memory TTL cache
-- [ ] `src/lib/server/zed-api.ts` — Zed API client
-- [ ] `src/lib/server/github-api.ts` — GitHub API client
+- [ ] `src/lib/server/cache.ts` — multi-layer cache (in-memory + filesystem for dev)
+- [ ] `src/lib/server/zed-api.ts` — Zed API client (uses cache)
+- [ ] `src/lib/server/github-api.ts` — GitHub API client (uses cache)
 - [ ] `src/lib/server/markdown.ts` — render with image rewrite + shiki
-- [ ] `src/lib/server/readme.ts` — on-demand fetch + render + cache
 - [ ] `ReadmeRenderer.svelte` — GitHub-flavored markdown CSS
 - [ ] `Sidebar.svelte`, `VersionHistory.svelte`, `InstallButton.svelte`, `SEOHead.svelte`
 - [ ] `extensions/[id]/+page.server.ts` + `+page.svelte`
@@ -531,7 +587,7 @@ PUBLIC_SITE_URL=https://zedext.dev
 - [ ] Loading states, error states, empty states
 - [ ] Responsive design pass (mobile, tablet, desktop)
 - [ ] SEO: sitemap.xml, robots.txt
-- [ ] Deploy SvelteKit to Vercel or Cloudflare Pages
+- [ ] Deploy SvelteKit to Vercel
 - [ ] Verify cron + search + detail pages in production
 
 ### Future Phases
@@ -607,8 +663,8 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 | Metric | Target |
 |--------|--------|
 | **Browse page load** | < 300ms (Algolia client-side search is ~20-50ms) |
-| **Detail page (cache hit)** | < 200ms (in-memory cache + SSR) |
-| **Detail page (cache miss)** | < 1.5s (GitHub API fetch + markdown rendering) |
+| **Detail page (CDN hit)** | < 50ms (served from Vercel edge) |
+| **Detail page (CDN miss)** | < 1.5s (Zed API + GitHub API + markdown rendering, in parallel) |
 | **Search latency** | < 50ms (Algolia) |
 | **Algolia index freshness** | < 6 hours (cron every 6h) |
 | **Detail page data freshness** | Always fresh (on-demand fetch, 1h cache for metadata, 24h for README) |
@@ -663,6 +719,4 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 
 5. **Algolia free tier limits:** 10K searches/month might be tight if the site gains traction. Monitor and consider adding server-side SQLite FTS5 as an alternative before hitting the limit.
 
-6. **Hosting:** Vercel (simplest for SvelteKit) vs Cloudflare Pages (better edge network, Workers for server routes). Both have generous free tiers. Since we have no database/persistent storage, either works.
-
-7. **In-memory cache durability:** Serverless platforms (Vercel) have cold starts that clear in-memory caches. This means more GitHub API calls. Is this acceptable, or should we add a simple file-based cache (`node:fs`) as a persistence layer?
+6. **Notification to Zed team:** Should we reach out before launching? They might appreciate it, or they might see it as fragmenting their ecosystem.
