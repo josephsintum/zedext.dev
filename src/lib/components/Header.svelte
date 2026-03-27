@@ -8,28 +8,19 @@
 	class="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]/90 backdrop-blur-md"
 >
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-		<a href="/" class="group flex items-center gap-2.5">
-			<div
-				class="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--color-text)] transition-colors group-hover:bg-[var(--color-accent)]"
-			>
-				<svg
-					aria-hidden="true"
-					class="h-4 w-4 text-[var(--color-surface)]"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-				>
-					<path d="M13 3L5 13h6l-1 8 8-10h-6l1-8z" />
-				</svg>
-			</div>
-			<span class="font-mono text-sm font-semibold tracking-tight text-[var(--color-text)]">
-				Zed Ext
-			</span>
+		<a href="/" class="font-mono text-sm font-semibold tracking-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-accent)]">
+			Zed Marketplace
 		</a>
 
 		<nav class="flex items-center gap-5">
+			<a
+				href="https://zed.dev/docs/extensions/developing-extensions"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+			>
+				Create Extension
+			</a>
 			<a
 				href="https://zed.dev"
 				target="_blank"

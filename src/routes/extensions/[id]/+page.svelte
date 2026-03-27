@@ -18,13 +18,13 @@
 </script>
 
 <svelte:head>
-	<title>{extension.name} — ZedExt</title>
+	<title>{extension.name} — Zed Marketplace</title>
 	<meta
 		name="description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content={`${extension.name} — ZedExt`} />
+	<meta property="og:title" content={`${extension.name} — Zed Marketplace`} />
 	<meta
 		property="og:description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}

@@ -3,22 +3,7 @@
 		class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row"
 	>
 		<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-tertiary)]">
-			<div
-				class="flex h-5 w-5 items-center justify-center rounded bg-[var(--color-text)] text-[var(--color-surface)]"
-			>
-				<svg
-					aria-hidden="true"
-					class="h-3 w-3"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2.5"
-					stroke-linecap="round"
-				>
-					<path d="M13 3L5 13h6l-1 8 8-10h-6l1-8z" />
-				</svg>
-			</div>
-			<span class="font-mono font-medium">ZedExt</span>
+			<span class="font-mono font-medium">Zed Marketplace</span>
 			<span class="text-[var(--color-border)]">/</span>
 			<span>Not affiliated with Zed Industries</span>
 		</div>

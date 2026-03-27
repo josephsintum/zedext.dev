@@ -134,13 +134,13 @@
 </script>
 
 <svelte:head>
-	<title>ZedExt — Discover Zed Extensions</title>
+	<title>Zed Marketplace — Discover Zed Extensions</title>
 	<meta
 		name="description"
 		content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history."
 	/>
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="ZedExt — Discover Zed Extensions" />
+	<meta property="og:title" content="Zed Marketplace — Discover Zed Extensions" />
 	<meta
 		property="og:description"
 		content="The best way to discover, search, and explore extensions for the Zed editor."
@@ -160,18 +160,18 @@
 				search.
 			</p>
 		</div>
+		<div class="mx-auto mt-6 max-w-2xl">
+			<SearchBar value={query} />
+		</div>
 	</div>
 </section>
 
-<!-- Sticky search/filter bar -->
+<!-- Sticky filter bar -->
 <div
 	class="sticky top-14 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)] backdrop-blur-md"
 >
-	<div class="mx-auto max-w-6xl px-6 pt-5 pb-4">
-		<div class="mx-auto max-w-2xl">
-			<SearchBar value={query} />
-		</div>
-		<div class="mt-3 flex items-center justify-between gap-4">
+	<div class="mx-auto max-w-6xl px-6 pt-4 pb-3">
+		<div class="flex items-center justify-between gap-4">
 			<CategoryTabs active={category} facets={displayFacets?.provides ?? {}} />
 			<div class="flex shrink-0 items-center gap-3">
 				{#if displayTotalHits > 0}

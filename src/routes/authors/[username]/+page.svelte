@@ -29,16 +29,16 @@
 </script>
 
 <svelte:head>
-	<title>{user.name ?? user.login} — ZedExt</title>
+	<title>{user.name ?? user.login} — Zed Marketplace</title>
 	<meta
 		name="description"
-		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
+		content={user.bio ?? `Extensions by ${user.name ?? user.login} on Zed Marketplace`}
 	/>
 	<meta property="og:type" content="profile" />
-	<meta property="og:title" content={`${user.name ?? user.login} — ZedExt`} />
+	<meta property="og:title" content={`${user.name ?? user.login} — Zed Marketplace`} />
 	<meta
 		property="og:description"
-		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
+		content={user.bio ?? `Extensions by ${user.name ?? user.login} on Zed Marketplace`}
 	/>
 	<meta property="og:image" content={user.avatar_url} />
 	<meta name="twitter:card" content="summary" />

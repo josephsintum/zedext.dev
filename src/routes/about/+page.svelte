@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>About — ZedExt</title>
+	<title>About — Zed Marketplace</title>
 	<meta
 		name="description"
 		content="ZedExt is an alternative extension marketplace for the Zed editor with rich READMEs, GitHub stats, and powerful search."
