@@ -24,6 +24,21 @@ export async function getRepoMetadata(owner: string, repo: string): Promise<GitH
 	});
 }
 
+export async function getLanguageDocsMarkdown(langId: string): Promise<string | null> {
+	return getCached(`gh:lang-docs:${langId}`, TWENTY_FOUR_HOURS, async () => {
+		try {
+			const res = await fetch(
+				`https://raw.githubusercontent.com/zed-industries/zed/main/docs/src/languages/${langId}.md`,
+				{ headers: headers() }
+			);
+			if (!res.ok) return null;
+			return await res.text();
+		} catch {
+			return null;
+		}
+	});
+}
+
 export async function getReadmeMarkdown(
 	owner: string,
 	repo: string

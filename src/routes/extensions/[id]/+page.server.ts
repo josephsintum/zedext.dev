@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getExtensionWithVersions } from '$lib/server/zed-api.js';
-import { getRepoMetadata, getReadmeMarkdown } from '$lib/server/github-api.js';
+import { getRepoMetadata, getReadmeMarkdown, getLanguageDocsMarkdown } from '$lib/server/github-api.js';
 import { renderMarkdown } from '$lib/server/markdown.js';
 import { parseRepoUrl } from '$lib/server/parse-repo-url.js';
 
@@ -34,6 +34,11 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		if (readmeData) {
 			const branch = readmeData.defaultBranch;
 			readmeHtml = await renderMarkdown(readmeData.markdown, parsed.owner, parsed.repo, branch);
+		}
+	} else if (isMonorepo) {
+		const markdown = await getLanguageDocsMarkdown(extension.id);
+		if (markdown) {
+			readmeHtml = await renderMarkdown(markdown, 'zed-industries', 'zed', 'main');
 		}
 	}
 
