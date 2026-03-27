@@ -68,6 +68,7 @@
 		<!-- Downloads -->
 		<span class="flex items-center gap-1 tabular-nums">
 			<svg
+				aria-hidden="true"
 				class="h-3.5 w-3.5"
 				fill="none"
 				stroke="currentColor"
@@ -87,6 +88,7 @@
 		{#if hit.github_stars > 0}
 			<span class="flex items-center gap-1 tabular-nums">
 				<svg
+					aria-hidden="true"
 					class="h-3.5 w-3.5"
 					fill="none"
 					stroke="currentColor"

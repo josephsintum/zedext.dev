@@ -40,10 +40,7 @@ export async function getLanguageDocsMarkdown(langId: string): Promise<string | 
 	});
 }
 
-export async function getReadmeMarkdown(
-	owner: string,
-	repo: string
-): Promise<{ markdown: string; defaultBranch: string } | null> {
+export async function getReadmeMarkdown(owner: string, repo: string): Promise<string | null> {
 	return getCached(`gh:readme:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
 		try {
 			const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, {
@@ -52,14 +49,7 @@ export async function getReadmeMarkdown(
 			if (!res.ok) return null;
 
 			const data: GitHubReadme = await res.json();
-			const markdown = Buffer.from(data.content, 'base64').toString('utf-8');
-
-			// Also fetch default branch for image URL rewriting
-			const repoRes = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, { headers: headers() });
-			const repoData = repoRes.ok ? await repoRes.json() : null;
-			const defaultBranch = repoData?.default_branch ?? 'main';
-
-			return { markdown, defaultBranch };
+			return Buffer.from(data.content, 'base64').toString('utf-8');
 		} catch {
 			return null;
 		}

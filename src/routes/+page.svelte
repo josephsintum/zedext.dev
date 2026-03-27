@@ -6,7 +6,7 @@
 	import SortSelect from '$lib/components/SortSelect.svelte';
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import { formatNumber } from '$lib/utils/format.js';
-	import type { SearchResults, ExtensionHit } from '$lib/types.js';
+	import type { ExtensionHit } from '$lib/types.js';
 
 	let { data } = $props();
 
@@ -36,13 +36,17 @@
 			animateFrom = 0;
 			loading = true;
 
-			searchExtensions(query, { category, sort, page: 0 }).then((r) => {
-				allHits = r.hits;
-				totalHits = r.nbHits;
-				totalPages = r.nbPages;
-				facets = r.facets;
-				loading = false;
-			});
+			searchExtensions(query, { category, sort, page: 0 })
+				.then((r) => {
+					allHits = r.hits;
+					totalHits = r.nbHits;
+					totalPages = r.nbPages;
+					facets = r.facets;
+				})
+				.catch(() => {})
+				.finally(() => {
+					loading = false;
+				});
 		}
 	});
 
@@ -53,12 +57,16 @@
 		loadingMore = true;
 		animateFrom = allHits.length;
 
-		searchExtensions(query, { category, sort, page: nextPage }).then((r) => {
-			allHits = [...allHits, ...r.hits];
-			currentPage = nextPage;
-			facets = r.facets;
-			loadingMore = false;
-		});
+		searchExtensions(query, { category, sort, page: nextPage })
+			.then((r) => {
+				allHits = [...allHits, ...r.hits];
+				currentPage = nextPage;
+				facets = r.facets;
+			})
+			.catch(() => {})
+			.finally(() => {
+				loadingMore = false;
+			});
 	}
 
 	const hasMore = $derived(currentPage + 1 < totalPages);
@@ -78,13 +86,20 @@
 		name="description"
 		content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history."
 	/>
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="ZedExt — Discover Zed Extensions" />
+	<meta
+		property="og:description"
+		content="The best way to discover, search, and explore extensions for the Zed editor."
+	/>
+	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
 <!-- Hero with dot grid background -->
 <section class="dot-grid border-b border-[var(--color-border)]">
 	<div class="mx-auto max-w-7xl px-6 pt-16 pb-10">
 		<div class="mx-auto max-w-2xl text-center">
-			<h1 class="text-4xl font-bold tracking-tight text-[var(--color-text)]">
+			<h1 class="text-4xl font-bold tracking-tight text-balance text-[var(--color-text)]">
 				Extensions for <span class="font-mono text-[var(--color-accent)]">Zed</span>
 			</h1>
 			<p class="mt-3 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">

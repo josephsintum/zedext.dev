@@ -7,6 +7,7 @@
 				class="flex h-5 w-5 items-center justify-center rounded bg-[var(--color-text)] text-white"
 			>
 				<svg
+					aria-hidden="true"
 					class="h-3 w-3"
 					viewBox="0 0 24 24"
 					fill="none"

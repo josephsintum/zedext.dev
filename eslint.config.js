@@ -45,13 +45,7 @@ export default ts.config(
 	{
 		settings: {
 			tailwindcss: {
-				whitelist: [
-					'dot-grid',
-					'hide-scrollbar',
-					'card-hover',
-					'animate-fade-up',
-					'readme-content'
-				]
+				whitelist: ['dot-grid', 'hide-scrollbar', 'card-hover', 'animate-fade-up', 'readme-content']
 			}
 		}
 	},

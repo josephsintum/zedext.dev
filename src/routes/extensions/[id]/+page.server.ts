@@ -1,7 +1,11 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getExtensionWithVersions } from '$lib/server/zed-api.js';
-import { getRepoMetadata, getReadmeMarkdown, getLanguageDocsMarkdown } from '$lib/server/github-api.js';
+import {
+	getRepoMetadata,
+	getReadmeMarkdown,
+	getLanguageDocsMarkdown
+} from '$lib/server/github-api.js';
 import { renderMarkdown } from '$lib/server/markdown.js';
 import { parseRepoUrl } from '$lib/server/parse-repo-url.js';
 
@@ -24,30 +28,26 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	let readmeHtml: string | null = null;
 	let zedDocsHtml: string | null = null;
 
-	// Try Zed language docs for all extensions (cached 24h)
-	const langDocsMarkdown = await getLanguageDocsMarkdown(extension.id);
+	// Fetch all external data in parallel
+	const [langDocsMarkdown, repoMeta, readmeMarkdown] = await Promise.all([
+		getLanguageDocsMarkdown(extension.id),
+		parsed && !isMonorepo ? getRepoMetadata(parsed.owner, parsed.repo) : null,
+		parsed && !isMonorepo ? getReadmeMarkdown(parsed.owner, parsed.repo) : null
+	]);
+
 	if (langDocsMarkdown) {
 		zedDocsHtml = await renderMarkdown(langDocsMarkdown, 'zed-industries', 'zed', 'main');
 	}
 
-	// Fetch GitHub data for non-monorepo extensions
 	if (parsed && !isMonorepo) {
-		const [repoMeta, readmeData] = await Promise.all([
-			getRepoMetadata(parsed.owner, parsed.repo),
-			getReadmeMarkdown(parsed.owner, parsed.repo)
-		]);
-
 		github = repoMeta;
-
-		if (readmeData) {
-			const branch = readmeData.defaultBranch;
-			readmeHtml = await renderMarkdown(readmeData.markdown, parsed.owner, parsed.repo, branch);
+		if (readmeMarkdown) {
+			const branch = repoMeta?.default_branch ?? 'main';
+			readmeHtml = await renderMarkdown(readmeMarkdown, parsed.owner, parsed.repo, branch);
 		}
 	}
 
-	const zedDocsUrl = zedDocsHtml
-		? `https://zed.dev/docs/languages/${extension.id}`
-		: null;
+	const zedDocsUrl = zedDocsHtml ? `https://zed.dev/docs/languages/${extension.id}` : null;
 
 	return {
 		extension,

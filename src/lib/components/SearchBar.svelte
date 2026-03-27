@@ -8,31 +8,36 @@
 	let focused = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
+	function performSearch(q: string) {
+		const params = new URLSearchParams(page.url.searchParams);
+		if (q) params.set('q', q);
+		else params.delete('q');
+		params.delete('page');
+		goto(`?${params}`, { replaceState: true, keepFocus: true });
+		onSearch?.(q);
+	}
+
 	function handleInput(e: Event) {
-		const q = (e.target as HTMLInputElement).value;
-		input = q;
+		input = (e.target as HTMLInputElement).value;
 		clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(() => {
-			const params = new URLSearchParams(page.url.searchParams);
-			if (q) params.set('q', q);
-			else params.delete('q');
-			params.delete('page');
-			goto(`?${params}`, { replaceState: true, keepFocus: true });
-			onSearch?.(q);
-		}, 300);
+		debounceTimer = setTimeout(() => performSearch(input), 300);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			input = '';
-			handleInput({ target: { value: '' } } as unknown as Event);
+			clearTimeout(debounceTimer);
+			performSearch('');
 		}
 	}
 </script>
 
-<div class="relative w-full transition-all duration-200" class:scale-[1.01]={focused}>
+<div
+	class="relative w-full transition-all duration-200 motion-reduce:transition-none"
+	class:scale-[1.01]={focused}
+>
 	<div
-		class="relative overflow-hidden rounded-xl border transition-all duration-200 {focused
+		class="relative overflow-hidden rounded-xl border transition-all duration-200 motion-reduce:transition-none {focused
 			? 'border-[var(--color-accent)] shadow-lg shadow-amber-500/10'
 			: 'border-[var(--color-border)] shadow-sm'}"
 	>
@@ -43,6 +48,7 @@
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
+			aria-hidden="true"
 		>
 			<path
 				stroke-linecap="round"
@@ -53,7 +59,8 @@
 		</svg>
 		<input
 			type="search"
-			placeholder="Search 1,600+ extensions..."
+			aria-label="Search extensions"
+			placeholder="Search 1,600+ extensions…"
 			{value}
 			oninput={handleInput}
 			onkeydown={handleKeydown}

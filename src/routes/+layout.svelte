@@ -8,7 +8,7 @@
 
 <div class="flex min-h-screen flex-col bg-[var(--color-surface)]">
 	<Header />
-	<main class="flex-1">
+	<main id="main" class="flex-1">
 		{@render children()}
 	</main>
 	<Footer />

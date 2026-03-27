@@ -128,3 +128,16 @@
 	animation: fade-up 0.15s ease forwards;
 	opacity: 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+	.card-hover {
+		transition: none;
+	}
+	.card-hover:hover {
+		transform: none;
+	}
+	.animate-fade-up {
+		animation: none;
+		opacity: 1;
+	}
+}

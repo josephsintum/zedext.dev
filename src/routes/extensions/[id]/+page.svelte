@@ -1,12 +1,17 @@
 <script lang="ts">
-	import ProvideTag from '$lib/components/ProvideTag.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import ReadmeRenderer from '$lib/components/ReadmeRenderer.svelte';
 	import InstallButton from '$lib/components/InstallButton.svelte';
 
 	let { data } = $props();
-	const { extension, versions, github, readmeHtml, zedDocsHtml, zedDocsUrl, isMonorepo } = data;
-	const hasBoth = zedDocsHtml && readmeHtml;
+	const extension = $derived(data.extension);
+	const versions = $derived(data.versions);
+	const github = $derived(data.github);
+	const readmeHtml = $derived(data.readmeHtml);
+	const zedDocsHtml = $derived(data.zedDocsHtml);
+	const zedDocsUrl = $derived(data.zedDocsUrl);
+	const isMonorepo = $derived(data.isMonorepo);
+	const hasBoth = $derived(zedDocsHtml && readmeHtml);
 	let activeTab = $state<'docs' | 'readme'>('docs');
 </script>
 
@@ -16,11 +21,13 @@
 		name="description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
-	<meta property="og:title" content="{extension.name} — ZedExt" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={`${extension.name} — ZedExt`} />
 	<meta
 		property="og:description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
+	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
 <div class="mx-auto max-w-7xl px-6 py-8">
@@ -62,8 +69,11 @@
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
 			{#if hasBoth}
-				<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]">
+				<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]" role="tablist">
 					<button
+						role="tab"
+						aria-selected={activeTab === 'docs'}
+						aria-controls="tabpanel-docs"
 						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
 							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
 							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
@@ -72,6 +82,9 @@
 						Zed Docs
 					</button>
 					<button
+						role="tab"
+						aria-selected={activeTab === 'readme'}
+						aria-controls="tabpanel-readme"
 						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
 							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
 							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
@@ -81,12 +94,14 @@
 					</button>
 				</div>
 				<div
+					id="tabpanel-{activeTab}"
+					role="tabpanel"
 					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
 				>
 					{#if activeTab === 'docs'}
-						<ReadmeRenderer html={zedDocsHtml} />
+						<ReadmeRenderer html={zedDocsHtml!} />
 					{:else}
-						<ReadmeRenderer html={readmeHtml} />
+						<ReadmeRenderer html={readmeHtml!} />
 					{/if}
 				</div>
 			{:else if zedDocsHtml}
