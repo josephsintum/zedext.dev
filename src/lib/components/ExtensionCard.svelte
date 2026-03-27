@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { ExtensionHit } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
-	import { timeAgo } from '$lib/utils/format.js';
 	import ProvideTag from './ProvideTag.svelte';
 
-	let { hit, index = 0 }: { hit: ExtensionHit; index?: number } = $props();
+	let { hit }: { hit: ExtensionHit } = $props();
 
 	const primaryProvides = $derived(
 		hit.provides.filter(
@@ -33,7 +32,6 @@
 <a
 	href="/extensions/{hit.objectID}"
 	class="card-hover group bg-surface-raised flex min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
-	style="animation-delay: {index * 30}ms"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
 		<h3

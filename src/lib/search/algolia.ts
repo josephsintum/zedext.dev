@@ -4,6 +4,25 @@ import type { SearchResults, ExtensionHit } from '$lib/types.js';
 
 const client = liteClient(PUBLIC_ALGOLIA_APP_ID, PUBLIC_ALGOLIA_SEARCH_KEY);
 
+function sortHits(hits: ExtensionHit[], sort: string): ExtensionHit[] {
+	const sorted = [...hits];
+	switch (sort) {
+		case 'updated':
+			return sorted.sort(
+				(a, b) =>
+					new Date(b.github_pushed_at ?? b.published_at).getTime() -
+					new Date(a.github_pushed_at ?? a.published_at).getTime()
+			);
+		case 'stars':
+			return sorted.sort((a, b) => (b.github_stars ?? 0) - (a.github_stars ?? 0));
+		case 'name':
+			return sorted.sort((a, b) => a.name.localeCompare(b.name));
+		case 'downloads':
+		default:
+			return sorted; // Algolia's default ranking already sorts by downloads
+	}
+}
+
 export async function searchExtensions(
 	query: string,
 	options: {
@@ -13,7 +32,7 @@ export async function searchExtensions(
 		hitsPerPage?: number;
 	} = {}
 ): Promise<SearchResults> {
-	const { category = 'all', page = 0, hitsPerPage = 24 } = options;
+	const { category = 'all', sort = 'downloads', page = 0, hitsPerPage = 24 } = options;
 
 	try {
 		const response = await client.search({
@@ -33,7 +52,7 @@ export async function searchExtensions(
 		if (!('hits' in result)) throw new Error('Unexpected response');
 
 		return {
-			hits: result.hits as ExtensionHit[],
+			hits: sortHits(result.hits as ExtensionHit[], sort),
 			nbHits: result.nbHits ?? 0,
 			nbPages: result.nbPages ?? 0,
 			page: result.page ?? 0,
@@ -41,11 +60,15 @@ export async function searchExtensions(
 		};
 	} catch (err) {
 		console.error('Algolia search failed, falling back to Zed API:', err);
-		return searchZedApiFallback(query, category);
+		return searchZedApiFallback(query, category, sort);
 	}
 }
 
-async function searchZedApiFallback(query: string, category: string): Promise<SearchResults> {
+async function searchZedApiFallback(
+	query: string,
+	category: string,
+	sort: string
+): Promise<SearchResults> {
 	const params = new URLSearchParams({ max_schema_version: '1' });
 	if (query) params.set('filter', query);
 	if (category !== 'all') params.set('provides', category);
@@ -70,5 +93,5 @@ async function searchZedApiFallback(query: string, category: string): Promise<Se
 		repository: ext.repository
 	}));
 
-	return { hits, nbHits: hits.length, nbPages: 1, page: 0, facets: {} };
+	return { hits: sortHits(hits, sort), nbHits: hits.length, nbPages: 1, page: 0, facets: {} };
 }

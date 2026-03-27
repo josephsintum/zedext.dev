@@ -5,34 +5,71 @@
 	import CategoryTabs from '$lib/components/CategoryTabs.svelte';
 	import SortSelect from '$lib/components/SortSelect.svelte';
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
-	import Pagination from '$lib/components/Pagination.svelte';
 	import { formatNumber } from '$lib/utils/format.js';
-	import type { SearchResults } from '$lib/types.js';
+	import type { SearchResults, ExtensionHit } from '$lib/types.js';
 
 	let { data } = $props();
 
 	let query = $derived(page.url.searchParams.get('q') ?? '');
 	let category = $derived(page.url.searchParams.get('category') ?? 'all');
 	let sort = $derived(page.url.searchParams.get('sort') ?? 'downloads');
-	let currentPage = $derived(Math.max(0, Number(page.url.searchParams.get('page') ?? 1) - 1));
 
-	let results: SearchResults | null = $state(null);
+	let allHits: ExtensionHit[] = $state([]);
+	let currentPage = $state(0);
+	let totalHits = $state(0);
+	let totalPages = $state(0);
+	let facets: Record<string, Record<string, number>> = $state({});
 	let loading = $state(false);
+	let loadingMore = $state(false);
+	let animateFrom = $state(0); // index from which new cards should animate
+
+	// Track search params to detect changes and reset
+	let lastSearchKey = $state('');
 
 	$effect(() => {
-		const q = query;
-		const cat = category;
-		const s = sort;
-		const p = currentPage;
+		const searchKey = `${query}|${category}|${sort}`;
 
-		loading = true;
-		searchExtensions(q, { category: cat, sort: s, page: p }).then((r) => {
-			results = r;
-			loading = false;
-		});
+		if (searchKey !== lastSearchKey) {
+			// Search params changed — reset to page 0
+			lastSearchKey = searchKey;
+			currentPage = 0;
+			animateFrom = 0;
+			loading = true;
+
+			searchExtensions(query, { category, sort, page: 0 }).then((r) => {
+				allHits = r.hits;
+				totalHits = r.nbHits;
+				totalPages = r.nbPages;
+				facets = r.facets;
+				loading = false;
+			});
+		}
 	});
 
-	const displayResults = $derived(results ?? data.initialResults);
+	function loadMore() {
+		if (loadingMore || currentPage + 1 >= totalPages) return;
+
+		const nextPage = currentPage + 1;
+		loadingMore = true;
+		animateFrom = allHits.length;
+
+		searchExtensions(query, { category, sort, page: nextPage }).then((r) => {
+			allHits = [...allHits, ...r.hits];
+			currentPage = nextPage;
+			facets = r.facets;
+			loadingMore = false;
+		});
+	}
+
+	const hasMore = $derived(currentPage + 1 < totalPages);
+	const remaining = $derived(totalHits - allHits.length);
+
+	// Use SSR data as initial state
+	const displayHits = $derived(allHits.length > 0 ? allHits : data.initialResults.hits);
+	const displayFacets = $derived(
+		Object.keys(facets).length > 0 ? facets : (data.initialResults.facets ?? {})
+	);
+	const displayTotalHits = $derived(totalHits || data.initialResults.nbHits);
 </script>
 
 <svelte:head>
@@ -66,11 +103,11 @@
 <section class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Toolbar: category tabs + sort + count -->
 	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<CategoryTabs active={category} facets={displayResults.facets?.provides ?? {}} />
+		<CategoryTabs active={category} facets={displayFacets?.provides ?? {}} />
 		<div class="flex items-center gap-3">
-			{#if displayResults.nbHits > 0}
+			{#if displayTotalHits > 0}
 				<span class="text-[13px] text-[var(--color-text-tertiary)] tabular-nums">
-					{formatNumber(displayResults.nbHits)} results
+					{formatNumber(displayTotalHits)} results
 				</span>
 			{/if}
 			<SortSelect value={sort} />
@@ -84,15 +121,18 @@
 		class:pointer-events-none={loading}
 		style="transition: opacity 0.15s ease"
 	>
-		{#each displayResults.hits as hit, i (hit.objectID)}
-			<div class="animate-fade-up min-w-0" style="animation-delay: {i * 25}ms">
-				<ExtensionCard {hit} index={i} />
+		{#each displayHits as hit, i (hit.objectID)}
+			<div
+				class="min-w-0 {i >= animateFrom ? 'animate-fade-up' : ''}"
+				style={i >= animateFrom ? `animation-delay: ${(i - animateFrom) * 15}ms` : ''}
+			>
+				<ExtensionCard {hit} />
 			</div>
 		{/each}
 	</div>
 
 	<!-- Empty state -->
-	{#if displayResults.hits.length === 0 && !loading}
+	{#if displayHits.length === 0 && !loading}
 		<div class="flex flex-col items-center py-24">
 			<div
 				class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-surface-hover)]"
@@ -122,13 +162,13 @@
 		</div>
 	{/if}
 
-	<!-- Loading shimmer -->
-	{#if loading && displayResults.hits.length === 0}
+	<!-- Loading shimmer (initial load only) -->
+	{#if loading && displayHits.length === 0}
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each Array(12) as _, i}
 				<div
 					class="animate-pulse rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4"
-					style="animation-delay: {i * 50}ms"
+					style="animation-delay: {i * 30}ms"
 				>
 					<div class="mb-2 flex justify-between">
 						<div class="h-4 w-24 rounded bg-[var(--color-surface-hover)]"></div>
@@ -147,8 +187,38 @@
 		</div>
 	{/if}
 
-	<!-- Pagination -->
-	<div class="mt-10">
-		<Pagination currentPage={displayResults.page} totalPages={displayResults.nbPages} />
-	</div>
+	<!-- Load More -->
+	{#if hasMore && displayHits.length > 0}
+		<div class="mt-10 flex justify-center">
+			<button
+				onclick={loadMore}
+				disabled={loadingMore}
+				class="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-6 py-2.5 text-[14px] font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] disabled:pointer-events-none disabled:opacity-50"
+			>
+				{#if loadingMore}
+					<svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+						<circle
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							stroke-width="2"
+							class="opacity-25"
+						/>
+						<path
+							fill="currentColor"
+							class="opacity-75"
+							d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+						/>
+					</svg>
+					Loading...
+				{:else}
+					Load More
+					{#if remaining > 0}
+						<span class="text-[var(--color-text-tertiary)]">({formatNumber(remaining)} more)</span>
+					{/if}
+				{/if}
+			</button>
+		</div>
+	{/if}
 </section>

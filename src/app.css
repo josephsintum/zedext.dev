@@ -125,6 +125,6 @@
 }
 
 .animate-fade-up {
-	animation: fade-up 0.4s ease forwards;
+	animation: fade-up 0.15s ease forwards;
 	opacity: 0;
 }
