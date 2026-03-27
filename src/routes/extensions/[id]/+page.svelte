@@ -11,6 +11,8 @@
 	const zedDocsHtml = $derived(data.zedDocsHtml);
 	const zedDocsUrl = $derived(data.zedDocsUrl);
 	const isMonorepo = $derived(data.isMonorepo);
+	const repoOwner = $derived(data.repoOwner);
+	const repoOwnerAvatar = $derived(data.repoOwnerAvatar);
 	const hasBoth = $derived(zedDocsHtml && readmeHtml);
 	let activeTab = $state<'docs' | 'readme'>('docs');
 </script>
@@ -150,7 +152,15 @@
 
 		<!-- Sidebar -->
 		<div class="w-full shrink-0 lg:w-72 xl:w-80">
-			<Sidebar {extension} {versions} {github} {isMonorepo} {zedDocsUrl} />
+			<Sidebar
+				{extension}
+				{versions}
+				{github}
+				{isMonorepo}
+				{zedDocsUrl}
+				{repoOwner}
+				{repoOwnerAvatar}
+			/>
 		</div>
 	</div>
 </div>

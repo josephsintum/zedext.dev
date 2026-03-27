@@ -4,10 +4,11 @@ import { getExtensionWithVersions } from '$lib/server/zed-api.js';
 import {
 	getRepoMetadata,
 	getReadmeMarkdown,
-	getLanguageDocsMarkdown
+	getLanguageDocsMarkdown,
+	getGitHubUser
 } from '$lib/server/github-api.js';
 import { renderMarkdown } from '$lib/server/markdown.js';
-import { parseRepoUrl } from '$lib/server/parse-repo-url.js';
+import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	setHeaders({
@@ -29,10 +30,11 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	let zedDocsHtml: string | null = null;
 
 	// Fetch all external data in parallel
-	const [langDocsMarkdown, repoMeta, readmeMarkdown] = await Promise.all([
+	const [langDocsMarkdown, repoMeta, readmeMarkdown, repoOwnerUser] = await Promise.all([
 		getLanguageDocsMarkdown(extension.id),
 		parsed && !isMonorepo ? getRepoMetadata(parsed.owner, parsed.repo) : null,
-		parsed && !isMonorepo ? getReadmeMarkdown(parsed.owner, parsed.repo) : null
+		parsed && !isMonorepo ? getReadmeMarkdown(parsed.owner, parsed.repo) : null,
+		parsed ? getGitHubUser(parsed.owner) : null
 	]);
 
 	if (langDocsMarkdown) {
@@ -56,6 +58,8 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		readmeHtml,
 		zedDocsHtml,
 		zedDocsUrl,
-		isMonorepo
+		isMonorepo,
+		repoOwner: parsed?.owner ?? null,
+		repoOwnerAvatar: repoOwnerUser?.avatar_url ?? null
 	};
 };

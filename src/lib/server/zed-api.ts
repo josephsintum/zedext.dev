@@ -4,6 +4,15 @@ import type { ZedExtension, ZedExtensionResponse } from '$lib/types.js';
 const ZED_API = 'https://api.zed.dev';
 const ONE_HOUR = 60 * 60 * 1000;
 
+export async function getAllExtensions(): Promise<ZedExtension[]> {
+	return getCached('zed:all-extensions', ONE_HOUR, async () => {
+		const res = await fetch(`${ZED_API}/extensions?max_schema_version=1`);
+		if (!res.ok) return [];
+		const data: ZedExtensionResponse = await res.json();
+		return data.data ?? [];
+	});
+}
+
 export async function getExtensionWithVersions(id: string): Promise<{
 	extension: ZedExtension;
 	versions: ZedExtension[];

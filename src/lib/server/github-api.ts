@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { getCached } from './cache.js';
-import type { GitHubRepo, GitHubReadme } from '$lib/types.js';
+import type { GitHubRepo, GitHubReadme, GitHubUser } from '$lib/types.js';
 
 const GITHUB_API = 'https://api.github.com';
 const ONE_HOUR = 60 * 60 * 1000;
@@ -34,6 +34,18 @@ export async function getLanguageDocsMarkdown(langId: string): Promise<string | 
 			if (!res.ok) return null;
 			const text = await res.text();
 			return text.replace(/^---\n[\s\S]*?\n---\n/, '');
+		} catch {
+			return null;
+		}
+	});
+}
+
+export async function getGitHubUser(username: string): Promise<GitHubUser | null> {
+	return getCached(`gh:user:${username}`, ONE_HOUR, async () => {
+		try {
+			const res = await fetch(`${GITHUB_API}/users/${username}`, { headers: headers() });
+			if (!res.ok) return null;
+			return await res.json();
 		} catch {
 			return null;
 		}

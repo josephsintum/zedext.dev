@@ -16,13 +16,17 @@
 		versions,
 		github,
 		isMonorepo = false,
-		zedDocsUrl = null
+		zedDocsUrl = null,
+		repoOwner = null,
+		repoOwnerAvatar = null
 	}: {
 		extension: ZedExtension;
 		versions: ZedExtension[];
 		github: GitHubRepo | null;
 		isMonorepo?: boolean;
 		zedDocsUrl?: string | null;
+		repoOwner?: string | null;
+		repoOwnerAvatar?: string | null;
 	} = $props();
 
 	const authorNames = $derived(parseAuthorNames(extension.authors));
@@ -77,8 +81,19 @@
 	<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4">
 		<!-- Downloads — prominent -->
 		<div class="flex items-center gap-3">
-			<svg class="h-5 w-5 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+			<svg
+				class="h-5 w-5 text-[var(--color-accent)]"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+				stroke-width="1.5"
+				aria-hidden="true"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+				/>
 			</svg>
 			<div>
 				<div class="font-mono text-2xl font-bold text-[var(--color-text)]">
@@ -90,22 +105,57 @@
 
 		<!-- Stars, forks, issues — compact row -->
 		{#if github && !isMonorepo}
-			<div class="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-3 text-[12px] text-[var(--color-text-tertiary)]">
+			<div
+				class="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-3 text-[12px] text-[var(--color-text-tertiary)]"
+			>
 				<span class="flex items-center gap-1 tabular-nums">
-					<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+					<svg
+						class="h-3.5 w-3.5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+						/>
 					</svg>
 					{formatNumber(github.stargazers_count)}
 				</span>
 				<span class="flex items-center gap-1 tabular-nums">
-					<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+					<svg
+						class="h-3.5 w-3.5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+						/>
 					</svg>
 					{formatNumber(github.forks_count)}
 				</span>
 				<span class="flex items-center gap-1 tabular-nums">
-					<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+					<svg
+						class="h-3.5 w-3.5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						aria-hidden="true"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+						/>
 					</svg>
 					{formatNumber(github.open_issues_count)}
 				</span>
@@ -118,7 +168,9 @@
 		{#if github?.license}
 			<div class="flex items-center justify-between">
 				<span class="text-[var(--color-text-tertiary)]">License</span>
-				<span class="rounded-md bg-[var(--color-surface)] px-2 py-0.5 font-mono text-[12px] text-[var(--color-text-secondary)]">
+				<span
+					class="rounded-md bg-[var(--color-surface)] px-2 py-0.5 font-mono text-[12px] text-[var(--color-text-secondary)]"
+				>
 					{github.license.spdx_id}
 				</span>
 			</div>
@@ -130,7 +182,9 @@
 		{#if extension.wasm_api_version}
 			<div class="flex items-center justify-between">
 				<span class="text-[var(--color-text-tertiary)]">WASM API</span>
-				<span class="font-mono text-[12px] text-[var(--color-text-secondary)]">v{extension.wasm_api_version}</span>
+				<span class="font-mono text-[12px] text-[var(--color-text-secondary)]"
+					>v{extension.wasm_api_version}</span
+				>
 			</div>
 		{/if}
 	</div>
@@ -149,6 +203,9 @@
 		</div>
 	</div>
 
+	<!-- Version History -->
+	<VersionHistory {versions} />
+
 	<!-- Authors -->
 	<div>
 		<h3
@@ -156,13 +213,33 @@
 		>
 			Authors
 		</h3>
-		<div class="space-y-1">
-			{#each authorNames as name}
-				<div class="text-[13px] text-[var(--color-text-secondary)]">{name}</div>
+		<div class="space-y-2">
+			{#each authorNames as name, i}
+				{#if i === 0 && repoOwner}
+					<a
+						href="/authors/{repoOwner}"
+						class="flex items-center gap-2 text-[13px] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
+					>
+						{#if repoOwnerAvatar}
+							<img
+								src={repoOwnerAvatar}
+								alt={name}
+								class="h-6 w-6 rounded-full border border-[var(--color-border)]"
+							/>
+						{/if}
+						<span>~{repoOwner}</span>
+					</a>
+				{:else}
+					<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-secondary)]">
+						<div
+							class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-hover)] text-[10px] font-medium text-[var(--color-text-tertiary)]"
+						>
+							{name.charAt(0).toUpperCase()}
+						</div>
+						<span>{name}</span>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	</div>
-
-	<!-- Version History -->
-	<VersionHistory {versions} />
 </aside>

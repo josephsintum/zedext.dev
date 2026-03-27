@@ -68,6 +68,21 @@ export interface GitHubReadme {
 	download_url: string;
 }
 
+// --- GitHub User types ---
+
+export interface GitHubUser {
+	login: string;
+	name: string | null;
+	avatar_url: string;
+	html_url: string;
+	bio: string | null;
+	public_repos: number;
+	followers: number;
+	company: string | null;
+	location: string | null;
+	blog: string | null;
+}
+
 // --- UI types ---
 
 export interface ExtensionHit extends AlgoliaExtension {
