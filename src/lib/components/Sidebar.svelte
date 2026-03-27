@@ -44,6 +44,7 @@
 					/>
 				</svg>
 				View Repository
+				<svg aria-hidden="true" class="h-3 w-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 		{/if}
 		{#if extension.repository}
@@ -60,6 +61,7 @@
 				{#if github && !isMonorepo && github.open_issues_count > 0}
 					<span class="text-[11px] text-[var(--color-text-tertiary)]">({github.open_issues_count})</span>
 				{/if}
+				<svg aria-hidden="true" class="h-3 w-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 		{/if}
 		{#if zedDocsUrl}
@@ -84,6 +86,7 @@
 					/>
 				</svg>
 				Zed Docs
+				<svg aria-hidden="true" class="h-3 w-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 		{/if}
 	</div>

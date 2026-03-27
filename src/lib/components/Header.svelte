@@ -23,6 +23,7 @@
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
 				Create Extension
+				<svg aria-hidden="true" class="inline h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 			<a
 				href="https://zed.dev"
@@ -31,6 +32,7 @@
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
 				Zed Editor
+				<svg aria-hidden="true" class="inline h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 			<button
 				onclick={toggleTheme}

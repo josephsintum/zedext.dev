@@ -22,7 +22,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				Zed Registry
+				Zed Registry<svg aria-hidden="true" class="ml-0.5 inline h-2.5 w-2.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 			<span class="text-[var(--color-border)]">&middot;</span>
 			<a
@@ -31,7 +31,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				Extensions Repo
+				Extensions Repo<svg aria-hidden="true" class="ml-0.5 inline h-2.5 w-2.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 			<span class="text-[var(--color-border)]">&middot;</span>
 			<a
@@ -40,7 +40,7 @@
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				Source
+				Source<svg aria-hidden="true" class="ml-0.5 inline h-2.5 w-2.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
 			</a>
 		</div>
 	</div>
