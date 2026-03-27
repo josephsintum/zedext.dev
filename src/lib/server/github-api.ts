@@ -32,7 +32,8 @@ export async function getLanguageDocsMarkdown(langId: string): Promise<string | 
 				{ headers: headers() }
 			);
 			if (!res.ok) return null;
-			return await res.text();
+			const text = await res.text();
+			return text.replace(/^---\n[\s\S]*?\n---\n/, '');
 		} catch {
 			return null;
 		}
