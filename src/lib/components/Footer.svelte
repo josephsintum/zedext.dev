@@ -3,9 +3,9 @@
 		class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row"
 	>
 		<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-tertiary)]">
-			<span class="font-mono font-medium">Zed Marketplace</span>
+			<span class="font-mono font-medium">ZedExt</span>
 			<span class="text-[var(--color-border)]">/</span>
-			<span>Not affiliated with Zed Industries</span>
+			<span>An unofficial community project. Not affiliated with Zed Industries.</span>
 		</div>
 
 		<div class="flex items-center gap-4 text-[12px] text-[var(--color-text-tertiary)]">

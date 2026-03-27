@@ -9,7 +9,7 @@
 >
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
 		<a href="/" class="font-mono text-sm font-semibold tracking-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-accent)]">
-			Zed Marketplace
+			ZedExt
 		</a>
 
 		<nav class="flex items-center gap-5">

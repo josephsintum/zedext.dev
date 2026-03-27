@@ -134,13 +134,13 @@
 </script>
 
 <svelte:head>
-	<title>Zed Marketplace — Discover Zed Extensions</title>
+	<title>ZedExt — Discover Zed Extensions</title>
 	<meta
 		name="description"
 		content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history."
 	/>
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content="Zed Marketplace — Discover Zed Extensions" />
+	<meta property="og:title" content="ZedExt — Discover Zed Extensions" />
 	<meta
 		property="og:description"
 		content="The best way to discover, search, and explore extensions for the Zed editor."
