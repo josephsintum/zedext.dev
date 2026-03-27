@@ -9,9 +9,26 @@ function getHighlighter(): Promise<Highlighter> {
 		highlighterPromise = createHighlighter({
 			themes: ['github-light'],
 			langs: [
-				'javascript', 'typescript', 'python', 'rust', 'go', 'ruby',
-				'bash', 'shell', 'json', 'toml', 'yaml', 'html', 'css',
-				'lua', 'elixir', 'java', 'c', 'cpp', 'markdown', 'sql'
+				'javascript',
+				'typescript',
+				'python',
+				'rust',
+				'go',
+				'ruby',
+				'bash',
+				'shell',
+				'json',
+				'toml',
+				'yaml',
+				'html',
+				'css',
+				'lua',
+				'elixir',
+				'java',
+				'c',
+				'cpp',
+				'markdown',
+				'sql'
 			]
 		});
 	}
@@ -21,17 +38,19 @@ function getHighlighter(): Promise<Highlighter> {
 function rewriteImageUrls(markdown: string, owner: string, repo: string, branch: string): string {
 	const baseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`;
 
-	return markdown
-		// Markdown images: ![alt](./path) or ![alt](path)
-		.replace(
-			/!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
-			(_, alt, path) => `![${alt}](${baseUrl}/${path.replace(/^\.\//, '')})`
-		)
-		// HTML img src: <img src="path">
-		.replace(
-			/src="(?!https?:\/\/|data:)([^"]+)"/g,
-			(_, path) => `src="${baseUrl}/${path.replace(/^\.\//, '')}"`
-		);
+	return (
+		markdown
+			// Markdown images: ![alt](./path) or ![alt](path)
+			.replace(
+				/!\[([^\]]*)\]\((?!https?:\/\/|data:)([^)]+)\)/g,
+				(_, alt, path) => `![${alt}](${baseUrl}/${path.replace(/^\.\//, '')})`
+			)
+			// HTML img src: <img src="path">
+			.replace(
+				/src="(?!https?:\/\/|data:)([^"]+)"/g,
+				(_, path) => `src="${baseUrl}/${path.replace(/^\.\//, '')}"`
+			)
+	);
 }
 
 export async function renderMarkdown(
@@ -55,7 +74,9 @@ export async function renderMarkdown(
 			if (loadedLangs.includes(language as any)) {
 				return highlighter.codeToHtml(text, { lang: language, theme: 'github-light' });
 			}
-		} catch { /* fallback to plain */ }
+		} catch {
+			/* fallback to plain */
+		}
 		const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		return `<pre><code class="language-${language}">${escaped}</code></pre>`;
 	};

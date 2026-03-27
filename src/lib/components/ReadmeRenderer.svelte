@@ -42,8 +42,12 @@
 		border-bottom: 1px solid var(--color-border);
 	}
 
-	.readme-content :global(h3) { font-size: 1.15em; }
-	.readme-content :global(h4) { font-size: 1em; }
+	.readme-content :global(h3) {
+		font-size: 1.15em;
+	}
+	.readme-content :global(h4) {
+		font-size: 1em;
+	}
 
 	.readme-content :global(h1:first-child),
 	.readme-content :global(h2:first-child) {
@@ -192,9 +196,9 @@
 	}
 
 	/* Badge images (shields.io etc) — no border */
-	.readme-content :global(img[src*="shields.io"]),
-	.readme-content :global(img[src*="badge"]),
-	.readme-content :global(img[src*="img.shields"]) {
+	.readme-content :global(img[src*='shields.io']),
+	.readme-content :global(img[src*='badge']),
+	.readme-content :global(img[src*='img.shields']) {
 		border: none;
 		border-radius: 0;
 		display: inline;

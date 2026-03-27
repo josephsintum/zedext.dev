@@ -37,7 +37,10 @@
 
 <svelte:head>
 	<title>ZedExt — Discover Zed Extensions</title>
-	<meta name="description" content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history." />
+	<meta
+		name="description"
+		content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history."
+	/>
 </svelte:head>
 
 <!-- Hero with dot grid background -->
@@ -48,8 +51,8 @@
 				Extensions for <span class="font-mono text-[var(--color-accent)]">Zed</span>
 			</h1>
 			<p class="mt-3 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
-				Browse the full Zed extension registry with rich detail pages,
-				GitHub stats, and instant search.
+				Browse the full Zed extension registry with rich detail pages, GitHub stats, and instant
+				search.
 			</p>
 		</div>
 
@@ -91,12 +94,26 @@
 	<!-- Empty state -->
 	{#if displayResults.hits.length === 0 && !loading}
 		<div class="flex flex-col items-center py-24">
-			<div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-surface-hover)]">
-				<svg class="h-8 w-8 text-[var(--color-text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-					<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+			<div
+				class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--color-surface-hover)]"
+			>
+				<svg
+					class="h-8 w-8 text-[var(--color-text-tertiary)]"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+					/>
 				</svg>
 			</div>
-			<p class="mt-4 text-[15px] font-medium text-[var(--color-text-secondary)]">No extensions found</p>
+			<p class="mt-4 text-[15px] font-medium text-[var(--color-text-secondary)]">
+				No extensions found
+			</p>
 			{#if query}
 				<p class="mt-1.5 text-[13px] text-[var(--color-text-tertiary)]">
 					No results for "<span class="font-mono">{query}</span>". Try a different search term.
@@ -109,7 +126,10 @@
 	{#if loading && displayResults.hits.length === 0}
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each Array(12) as _, i}
-				<div class="animate-pulse rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4" style="animation-delay: {i * 50}ms">
+				<div
+					class="animate-pulse rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4"
+					style="animation-delay: {i * 50}ms"
+				>
 					<div class="mb-2 flex justify-between">
 						<div class="h-4 w-24 rounded bg-[var(--color-surface-hover)]"></div>
 						<div class="h-4 w-12 rounded bg-[var(--color-surface-hover)]"></div>

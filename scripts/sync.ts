@@ -15,7 +15,12 @@ import { algoliasearch } from 'algoliasearch';
 import { parse as parseToml } from 'smol-toml';
 import { parseRepoUrl } from '../src/lib/server/parse-repo-url.js';
 import { parseAuthorNames } from '../src/lib/server/parse-author.js';
-import type { ZedExtension, ZedExtensionResponse, AlgoliaExtension, GitHubRepo } from '../src/lib/types.js';
+import type {
+	ZedExtension,
+	ZedExtensionResponse,
+	AlgoliaExtension,
+	GitHubRepo
+} from '../src/lib/types.js';
 
 // --- Config ---
 

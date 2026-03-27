@@ -5,7 +5,8 @@
 	import { CATEGORIES } from '$lib/utils/constants.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
-	let { active = 'all', facets = {} }: { active?: string; facets?: Record<string, number> } = $props();
+	let { active = 'all', facets = {} }: { active?: string; facets?: Record<string, number> } =
+		$props();
 
 	function selectCategory(slug: string) {
 		const params = new URLSearchParams(page.url.searchParams);

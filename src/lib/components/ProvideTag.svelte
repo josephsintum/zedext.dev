@@ -29,7 +29,9 @@
 		'debug-adapters': 'Debug'
 	};
 
-	const s = $derived(styles[provide] ?? { bg: 'bg-zinc-50', text: 'text-zinc-600', dot: 'bg-zinc-400' });
+	const s = $derived(
+		styles[provide] ?? { bg: 'bg-zinc-50', text: 'text-zinc-600', dot: 'bg-zinc-400' }
+	);
 </script>
 
 <span

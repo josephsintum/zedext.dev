@@ -13,7 +13,7 @@ export async function searchExtensions(
 		hitsPerPage?: number;
 	} = {}
 ): Promise<SearchResults> {
-	const { category = 'all', sort = 'downloads', page = 0, hitsPerPage = 24 } = options;
+	const { category = 'all', page = 0, hitsPerPage = 24 } = options;
 
 	try {
 		const response = await client.search({
@@ -45,10 +45,7 @@ export async function searchExtensions(
 	}
 }
 
-async function searchZedApiFallback(
-	query: string,
-	category: string
-): Promise<SearchResults> {
+async function searchZedApiFallback(query: string, category: string): Promise<SearchResults> {
 	const params = new URLSearchParams({ max_schema_version: '1' });
 	if (query) params.set('filter', query);
 	if (category !== 'all') params.set('provides', category);

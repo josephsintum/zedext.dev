@@ -14,7 +14,11 @@ function ensureCacheDir() {
 	if (!existsSync(CACHE_DIR)) mkdirSync(CACHE_DIR, { recursive: true });
 }
 
-export async function getCached<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
+export async function getCached<T>(
+	key: string,
+	ttlMs: number,
+	fetcher: () => Promise<T>
+): Promise<T> {
 	// L1: in-memory
 	const mem = memoryCache.get(key);
 	if (mem && Date.now() < mem.expiry) {
@@ -32,7 +36,9 @@ export async function getCached<T>(key: string, ttlMs: number, fetcher: () => Pr
 					const data = JSON.parse(readFileSync(filePath, 'utf-8')) as T;
 					memoryCache.set(key, { data, expiry: Date.now() + ttlMs });
 					return data;
-				} catch { /* corrupted cache file, refetch */ }
+				} catch {
+					/* corrupted cache file, refetch */
+				}
 			}
 		}
 	}
@@ -45,7 +51,9 @@ export async function getCached<T>(key: string, ttlMs: number, fetcher: () => Pr
 		try {
 			ensureCacheDir();
 			writeFileSync(join(CACHE_DIR, `${hashKey(key)}.json`), JSON.stringify(data));
-		} catch { /* non-critical */ }
+		} catch {
+			/* non-critical */
+		}
 	}
 
 	return data;

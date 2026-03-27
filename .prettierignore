@@ -1,0 +1,14 @@
+# Package managers
+node_modules
+bun.lock
+
+# Build output
+.svelte-kit
+build
+.vercel
+
+# Cache
+.cache
+
+# Design doc
+DESIGN.md

@@ -24,10 +24,15 @@ export async function getRepoMetadata(owner: string, repo: string): Promise<GitH
 	});
 }
 
-export async function getReadmeMarkdown(owner: string, repo: string): Promise<{ markdown: string; defaultBranch: string } | null> {
+export async function getReadmeMarkdown(
+	owner: string,
+	repo: string
+): Promise<{ markdown: string; defaultBranch: string } | null> {
 	return getCached(`gh:readme:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
 		try {
-			const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, { headers: headers() });
+			const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, {
+				headers: headers()
+			});
 			if (!res.ok) return null;
 
 			const data: GitHubReadme = await res.json();

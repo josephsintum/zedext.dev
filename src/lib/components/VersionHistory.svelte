@@ -9,15 +9,21 @@
 </script>
 
 <div>
-	<h3 class="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]">
+	<h3
+		class="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]"
+	>
 		Versions
 		<span class="ml-1 font-normal">({versions.length})</span>
 	</h3>
 
 	<div class="space-y-0">
 		{#each displayVersions as v, i}
-			<div class="flex items-center justify-between border-b border-[var(--color-border)] py-2 last:border-0">
-				<span class="font-mono text-[13px] text-[var(--color-text)] {i === 0 ? 'font-semibold' : ''}">
+			<div
+				class="flex items-center justify-between border-b border-[var(--color-border)] py-2 last:border-0"
+			>
+				<span
+					class="font-mono text-[13px] text-[var(--color-text)] {i === 0 ? 'font-semibold' : ''}"
+				>
 					v{v.version}
 				</span>
 				<span class="text-[12px] text-[var(--color-text-tertiary)]">

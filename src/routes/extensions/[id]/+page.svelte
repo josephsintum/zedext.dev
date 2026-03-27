@@ -10,9 +10,15 @@
 
 <svelte:head>
 	<title>{extension.name} — ZedExt</title>
-	<meta name="description" content={extension.description ?? `${extension.name} extension for the Zed editor`} />
+	<meta
+		name="description"
+		content={extension.description ?? `${extension.name} extension for the Zed editor`}
+	/>
 	<meta property="og:title" content="{extension.name} — ZedExt" />
-	<meta property="og:description" content={extension.description ?? `${extension.name} extension for the Zed editor`} />
+	<meta
+		property="og:description"
+		content={extension.description ?? `${extension.name} extension for the Zed editor`}
+	/>
 </svelte:head>
 
 <div class="mx-auto max-w-7xl px-6 py-8">
@@ -29,7 +35,9 @@
 			<div class="flex-1">
 				<div class="flex items-center gap-3">
 					<h1 class="font-mono text-2xl font-bold text-[var(--color-text)]">{extension.name}</h1>
-					<span class="rounded-md bg-[var(--color-surface-hover)] px-2 py-0.5 font-mono text-[13px] text-[var(--color-text-tertiary)]">
+					<span
+						class="rounded-md bg-[var(--color-surface-hover)] px-2 py-0.5 font-mono text-[13px] text-[var(--color-text-tertiary)]"
+					>
 						v{extension.version}
 					</span>
 				</div>
@@ -57,11 +65,15 @@
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
 			{#if readmeHtml}
-				<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8">
+				<div
+					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+				>
 					<ReadmeRenderer html={readmeHtml} />
 				</div>
 			{:else}
-				<div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 text-center">
+				<div
+					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 text-center"
+				>
 					{#if isMonorepo}
 						<p class="text-[var(--color-text-secondary)]">
 							This extension is maintained as part of the
@@ -70,7 +82,8 @@
 								target="_blank"
 								rel="noopener noreferrer"
 								class="font-medium text-[var(--color-accent)] hover:underline"
-							>core Zed repository</a>.
+								>core Zed repository</a
+							>.
 						</p>
 					{:else}
 						<p class="text-[var(--color-text-tertiary)]">No README available</p>
