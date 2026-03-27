@@ -38,7 +38,7 @@
 >
 	<div
 		class="relative overflow-hidden rounded-xl border transition-all duration-200 motion-reduce:transition-none {focused
-			? 'border-[var(--color-accent)] shadow-lg shadow-amber-500/10'
+			? 'border-[var(--color-accent)] shadow-lg shadow-[var(--color-accent)]/10'
 			: 'border-[var(--color-border)] shadow-sm'}"
 	>
 		<svg
