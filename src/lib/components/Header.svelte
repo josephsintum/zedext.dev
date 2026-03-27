@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
+
+	const isDark = $derived(getTheme() === 'dark');
 </script>
 
 <header
@@ -11,7 +14,7 @@
 			>
 				<svg
 					aria-hidden="true"
-					class="h-4 w-4 text-white"
+					class="h-4 w-4 text-[var(--color-surface)]"
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
@@ -48,6 +51,47 @@
 				</svg>
 				GitHub
 			</a>
+			<button
+				onclick={toggleTheme}
+				aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+				class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none"
+			>
+				{#if isDark}
+					<svg
+						aria-hidden="true"
+						class="h-4 w-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<circle cx="12" cy="12" r="5" />
+						<line x1="12" y1="1" x2="12" y2="3" />
+						<line x1="12" y1="21" x2="12" y2="23" />
+						<line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+						<line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+						<line x1="1" y1="12" x2="3" y2="12" />
+						<line x1="21" y1="12" x2="23" y2="12" />
+						<line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+						<line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+					</svg>
+				{:else}
+					<svg
+						aria-hidden="true"
+						class="h-4 w-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+					</svg>
+				{/if}
+			</button>
 		</nav>
 	</div>
 </header>

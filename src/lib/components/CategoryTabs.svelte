@@ -27,7 +27,7 @@
 			class={cn(
 				'group relative shrink-0 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150',
 				active === cat.slug
-					? 'bg-[var(--color-text)] text-white shadow-sm'
+					? 'bg-[var(--color-text)] text-[var(--color-surface)] shadow-sm'
 					: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]'
 			)}
 		>
@@ -36,7 +36,9 @@
 				<span
 					class={cn(
 						'ml-1.5 tabular-nums',
-						active === cat.slug ? 'text-white/60' : 'text-[var(--color-text-tertiary)]'
+						active === cat.slug
+							? 'text-[var(--color-surface)]/60'
+							: 'text-[var(--color-text-tertiary)]'
 					)}
 				>
 					{formatNumber(count)}

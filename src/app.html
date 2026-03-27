@@ -5,12 +5,23 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="theme-color" content="#fafaf9" />
 		<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+		<script>
+			(function () {
+				var t = localStorage.getItem('theme');
+				var dark = t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches);
+				if (dark) {
+					document.documentElement.classList.add('dark');
+					document.documentElement.style.colorScheme = 'dark';
+					document.querySelector('meta[name="theme-color"]').content = '#111216';
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<a
 			href="#main"
-			class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:shadow"
+			class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-[var(--color-surface-raised)] focus:px-4 focus:py-2 focus:text-sm focus:text-[var(--color-text)] focus:shadow"
 			>Skip to content</a
 		>
 		<div style="display: contents">%sveltekit.body%</div>

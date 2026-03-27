@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @font-face {
 	font-family: 'Geist';
 	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.woff2')
@@ -73,6 +75,40 @@
 	--color-text: oklch(0.2 0.02 75);
 	--color-text-secondary: oklch(0.45 0.01 75);
 	--color-text-tertiary: oklch(0.6 0.01 75);
+
+	--color-code-bg: oklch(0.96 0.004 75);
+	--color-pre-bg: oklch(0.975 0.004 75);
+	--color-blockquote-bg: oklch(0.98 0.004 75);
+	--color-table-header-bg: oklch(0.975 0.004 75);
+	--color-table-row-bg: oklch(0.985 0.002 75);
+	--color-dot-grid: oklch(0.85 0.01 75);
+	--color-card-shadow: oklch(0.2 0.02 75 / 0.08);
+}
+
+/* Dark theme — cool blue-gray base (rgb ~17,18,22) */
+.dark {
+	--color-accent: oklch(0.78 0.14 75);
+	--color-accent-soft: oklch(0.25 0.05 75);
+	--color-accent-hover: oklch(0.85 0.12 75);
+
+	--color-surface: oklch(0.17 0.01 270);
+	--color-surface-hover: oklch(0.21 0.01 270);
+	--color-surface-raised: oklch(0.2 0.01 270);
+
+	--color-border: oklch(0.28 0.008 270);
+	--color-border-hover: oklch(0.36 0.008 270);
+
+	--color-text: oklch(0.87 0.005 270);
+	--color-text-secondary: oklch(0.65 0.008 270);
+	--color-text-tertiary: oklch(0.48 0.008 270);
+
+	--color-code-bg: oklch(0.22 0.01 270);
+	--color-pre-bg: oklch(0.2 0.01 270);
+	--color-blockquote-bg: oklch(0.19 0.01 270);
+	--color-table-header-bg: oklch(0.21 0.01 270);
+	--color-table-row-bg: oklch(0.18 0.01 270);
+	--color-dot-grid: oklch(0.23 0.008 270);
+	--color-card-shadow: oklch(0 0 0 / 0.4);
 }
 
 @layer base {
@@ -87,7 +123,7 @@
 
 /* Dot grid background */
 .dot-grid {
-	background-image: radial-gradient(circle, oklch(0.85 0.01 75) 0.5px, transparent 0.5px);
+	background-image: radial-gradient(circle, var(--color-dot-grid) 0.5px, transparent 0.5px);
 	background-size: 24px 24px;
 }
 
@@ -109,7 +145,7 @@
 }
 .card-hover:hover {
 	transform: translateY(-2px);
-	box-shadow: 0 8px 24px -8px oklch(0.2 0.02 75 / 0.08);
+	box-shadow: 0 8px 24px -8px var(--color-card-shadow);
 }
 
 /* Staggered fade-in animation */

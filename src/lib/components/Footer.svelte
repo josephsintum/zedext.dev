@@ -4,7 +4,7 @@
 	>
 		<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-tertiary)]">
 			<div
-				class="flex h-5 w-5 items-center justify-center rounded bg-[var(--color-text)] text-white"
+				class="flex h-5 w-5 items-center justify-center rounded bg-[var(--color-text)] text-[var(--color-surface)]"
 			>
 				<svg
 					aria-hidden="true"

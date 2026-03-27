@@ -23,7 +23,9 @@
 		class="appearance-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-2 pr-8 pl-3 text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-hover)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/10 focus:outline-none"
 	>
 		{#each SORT_OPTIONS as opt}
-			<option value={opt.value}>{opt.label}</option>
+			<option value={opt.value} class="bg-[var(--color-surface-raised)] text-[var(--color-text)]"
+				>{opt.label}</option
+			>
 		{/each}
 	</select>
 	<svg

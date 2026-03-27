@@ -84,7 +84,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.875em;
 		padding: 0.15em 0.4em;
-		background: oklch(0.96 0.004 75);
+		background: var(--color-code-bg);
 		border-radius: 6px;
 	}
 
@@ -94,7 +94,7 @@
 		padding: 0;
 		border-radius: 8px;
 		border: 1px solid var(--color-border);
-		background: oklch(0.975 0.004 75);
+		background: var(--color-pre-bg);
 		overflow: hidden;
 	}
 
@@ -115,6 +115,19 @@
 		border-radius: 8px;
 		font-size: 13px;
 		line-height: 1.6;
+	}
+
+	/* Shiki dual-theme: light by default */
+	.readme-content :global(.shiki),
+	.readme-content :global(.shiki span) {
+		color: var(--shiki-light);
+		background-color: var(--shiki-light-bg);
+	}
+
+	:global(.dark) .readme-content :global(.shiki),
+	:global(.dark) .readme-content :global(.shiki span) {
+		color: var(--shiki-dark);
+		background-color: var(--shiki-dark-bg);
 	}
 
 	/* Lists */
@@ -139,7 +152,7 @@
 		padding: 0.5em 1em;
 		border-left: 3px solid var(--color-accent);
 		color: var(--color-text-secondary);
-		background: oklch(0.98 0.004 75);
+		background: var(--color-blockquote-bg);
 		border-radius: 0 6px 6px 0;
 	}
 
@@ -166,11 +179,11 @@
 
 	.readme-content :global(th) {
 		font-weight: 600;
-		background: oklch(0.975 0.004 75);
+		background: var(--color-table-header-bg);
 	}
 
 	.readme-content :global(tr:nth-child(even)) {
-		background: oklch(0.985 0.002 75);
+		background: var(--color-table-row-bg);
 	}
 
 	/* Horizontal rules */
