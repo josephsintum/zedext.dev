@@ -85,7 +85,7 @@ npmx.dev is a Nuxt 4 full-stack app that wraps the npm registry. It uses **no tr
 | Pattern | How npmx.dev Does It | How We Do It |
 |---------|---------------------|--------------|
 | **No database** | Fetches everything on-demand, caches with SWR | Same: on-demand from Zed API + GitHub API, in-memory cache |
-| **Search** | Algolia client-side (lite client 13KB) with npm API fallback | Same: Algolia primary, Zed API as fallback |
+| **Search** | Algolia via `vue-instantsearch` (official Vue widget library) | Algolia via `algoliasearch/lite` (raw client — our UI is simple enough to skip InstantSearch widgets) |
 | **README** | Fetched on-demand from npm registry, cached per request | Fetched on-demand from GitHub API, cached in memory (24h TTL) |
 | **Styling** | UnoCSS with CSS variable theme system | Tailwind CSS v4 with CSS variables |
 | **Caching** | Multi-layer: fetch cache (SWR) → payload cache (ISR) → Redis | In-memory cache → SvelteKit HTTP headers → CDN edge |
@@ -141,13 +141,13 @@ We started with Supabase (Postgres), then simplified to SQLite, then asked: what
 |-------|-----------|-----------|
 | **Framework** | SvelteKit + TypeScript | SSR for SEO, lighter than Nuxt/Next, handles both UI and server routes |
 | **Styling** | Tailwind CSS v4 | CSS-first config, fast iteration, uses CSS variables natively |
-| **Search** | Algolia (free tier) | Client-side, typo-tolerant, faceted filtering — same pattern as npmx.dev |
+| **Search** | Algolia via `algoliasearch/lite` (free tier) | Direct client calls — no InstantSearch widget library needed. Typo-tolerant, faceted filtering |
 | **Search fallback** | Zed API (`api.zed.dev/extensions?filter=...`) | Free, no infrastructure, graceful degradation |
 | **Markdown** | marked + DOMPurify + shiki | Fast parsing, safe HTML output, syntax highlighting |
 | **Hosting** | Vercel | Free tier, edge CDN caching via `Cache-Control` headers, zero config SvelteKit deploy |
 | **Package manager** | pnpm | Fast, disk-efficient |
 
-No database. No Redis. No Meilisearch. No separate backend.
+No database. No Redis. No Meilisearch. No separate backend. No InstantSearch widget library.
 
 ---
 
@@ -368,8 +368,8 @@ src/routes/
 src/lib/components/
 ├── Header.svelte               # Site header with search bar
 ├── Footer.svelte               # Site footer
-├── SearchBar.svelte            # Algolia InstantSearch, debounced, URL state sync
-├── CategoryTabs.svelte         # Horizontal tabs with facet counts from Algolia
+├── SearchBar.svelte            # Debounced input, calls algoliasearch/lite, URL state sync
+├── CategoryTabs.svelte         # Horizontal tabs with counts from results.facets
 ├── SortSelect.svelte           # Sort dropdown
 ├── ExtensionCard.svelte        # Card: name, desc, downloads, stars, tags
 ├── Pagination.svelte           # Page navigation
@@ -385,17 +385,41 @@ src/lib/components/
 
 **URL state:** `/?q=python&category=language-servers&sort=stars&page=2`
 
+**Search implementation using `algoliasearch/lite` directly:**
+
+```typescript
+import algoliasearch from 'algoliasearch/lite';
+const client = algoliasearch(PUBLIC_ALGOLIA_APP_ID, PUBLIC_ALGOLIA_SEARCH_KEY);
+const index = client.initIndex('extensions');
+
+// Single function call returns everything we need
+const results = await index.search(query, {
+  facets: ['provides'],
+  filters: category !== 'all' ? `provides:${category}` : '',
+  hitsPerPage: 24,
+  page: page - 1,
+});
+
+// results.hits       → extension cards
+// results.facets     → { provides: { themes: 589, languages: 312, ... } }
+// results.nbHits     → total count (e.g. 1647)
+// results.nbPages    → pagination (e.g. 69)
+```
+
+No InstantSearch widget library needed. We build our own Svelte components and bind them to the search results.
+
 **Search flow:**
-1. **Initial SSR load** (`+page.server.ts`): optionally fetch top extensions from Zed API for SEO content. Or render a shell and let Algolia hydrate client-side.
-2. **Client-side search** (after hydration): Algolia lite client handles search directly from the browser. No server roundtrip. Typing in the search bar queries Algolia instantly.
-3. **Fallback:** If Algolia fails, fall back to Zed API `?filter=` parameter. UI gracefully degrades — no facet counts, basic results.
+1. **Initial SSR load** (`+page.server.ts`): fetch top extensions from Zed API for SEO content (search engines can't run client-side Algolia).
+2. **Client-side search** (after hydration): `algoliasearch/lite` calls Algolia directly from the browser. Typing triggers a debounced search, results update reactively.
+3. **URL sync:** read/write `$page.url.searchParams` via `goto()` with `replaceState`. SvelteKit handles this natively — no InstantSearch router needed.
+4. **Fallback:** If Algolia fails (network error, blocked), fall back to Zed API `?filter=` parameter. UI hides facet counts, shows basic results.
 
 **UI elements:**
 - Search bar — debounced (300ms), updates URL via `goto()` with `replaceState`
-- Category tabs — horizontal scroll, facet counts from Algolia response
+- Category tabs — horizontal scroll, counts from `results.facets.provides`
 - Sort dropdown — downloads (default), recently updated, name, stars
 - Extension grid — responsive: 1 col mobile, 2 col tablet, 3-4 col desktop
-- Pagination at bottom
+- Pagination at bottom — computed from `results.nbPages`
 
 ### 12.4 Extension Detail Page (`/extensions/[id]`)
 
@@ -500,8 +524,8 @@ zedext/
 │   │   │   ├── parse-author.ts     # "Name <email>" → { name, email }
 │   │   │   └── parse-repo-url.ts   # GitHub URL → { owner, repo }
 │   │   ├── components/             # 13 Svelte components (see 12.2)
-│   │   ├── stores/
-│   │   │   └── search.ts           # Algolia search state + fallback logic
+│   │   ├── search/
+│   │   │   └── algolia.ts          # algoliasearch/lite client init + search helper with Zed API fallback
 │   │   ├── utils/
 │   │   │   ├── format.ts           # formatNumber, formatDate, timeAgo
 │   │   │   └── constants.ts        # CATEGORIES, SORT_OPTIONS
@@ -564,8 +588,9 @@ PUBLIC_SITE_URL=https://zedext.dev
 - [ ] `src/lib/utils/format.ts` — number/date formatting
 - [ ] `src/lib/utils/constants.ts` — categories, sort options
 - [ ] Layout: `Header.svelte`, `Footer.svelte`, `+layout.svelte`
-- [ ] `SearchBar.svelte` — Algolia client-side search with Zed API fallback
-- [ ] `CategoryTabs.svelte` — facet counts from Algolia
+- [ ] `src/lib/search/algolia.ts` — algoliasearch/lite client + search helper with fallback
+- [ ] `SearchBar.svelte` — debounced input, calls algolia.ts, URL state sync
+- [ ] `CategoryTabs.svelte` — renders facet counts from search results
 - [ ] `SortSelect.svelte`, `ProvideTag.svelte`, `ExtensionCard.svelte`, `Pagination.svelte`
 - [ ] `+page.server.ts` + `+page.svelte` — wire browse page
 - [ ] Test: search, filter, sort, paginate, URL state, fallback
@@ -688,7 +713,8 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 |--------|----------|
 | **SQLite FTS5** | Rejected: no typo tolerance |
 | **Meilisearch** | Rejected: another service to host and manage |
-| **Algolia (free tier)** | **Chosen**: client-side, typo-tolerant, faceted, zero infrastructure. Same pattern as npmx.dev |
+| **Algolia via InstantSearch widget library** | Rejected: no official Svelte support. Community library (`svelte-algolia-instantsearch`) is dead — incompatible with Svelte 5, unmaintained since Jan 2024 |
+| **Algolia via `algoliasearch/lite` (raw client)** | **Chosen**: one API call returns hits, facets, and pagination. Our UI is simple enough (search + category filter + sort + pagination) that InstantSearch widgets are unnecessary. Works with any framework |
 
 ### Search Fallback
 
@@ -703,7 +729,8 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 |--------|----------|
 | **SvelteKit + Hono + Supabase + Meilisearch** | Rejected: 4 services. Massively overengineered |
 | **SvelteKit + SQLite + Algolia** | Rejected: SQLite still unnecessary for this scale |
-| **SvelteKit + Algolia + on-demand fetching** | **Chosen**: simplest possible architecture. One app, zero persistence beyond Algolia |
+| **Next.js + react-instantsearch** | Considered: first-class Algolia widget library, best Vercel integration. Rejected: InstantSearch widgets are overkill for our simple UI. Using `algoliasearch/lite` directly works with any framework, making the Algolia integration a non-factor in framework choice |
+| **SvelteKit + `algoliasearch/lite` + on-demand fetching** | **Chosen**: simplest architecture, best DX, smallest bundles. One API call to Algolia returns everything we need — no widget library required |
 
 ---
 
@@ -717,6 +744,6 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 
 4. **Legal/licensing:** We're displaying README content from other people's repos. A simple attribution footer is likely sufficient, but worth confirming.
 
-5. **Algolia free tier limits:** 10K searches/month might be tight if the site gains traction. Monitor and consider adding server-side SQLite FTS5 as an alternative before hitting the limit.
+5. **Algolia free tier limits:** 10K searches/month might be tight if the site gains traction. Since we use `algoliasearch/lite` directly (not InstantSearch), switching to a different search provider (Typesense, Orama) or adding server-side search would only require changing the `algolia.ts` helper — the UI components are decoupled from the search provider.
 
 6. **Notification to Zed team:** Should we reach out before launching? They might appreciate it, or they might see it as fragmenting their ecosystem.
