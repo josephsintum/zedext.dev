@@ -25,6 +25,13 @@
 
 		<div class="flex items-center gap-4 text-[12px] text-[var(--color-text-tertiary)]">
 			<a
+				href="/about"
+				class="transition-colors hover:text-[var(--color-text-secondary)]"
+			>
+				About
+			</a>
+			<span class="text-[var(--color-border)]">&middot;</span>
+			<a
 				href="https://zed.dev/extensions"
 				class="transition-colors hover:text-[var(--color-text-secondary)]"
 				target="_blank"
@@ -43,7 +50,7 @@
 			</a>
 			<span class="text-[var(--color-border)]">&middot;</span>
 			<a
-				href="https://github.com"
+				href="https://github.com/josephsintum/zedext.dev"
 				class="transition-colors hover:text-[var(--color-text-secondary)]"
 				target="_blank"
 				rel="noopener noreferrer"
