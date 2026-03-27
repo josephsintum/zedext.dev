@@ -37,8 +37,8 @@ There is no third-party alternative. The only way to discover Zed extensions is 
 4. **Version history:** Display all published versions with dates, so users can see release cadence and track changes.
 5. **Fast and accessible:** Pages load in under 1 second (SSR), work on mobile, and are fully keyboard-navigable.
 6. **SEO-optimized:** Each extension has a unique, indexable page with proper meta/OG tags — so extensions are discoverable via Google.
-7. **Low operating cost:** Target near-zero cost. Hobby/manual sync is effectively free; automated 6-hour Vercel cron requires Pro. No database, no servers to manage.
-8. **Data freshness:** Algolia index updated every 6 hours when Vercel cron is enabled. Detail page data fetched on-demand (always fresh).
+7. **Low operating cost:** Target near-zero cost. Daily Vercel cron works on Hobby (free). No database, no servers to manage.
+8. **Data freshness:** Algolia index updated once daily via Vercel cron. Detail page data fetched on-demand (always fresh).
 9. **Complete coverage:** Index all ~1,600+ extensions, not just the top 1,000 returned by the Zed API.
 
 ---
@@ -144,7 +144,7 @@ We started with Supabase (Postgres), then simplified to SQLite, then asked: what
 | **Search** | Algolia via `algoliasearch/lite` (free tier) | Direct client calls — no InstantSearch widget library needed. Typo-tolerant, faceted filtering |
 | **Search fallback** | Zed API (`api.zed.dev/extensions?filter=...`) | Free, no infrastructure, graceful degradation |
 | **Markdown** | marked + DOMPurify + shiki | Fast parsing, safe HTML output, syntax highlighting |
-| **Hosting** | Vercel | Best fit for SvelteKit deploys and CDN caching. Hobby works for manual/daily sync; 6-hour cron requires Pro |
+| **Hosting** | Vercel | Best fit for SvelteKit deploys and CDN caching. Daily cron works on Hobby (free) |
 | **Package manager** | pnpm | Fast, disk-efficient |
 
 No database. No Redis. No Meilisearch. No separate backend. No InstantSearch widget library.
@@ -319,9 +319,7 @@ Returns up to 1000 results. No typo tolerance, no faceted counts, no custom sort
 
 ## 11. Sync Pipeline
 
-The sync pipeline lives in shared server code (`src/lib/server/algolia-sync.ts`). It powers both the local CLI (`scripts/sync.ts`) and the production Vercel cron route (`GET /api/sync`). In production, `vercel.json` schedules that route every 6 hours.
-
-**Deployment note:** Vercel's current cron limits mean `0 */6 * * *` requires the Pro plan. Hobby can still use the same route manually or switch to a once-per-day schedule.
+The sync pipeline lives in shared server code (`src/lib/server/algolia-sync.ts`). It powers both the local CLI (`scripts/sync.ts`) and the production Vercel cron route (`GET /api/sync`). In production, `vercel.json` schedules that route once daily at midnight UTC.
 
 ### 11.1 Sync Flow
 
@@ -705,7 +703,7 @@ READMEs are user-generated content from thousands of GitHub repos. The rendering
 | **Detail page (CDN hit)** | < 50ms (served from Vercel edge) |
 | **Detail page (CDN miss)** | < 1.5s (Zed API + GitHub API + markdown rendering, in parallel) |
 | **Search latency** | < 50ms (Algolia) |
-| **Algolia index freshness** | < 6 hours (cron every 6h) |
+| **Algolia index freshness** | < 24 hours (daily cron) |
 | **Detail page data freshness** | Always fresh (on-demand fetch, 1h cache for metadata, 24h for README) |
 | **Uptime** | 99.5% |
 
