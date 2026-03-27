@@ -2,7 +2,17 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
-	let { value = '', onSearch }: { value?: string; onSearch?: (q: string) => void } = $props();
+	import { formatNumber } from '$lib/utils/format.js';
+
+	let {
+		value = '',
+		totalHits = 0,
+		onSearch
+	}: { value?: string; totalHits?: number; onSearch?: (q: string) => void } = $props();
+
+	const placeholder = $derived(
+		totalHits > 0 ? `Search ${formatNumber(totalHits)}+ extensions…` : 'Search extensions…'
+	);
 
 	let input = $state(value);
 	let focused = $state(false);
@@ -60,7 +70,7 @@
 		<input
 			type="search"
 			aria-label="Search extensions"
-			placeholder="Search 1,600+ extensions…"
+			{placeholder}
 			{value}
 			oninput={handleInput}
 			onkeydown={handleKeydown}

@@ -146,7 +146,7 @@
 			</p>
 		</div>
 		<div class="mx-auto mt-6 max-w-2xl">
-			<SearchBar value={query} />
+			<SearchBar value={query} totalHits={displayTotalHits} />
 		</div>
 	</div>
 </section>
@@ -157,7 +157,7 @@
 >
 	<div class="mx-auto max-w-6xl px-6 pt-4 pb-3">
 		<div class="flex items-center justify-between gap-4">
-			<CategoryTabs active={category} facets={displayFacets?.provides ?? {}} />
+			<CategoryTabs active={category} />
 			<div class="flex shrink-0 items-center gap-3">
 				{#if displayTotalHits > 0}
 					<span class="text-[12px] tabular-nums opacity-50">
@@ -520,7 +520,7 @@
 				{#if loadingMore}
 					Loading...
 				{:else}
-					Show more {#if remaining > 0}({formatNumber(remaining)}){/if}
+					Show more ({formatNumber(remaining)})
 				{/if}
 			</button>
 		</div>

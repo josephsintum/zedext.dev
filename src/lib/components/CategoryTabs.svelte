@@ -3,10 +3,8 @@
 	import { page } from '$app/state';
 	import clsx from 'clsx';
 	import { CATEGORIES } from '$lib/utils/constants.js';
-	import { formatNumber } from '$lib/utils/format.js';
 
-	let { active = 'all', facets = {} }: { active?: string; facets?: Record<string, number> } =
-		$props();
+	let { active = 'all' }: { active?: string } = $props();
 
 	function selectCategory(slug: string) {
 		const params = new URLSearchParams(page.url.searchParams);
@@ -15,13 +13,10 @@
 		params.delete('page');
 		goto(`?${params}`, { replaceState: true });
 	}
-
-	const totalCount = $derived(Object.values(facets).reduce((a, b) => a + b, 0));
 </script>
 
 <div class="hide-scrollbar flex gap-1.5 overflow-x-auto">
 	{#each CATEGORIES as cat}
-		{@const count = cat.provides ? facets[cat.provides] : totalCount || undefined}
 		<button
 			onclick={() => selectCategory(cat.slug)}
 			class={clsx(
@@ -31,19 +26,7 @@
 					: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]'
 			)}
 		>
-			<span>{cat.label}</span>
-			{#if count !== undefined}
-				<span
-					class={clsx(
-						'ml-1.5 tabular-nums',
-						active === cat.slug
-							? 'text-[var(--color-surface)]/60'
-							: 'text-[var(--color-text-tertiary)]'
-					)}
-				>
-					{formatNumber(count)}
-				</span>
-			{/if}
+			{cat.label}
 		</button>
 	{/each}
 </div>
