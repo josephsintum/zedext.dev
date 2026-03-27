@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 import { runAlgoliaSync } from '$lib/server/algolia-sync.js';
 
 export const config = {
-	maxDuration: 800
+	maxDuration: 300
 };
 
 export const GET: RequestHandler = async ({ request }) => {

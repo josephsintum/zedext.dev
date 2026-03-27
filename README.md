@@ -67,7 +67,7 @@ PUBLIC_SITE_URL=https://zedext.dev      # Site URL
 `vercel.json` schedules `GET /api/sync` once daily at midnight UTC using `0 0 * * *`. The route checks `Authorization: Bearer $CRON_SECRET` and then runs the same shared sync logic as `pnpm sync`, so manual and scheduled syncs stay identical.
 
 - This schedule works on the Vercel Hobby plan (free).
-- The sync route is configured as a long-running Node function (`maxDuration = 800`) for Vercel cron use.
+- The sync route is configured as a long-running Node function (`maxDuration = 300`) for Vercel cron use.
 - You can still refresh manually at any time with `pnpm sync`, or by calling `/api/sync` with the same bearer token.
 
 ## Contributing
