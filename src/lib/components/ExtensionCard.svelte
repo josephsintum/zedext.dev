@@ -32,7 +32,7 @@
 
 <a
 	href="/extensions/{hit.objectID}"
-	class="card-hover group flex min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] bg-surface-raised p-4 {accentBorder}"
+	class="card-hover group bg-surface-raised flex min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
 	style="animation-delay: {index * 30}ms"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
@@ -50,7 +50,7 @@
 
 	{#if hit.description}
 		<p
-			class="mb-3 min-w-0 line-clamp-2 text-[13px] leading-relaxed text-[var(--color-text-secondary)]"
+			class="mb-3 line-clamp-2 min-w-0 text-[13px] leading-relaxed text-[var(--color-text-secondary)]"
 		>
 			{hit.description}
 		</p>

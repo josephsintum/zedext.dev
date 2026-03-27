@@ -37,7 +37,7 @@
 			: 'border-[var(--color-border)] shadow-sm'}"
 	>
 		<svg
-			class="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 transition-colors duration-200"
+			class="absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 transition-colors duration-200"
 			class:text-[var(--color-accent)]={focused}
 			class:text-[var(--color-text-tertiary)]={!focused}
 			fill="none"
@@ -59,9 +59,9 @@
 			onkeydown={handleKeydown}
 			onfocus={() => (focused = true)}
 			onblur={() => (focused = false)}
-			class="w-full bg-[var(--color-surface-raised)] py-3.5 pl-12 pr-4 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
+			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
 		/>
-		<div class="absolute right-4 top-1/2 -translate-y-1/2">
+		<div class="absolute top-1/2 right-4 -translate-y-1/2">
 			<kbd
 				class="hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-text-tertiary)] sm:inline-block"
 				>/</kbd

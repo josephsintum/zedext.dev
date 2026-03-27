@@ -19,14 +19,14 @@
 	<select
 		{value}
 		onchange={handleChange}
-		class="appearance-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-2 pl-3 pr-8 text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-hover)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/10"
+		class="appearance-none rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-2 pr-8 pl-3 text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-border-hover)] focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/10 focus:outline-none"
 	>
 		{#each SORT_OPTIONS as opt}
 			<option value={opt.value}>{opt.label}</option>
 		{/each}
 	</select>
 	<svg
-		class="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+		class="pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 text-[var(--color-text-tertiary)]"
 		fill="none"
 		stroke="currentColor"
 		viewBox="0 0 24 24"

@@ -10,7 +10,7 @@
 
 <div>
 	<h3
-		class="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]"
+		class="mb-3 text-[13px] font-semibold tracking-wide text-[var(--color-text-tertiary)] uppercase"
 	>
 		Versions
 		<span class="ml-1 font-normal">({versions.length})</span>

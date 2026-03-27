@@ -45,7 +45,7 @@
 
 <!-- Hero with dot grid background -->
 <section class="dot-grid border-b border-[var(--color-border)]">
-	<div class="mx-auto max-w-7xl px-6 pb-10 pt-16">
+	<div class="mx-auto max-w-7xl px-6 pt-16 pb-10">
 		<div class="mx-auto max-w-2xl text-center">
 			<h1 class="text-4xl font-bold tracking-tight text-[var(--color-text)]">
 				Extensions for <span class="font-mono text-[var(--color-accent)]">Zed</span>
@@ -69,7 +69,7 @@
 		<CategoryTabs active={category} facets={displayResults.facets?.provides ?? {}} />
 		<div class="flex items-center gap-3">
 			{#if displayResults.nbHits > 0}
-				<span class="text-[13px] tabular-nums text-[var(--color-text-tertiary)]">
+				<span class="text-[13px] text-[var(--color-text-tertiary)] tabular-nums">
 					{formatNumber(displayResults.nbHits)} results
 				</span>
 			{/if}
