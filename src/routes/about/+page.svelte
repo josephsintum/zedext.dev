@@ -4,6 +4,22 @@
 		name="description"
 		content="ZedExt is an alternative extension marketplace for the Zed editor with rich READMEs, GitHub stats, and powerful search."
 	/>
+	<link rel="canonical" href="https://zedext.dev/about" />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="ZedExt" />
+	<meta property="og:url" content="https://zedext.dev/about" />
+	<meta property="og:title" content="About — ZedExt" />
+	<meta
+		property="og:description"
+		content="ZedExt is an alternative extension marketplace for the Zed editor with rich READMEs, GitHub stats, and powerful search."
+	/>
+	<meta
+		property="og:image"
+		content="https://zedext.dev/og?title=About+ZedExt&description=An+alternative+extension+marketplace+for+the+Zed+editor"
+	/>
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <div class="mx-auto max-w-3xl px-6 py-16">

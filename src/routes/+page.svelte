@@ -126,13 +126,22 @@
 		name="description"
 		content="The best way to discover, search, and explore extensions for the Zed editor. Rich detail pages with README, GitHub stats, and version history."
 	/>
+	<link rel="canonical" href="https://zedext.dev" />
 	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="ZedExt" />
+	<meta property="og:url" content="https://zedext.dev" />
 	<meta property="og:title" content="ZedExt — Discover Zed Extensions" />
 	<meta
 		property="og:description"
 		content="The best way to discover, search, and explore extensions for the Zed editor."
 	/>
-	<meta name="twitter:card" content="summary" />
+	<meta
+		property="og:image"
+		content="https://zedext.dev/og?title=ZedExt&description=Discover%2C+search%2C+and+explore+extensions+for+the+Zed+editor"
+	/>
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <!-- Hero -->

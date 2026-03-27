@@ -23,13 +23,22 @@
 		name="description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
+	<link rel="canonical" href={`https://zedext.dev/extensions/${extension.name}`} />
 	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="ZedExt" />
+	<meta property="og:url" content={`https://zedext.dev/extensions/${extension.name}`} />
 	<meta property="og:title" content={`${extension.name} — ZedExt`} />
 	<meta
 		property="og:description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
-	<meta name="twitter:card" content="summary" />
+	<meta
+		property="og:image"
+		content={`https://zedext.dev/og?title=${encodeURIComponent(extension.name)}&description=${encodeURIComponent(extension.description ?? `${extension.name} extension for the Zed editor`)}&type=extension`}
+	/>
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <div class="mx-auto max-w-7xl px-6 py-8">

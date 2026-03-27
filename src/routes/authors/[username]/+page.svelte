@@ -14,13 +14,18 @@
 		name="description"
 		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
 	/>
+	<link rel="canonical" href={`https://zedext.dev/authors/${user.login}`} />
 	<meta property="og:type" content="profile" />
+	<meta property="og:site_name" content="ZedExt" />
+	<meta property="og:url" content={`https://zedext.dev/authors/${user.login}`} />
 	<meta property="og:title" content={`${user.name ?? user.login} — ZedExt`} />
 	<meta
 		property="og:description"
 		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
 	/>
 	<meta property="og:image" content={user.avatar_url} />
+	<meta property="og:image:width" content="460" />
+	<meta property="og:image:height" content="460" />
 	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
