@@ -15,12 +15,14 @@
 		provideLabel,
 		provideDotColor
 	} from '$lib/utils/extension-ui.js';
+	import { getMatchingBuiltinFeatures } from '$lib/utils/constants.js';
 
 	let { data } = $props();
 
 	let query = $derived(page.url.searchParams.get('q') ?? '');
 	let category = $derived(page.url.searchParams.get('category') ?? 'all');
 	let sort = $derived(page.url.searchParams.get('sort') ?? 'downloads');
+	const builtinMatches = $derived(getMatchingBuiltinFeatures(query));
 
 	// Client-side search state — only used after user interaction
 	let clientHits: ExtensionHit[] = $state([]);
@@ -229,6 +231,26 @@
 		</div>
 	</div>
 </div>
+
+<!-- Built-in feature banners -->
+{#if builtinMatches.length > 0}
+	<div class="mx-auto max-w-6xl px-6">
+		{#each builtinMatches as feature}
+			<a
+				href="https://zed.dev{feature.docsUrl}"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mb-2 flex items-center justify-between rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface-raised)] px-5 py-3.5 transition-colors hover:border-[var(--color-text-tertiary)]"
+			>
+				<div class="flex items-center gap-3">
+					<span class="text-[13px] font-medium text-[var(--color-text)]">{feature.name}</span>
+					<span class="text-[13px] text-[var(--color-text-tertiary)]">{feature.message}</span>
+				</div>
+				<span class="shrink-0 text-[12px] text-[var(--color-text-tertiary)]">View docs ↗</span>
+			</a>
+		{/each}
+	</div>
+{/if}
 
 <!-- Content -->
 <div class="mx-auto max-w-6xl px-6 pb-5">
