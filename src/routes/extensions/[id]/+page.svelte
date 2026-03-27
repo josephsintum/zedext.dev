@@ -5,7 +5,9 @@
 	import InstallButton from '$lib/components/InstallButton.svelte';
 
 	let { data } = $props();
-	const { extension, versions, github, readmeHtml, isMonorepo } = data;
+	const { extension, versions, github, readmeHtml, zedDocsHtml, isMonorepo } = data;
+	const hasBoth = zedDocsHtml && readmeHtml;
+	let activeTab = $state<'docs' | 'readme'>('docs');
 </script>
 
 <svelte:head>
@@ -64,7 +66,41 @@
 	<div class="flex flex-col gap-8 lg:flex-row">
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
-			{#if readmeHtml}
+			{#if hasBoth}
+				<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]">
+					<button
+						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
+							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
+							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+						onclick={() => (activeTab = 'docs')}
+					>
+						Zed Docs
+					</button>
+					<button
+						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
+							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
+							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+						onclick={() => (activeTab = 'readme')}
+					>
+						README
+					</button>
+				</div>
+				<div
+					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+				>
+					{#if activeTab === 'docs'}
+						<ReadmeRenderer html={zedDocsHtml} />
+					{:else}
+						<ReadmeRenderer html={readmeHtml} />
+					{/if}
+				</div>
+			{:else if zedDocsHtml}
+				<div
+					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+				>
+					<ReadmeRenderer html={zedDocsHtml} />
+				</div>
+			{:else if readmeHtml}
 				<div
 					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
 				>

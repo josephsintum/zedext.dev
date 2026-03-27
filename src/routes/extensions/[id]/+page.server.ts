@@ -22,7 +22,15 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 
 	let github = null;
 	let readmeHtml: string | null = null;
+	let zedDocsHtml: string | null = null;
 
+	// Try Zed language docs for all extensions (cached 24h)
+	const langDocsMarkdown = await getLanguageDocsMarkdown(extension.id);
+	if (langDocsMarkdown) {
+		zedDocsHtml = await renderMarkdown(langDocsMarkdown, 'zed-industries', 'zed', 'main');
+	}
+
+	// Fetch GitHub data for non-monorepo extensions
 	if (parsed && !isMonorepo) {
 		const [repoMeta, readmeData] = await Promise.all([
 			getRepoMetadata(parsed.owner, parsed.repo),
@@ -35,11 +43,6 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 			const branch = readmeData.defaultBranch;
 			readmeHtml = await renderMarkdown(readmeData.markdown, parsed.owner, parsed.repo, branch);
 		}
-	} else if (isMonorepo) {
-		const markdown = await getLanguageDocsMarkdown(extension.id);
-		if (markdown) {
-			readmeHtml = await renderMarkdown(markdown, 'zed-industries', 'zed', 'main');
-		}
 	}
 
 	return {
@@ -47,6 +50,7 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		versions,
 		github,
 		readmeHtml,
+		zedDocsHtml,
 		isMonorepo
 	};
 };
