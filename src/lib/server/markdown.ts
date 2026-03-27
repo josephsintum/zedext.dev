@@ -1,5 +1,5 @@
 import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 import { createHighlighter, type Highlighter } from 'shiki';
 
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -89,12 +89,24 @@ export async function renderMarkdown(
 	});
 
 	// Sanitize HTML
-	const clean = DOMPurify.sanitize(rawHtml, {
-		ADD_TAGS: ['pre', 'code', 'span'],
-		ADD_ATTR: ['class', 'style'],
-		ALLOW_DATA_ATTR: false,
-		FORBID_TAGS: ['script', 'iframe', 'form', 'input', 'textarea'],
-		FORBID_ATTR: ['onclick', 'onload', 'onerror']
+	const clean = sanitizeHtml(rawHtml, {
+		allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+			'img',
+			'pre',
+			'code',
+			'span',
+			'details',
+			'summary'
+		]),
+		allowedAttributes: {
+			...sanitizeHtml.defaults.allowedAttributes,
+			span: ['class', 'style'],
+			code: ['class'],
+			pre: ['class'],
+			img: ['src', 'alt', 'width', 'height'],
+			a: ['href', 'target', 'rel']
+		},
+		allowedSchemes: ['http', 'https', 'mailto']
 	});
 
 	// Add target="_blank" to external links
