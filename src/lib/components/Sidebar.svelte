@@ -51,6 +51,22 @@
 				View Repository
 			</a>
 		{/if}
+		{#if extension.repository}
+			<a
+				href="{extension.repository}/issues"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="mt-2 flex items-center gap-1.5 text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+			>
+				<svg aria-hidden="true" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+				</svg>
+				Issues
+				{#if github && !isMonorepo && github.open_issues_count > 0}
+					<span class="text-[11px] text-[var(--color-text-tertiary)]">({github.open_issues_count})</span>
+				{/if}
+			</a>
+		{/if}
 		{#if zedDocsUrl}
 			<a
 				href={zedDocsUrl}
