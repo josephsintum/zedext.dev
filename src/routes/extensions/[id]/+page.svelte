@@ -48,11 +48,6 @@
 						{extension.description}
 					</p>
 				{/if}
-				<div class="mt-3 flex flex-wrap gap-1.5">
-					{#each extension.provides as provide}
-						<ProvideTag {provide} />
-					{/each}
-				</div>
 			</div>
 
 			<!-- Mobile install button (hidden on lg+) -->
