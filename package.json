@@ -31,6 +31,9 @@
 	},
 	"dependencies": {
 		"algoliasearch": "^5.50.0",
+		"isomorphic-dompurify": "^3.7.1",
+		"marked": "^17.0.5",
+		"shiki": "^4.0.2",
 		"smol-toml": "^1.6.1"
 	}
 }
