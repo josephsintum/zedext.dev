@@ -5,7 +5,7 @@
 	import InstallButton from '$lib/components/InstallButton.svelte';
 
 	let { data } = $props();
-	const { extension, versions, github, readmeHtml, zedDocsHtml, isMonorepo } = data;
+	const { extension, versions, github, readmeHtml, zedDocsHtml, zedDocsUrl, isMonorepo } = data;
 	const hasBoth = zedDocsHtml && readmeHtml;
 	let activeTab = $state<'docs' | 'readme'>('docs');
 </script>
@@ -140,7 +140,7 @@
 
 		<!-- Sidebar -->
 		<div class="w-full shrink-0 lg:w-72 xl:w-80">
-			<Sidebar {extension} {versions} {github} {isMonorepo} />
+			<Sidebar {extension} {versions} {github} {isMonorepo} {zedDocsUrl} />
 		</div>
 	</div>
 </div>

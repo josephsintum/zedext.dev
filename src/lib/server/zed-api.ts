@@ -15,8 +15,16 @@ export async function getExtensionWithVersions(id: string): Promise<{
 		const data: ZedExtensionResponse = await res.json();
 		if (!data.data || data.data.length === 0) return null;
 
-		// Versions are returned newest first
-		const versions = data.data;
+		// Sort by semver descending (newest first)
+		const versions = data.data.sort((a, b) => {
+			const pa = a.version.split('.').map(Number);
+			const pb = b.version.split('.').map(Number);
+			for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+				const diff = (pb[i] ?? 0) - (pa[i] ?? 0);
+				if (diff !== 0) return diff;
+			}
+			return 0;
+		});
 		const extension = versions[0];
 
 		return { extension, versions };

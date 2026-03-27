@@ -45,12 +45,17 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 		}
 	}
 
+	const zedDocsUrl = zedDocsHtml
+		? `https://zed.dev/docs/languages/${extension.id}`
+		: null;
+
 	return {
 		extension,
 		versions,
 		github,
 		readmeHtml,
 		zedDocsHtml,
+		zedDocsUrl,
 		isMonorepo
 	};
 };
