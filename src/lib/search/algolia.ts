@@ -1,17 +1,8 @@
-import { algoliasearch } from 'algoliasearch/lite';
+import { liteClient } from 'algoliasearch/lite';
+import { PUBLIC_ALGOLIA_APP_ID, PUBLIC_ALGOLIA_SEARCH_KEY } from '$env/static/public';
 import type { SearchResults, ExtensionHit } from '$lib/types.js';
 
-const APP_ID = import.meta.env.PUBLIC_ALGOLIA_APP_ID;
-const SEARCH_KEY = import.meta.env.PUBLIC_ALGOLIA_SEARCH_KEY;
-
-const client = algoliasearch(APP_ID, SEARCH_KEY);
-
-const SORT_MAP: Record<string, string[]> = {
-	downloads: ['download_count:desc'],
-	updated: ['github_pushed_at:desc'],
-	stars: ['github_stars:desc'],
-	name: ['name:asc']
-};
+const client = liteClient(PUBLIC_ALGOLIA_APP_ID, PUBLIC_ALGOLIA_SEARCH_KEY);
 
 export async function searchExtensions(
 	query: string,
@@ -25,20 +16,24 @@ export async function searchExtensions(
 	const { category = 'all', sort = 'downloads', page = 0, hitsPerPage = 24 } = options;
 
 	try {
-		const result = await client.searchSingleIndex<ExtensionHit>({
-			indexName: 'extensions',
-			searchParams: {
-				query,
-				facets: ['provides'],
-				filters: category !== 'all' ? `provides:${category}` : '',
-				hitsPerPage,
-				page,
-				...(sort !== 'downloads' ? { optionalFilters: SORT_MAP[sort] } : {})
-			}
+		const response = await client.search({
+			requests: [
+				{
+					indexName: 'extensions',
+					query,
+					facets: ['provides'],
+					filters: category !== 'all' ? `provides:${category}` : '',
+					hitsPerPage,
+					page
+				}
+			]
 		});
 
+		const result = response.results[0];
+		if (!('hits' in result)) throw new Error('Unexpected response');
+
 		return {
-			hits: result.hits,
+			hits: result.hits as ExtensionHit[],
 			nbHits: result.nbHits ?? 0,
 			nbPages: result.nbPages ?? 0,
 			page: result.page ?? 0,

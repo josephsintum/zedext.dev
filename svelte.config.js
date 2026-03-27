@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-auto';
 import { relative, sep } from 'node:path';
 
 /** @type {import('@sveltejs/kit').Config} */
