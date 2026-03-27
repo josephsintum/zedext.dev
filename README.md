@@ -17,13 +17,14 @@ Zed's official extension page at [zed.dev/extensions](https://zed.dev/extensions
 
 ## Architecture
 
-No database. All data is fetched on-demand from the Zed API and GitHub API, then cached in memory. Search is powered by Algolia, with the index refreshed every 6 hours via a sync script.
+No database. All data is fetched on-demand from the Zed API and GitHub API, then cached in memory. Search is powered by Algolia, with the index refreshed every 6 hours via Vercel cron hitting a protected `/api/sync` route.
 
 ```
 Browser ──► Algolia        (client-side search)
 Server  ──► Zed API        (extension metadata + versions)
         ──► GitHub API     (stars, README, license)
         ──► In-memory cache (1h metadata, 24h README)
+Cron    ──► /api/sync      (Vercel cron → Algolia refresh)
 ```
 
 ## Stack
@@ -57,8 +58,19 @@ GITHUB_TOKEN=ghp_...                    # GitHub API (server + sync)
 PUBLIC_ALGOLIA_APP_ID=XXXXXXXXXX        # Algolia app ID (public)
 PUBLIC_ALGOLIA_SEARCH_KEY=xxxxxxxxxxxx  # Algolia search key (public, read-only)
 ALGOLIA_ADMIN_KEY=xxxxxxxxxxxx          # Algolia admin key (sync only)
+CRON_SECRET=replace-with-long-random    # Vercel cron bearer token
 PUBLIC_SITE_URL=https://zedext.dev      # Site URL
 ```
+
+## Vercel cron
+
+`vercel.json` schedules `GET /api/sync` every 6 hours using `0 */6 * * *` (UTC). The route checks `Authorization: Bearer $CRON_SECRET` and then runs the same shared sync logic as `pnpm sync`, so manual and scheduled syncs stay identical.
+
+Important constraints from Vercel's current cron model:
+
+- A 6-hour schedule requires the Vercel Pro plan. Hobby cron jobs can only run once per day.
+- The sync route is configured as a long-running Node function (`maxDuration = 800`) for Vercel cron use.
+- You can still refresh manually at any time with `pnpm sync`, or by calling `/api/sync` with the same bearer token.
 
 ## Contributing
 

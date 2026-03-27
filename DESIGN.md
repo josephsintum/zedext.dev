@@ -37,8 +37,8 @@ There is no third-party alternative. The only way to discover Zed extensions is 
 4. **Version history:** Display all published versions with dates, so users can see release cadence and track changes.
 5. **Fast and accessible:** Pages load in under 1 second (SSR), work on mobile, and are fully keyboard-navigable.
 6. **SEO-optimized:** Each extension has a unique, indexable page with proper meta/OG tags — so extensions are discoverable via Google.
-7. **Low operating cost:** Target ~$0/month (Algolia free tier + free hosting tier). No database, no servers to manage.
-8. **Data freshness:** Algolia index updated every 6 hours. Detail page data fetched on-demand (always fresh).
+7. **Low operating cost:** Target near-zero cost. Hobby/manual sync is effectively free; automated 6-hour Vercel cron requires Pro. No database, no servers to manage.
+8. **Data freshness:** Algolia index updated every 6 hours when Vercel cron is enabled. Detail page data fetched on-demand (always fresh).
 9. **Complete coverage:** Index all ~1,600+ extensions, not just the top 1,000 returned by the Zed API.
 
 ---
@@ -115,10 +115,10 @@ npmx.dev is a Nuxt 4 full-stack app that wraps the npm registry. It uses **no tr
 └──────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────┐
-│        scripts/sync.ts  (cron, every 6h)     │
-│                                              │
-│  Zed API ──▶ enrich ──▶ Algolia index        │
-│  GitHub API ──┘                              │
+│  Vercel Cron ──▶ /api/sync ──▶ Algolia sync  │
+│                    │                         │
+│                    ├──▶ Zed API              │
+│                    └──▶ GitHub API           │
 └──────────────────────────────────────────────┘
 ```
 
@@ -126,7 +126,7 @@ npmx.dev is a Nuxt 4 full-stack app that wraps the npm registry. It uses **no tr
 
 - **Browse/search:** Algolia handles it entirely client-side
 - **Detail pages:** SvelteKit server routes fetch from Zed API + GitHub API on-demand, cache in memory
-- **Cron script:** Fetches all extensions from Zed API, enriches with GitHub stars/license, pushes to Algolia
+- **Cron route:** Vercel cron hits `/api/sync`, which runs the shared sync pipeline and pushes to Algolia
 - **Fallback:** If Algolia is down, client searches Zed API directly
 
 ### Why No Database?
@@ -144,7 +144,7 @@ We started with Supabase (Postgres), then simplified to SQLite, then asked: what
 | **Search** | Algolia via `algoliasearch/lite` (free tier) | Direct client calls — no InstantSearch widget library needed. Typo-tolerant, faceted filtering |
 | **Search fallback** | Zed API (`api.zed.dev/extensions?filter=...`) | Free, no infrastructure, graceful degradation |
 | **Markdown** | marked + DOMPurify + shiki | Fast parsing, safe HTML output, syntax highlighting |
-| **Hosting** | Vercel | Free tier, edge CDN caching via `Cache-Control` headers, zero config SvelteKit deploy |
+| **Hosting** | Vercel | Best fit for SvelteKit deploys and CDN caching. Hobby works for manual/daily sync; 6-hour cron requires Pro |
 | **Package manager** | pnpm | Fast, disk-efficient |
 
 No database. No Redis. No Meilisearch. No separate backend. No InstantSearch widget library.
@@ -319,18 +319,21 @@ Returns up to 1000 results. No typo tolerance, no faceted counts, no custom sort
 
 ## 11. Sync Pipeline
 
-The sync pipeline is a standalone script (`scripts/sync.ts`). It fetches data from the Zed API and GitHub API, then pushes enriched documents to Algolia. Runs every 6 hours via cron (GitHub Actions scheduled workflow or system cron).
+The sync pipeline lives in shared server code (`src/lib/server/algolia-sync.ts`). It powers both the local CLI (`scripts/sync.ts`) and the production Vercel cron route (`GET /api/sync`). In production, `vercel.json` schedules that route every 6 hours.
+
+**Deployment note:** Vercel's current cron limits mean `0 */6 * * *` requires the Pro plan. Hobby can still use the same route manually or switch to a once-per-day schedule.
 
 ### 11.1 Sync Flow
 
 ```
+0. Vercel cron triggers GET /api/sync with Authorization: Bearer {CRON_SECRET}
 1. Fetch extensions.toml from GitHub raw URL → parse for complete extension ID list (~1,600+)
 2. Fetch GET api.zed.dev/extensions?max_schema_version=1 → up to 1000 extensions
 3. For IDs in extensions.toml but NOT in API response:
    Fetch GET api.zed.dev/extensions/{id} individually (rate: 10 req/sec)
 4. For each extension with a GitHub repository URL:
    Fetch GET api.github.com/repos/{owner}/{repo} → stars, forks, license, pushed_at
-   (rate: ~1.3 req/sec to stay within 5000/hr)
+   (rate tuned for a bounded cron run while staying within GitHub's hourly quota)
 5. Transform each extension into an AlgoliaExtension document
 6. Push all documents to Algolia index (batch upsert)
 ```
@@ -356,6 +359,9 @@ src/routes/
 ├── +layout.svelte              # Header, slot, Footer
 ├── +page.svelte                # Browse / Search page (/)
 ├── +page.server.ts             # SSR: initial top extensions (optional, for SEO)
+├── api/
+│   └── sync/
+│       └── +server.ts          # Protected Vercel cron endpoint
 └── extensions/
     └── [id]/
         ├── +page.svelte        # Extension detail page
@@ -518,6 +524,7 @@ zedext/
 │   ├── lib/
 │   │   ├── server/
 │   │   │   ├── cache.ts            # Multi-layer cache: in-memory + filesystem (dev) + CDN (prod)
+│   │   │   ├── algolia-sync.ts     # Shared Algolia sync pipeline (CLI + Vercel cron)
 │   │   │   ├── zed-api.ts          # Zed API client (fetch extensions, versions)
 │   │   │   ├── github-api.ts       # GitHub API client (repo metadata, README)
 │   │   │   ├── markdown.ts         # marked + shiki + DOMPurify + image URL rewrite
@@ -532,11 +539,12 @@ zedext/
 │   │   └── types.ts                # All TypeScript interfaces
 │   └── routes/                     # See section 12.1
 ├── scripts/
-│   └── sync.ts                     # Cron: Zed API + GitHub API → Algolia index
+│   └── sync.ts                     # Local entry point for the shared sync pipeline
 ├── .cache/                         # Filesystem cache (dev only, gitignored)
 ├── static/
 │   └── favicon.ico
 ├── svelte.config.js
+├── vercel.json                     # Vercel cron schedule for /api/sync
 ├── vite.config.ts
 ├── package.json
 ├── .env.example
@@ -559,11 +567,14 @@ PUBLIC_ALGOLIA_APP_ID=XXXXXXXXXX
 PUBLIC_ALGOLIA_SEARCH_KEY=xxxxxxxxxxxx  # Read-only, safe for client
 ALGOLIA_ADMIN_KEY=xxxxxxxxxxxx          # Write key, server/sync only
 
+# Cron
+CRON_SECRET=replace-with-a-long-random-string
+
 # App
 PUBLIC_SITE_URL=https://zedext.dev
 ```
 
-**4 environment variables.** The Algolia search key is intentionally public (read-only, same as npmx.dev).
+**5 environment variables.** The Algolia search key is intentionally public (read-only, same as npmx.dev).
 
 ---
 
@@ -580,6 +591,7 @@ PUBLIC_SITE_URL=https://zedext.dev
 ### Phase 1: Data Pipeline
 
 - [ ] `scripts/sync.ts` — Zed API + GitHub metadata → Algolia index
+- [ ] `src/lib/server/algolia-sync.ts` — shared sync implementation for CLI + Vercel cron
 - [ ] `src/lib/server/parse-repo-url.ts`, `parse-author.ts` — utility functions
 - [ ] Run first sync, verify all ~1,600 extensions in Algolia
 
@@ -608,7 +620,7 @@ PUBLIC_SITE_URL=https://zedext.dev
 
 ### Phase 4: Polish & Deploy
 
-- [ ] Set up cron (GitHub Actions scheduled workflow)
+- [ ] Set up Vercel cron (`vercel.json` + `/api/sync` + `CRON_SECRET`)
 - [ ] Loading states, error states, empty states
 - [ ] Responsive design pass (mobile, tablet, desktop)
 - [ ] SEO: sitemap.xml, robots.txt
@@ -662,6 +674,7 @@ PUBLIC_SITE_URL=https://zedext.dev
 |--------|-------|
 | `GITHUB_TOKEN` | Server + sync script. Read-only GitHub API access (PAT with `public_repo` scope) |
 | `ALGOLIA_ADMIN_KEY` | Sync script only. Write access to Algolia index |
+| `CRON_SECRET` | Vercel cron only. Authorizes `GET /api/sync` |
 | `PUBLIC_ALGOLIA_SEARCH_KEY` | **Intentionally public.** Read-only search key (standard Algolia pattern) |
 
 ### Attack Surface
@@ -671,6 +684,7 @@ PUBLIC_SITE_URL=https://zedext.dev
 | **README XSS** | Malicious README injects JavaScript via rendered HTML | Sanitize with DOMPurify; strict allowlist of tags/attributes |
 | **GitHub API token leak** | Token in logs or error messages | Never log request headers; environment variables only |
 | **Algolia admin key leak** | Attacker could modify search index | Only used in sync script; never imported by SvelteKit app |
+| **Unprotected cron endpoint** | Anyone could trigger an expensive reindex | Require `Authorization: Bearer {CRON_SECRET}` on `/api/sync` |
 | **SSRF via repository URL** | Crafted repo URL causes server to fetch from internal network | Validate that repository URL matches `https://github.com/*` pattern before fetching |
 
 ### README Sanitization
