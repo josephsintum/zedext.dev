@@ -9,6 +9,12 @@
 	import { getViewMode, setViewMode } from '$lib/stores/viewMode.svelte.js';
 	import type { ExtensionHit } from '$lib/types.js';
 	import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
+	import {
+		filterProvides,
+		getHoverBorder,
+		provideLabel,
+		provideDotColor
+	} from '$lib/utils/extension-ui.js';
 
 	let { data } = $props();
 
@@ -16,29 +22,39 @@
 	let category = $derived(page.url.searchParams.get('category') ?? 'all');
 	let sort = $derived(page.url.searchParams.get('sort') ?? 'downloads');
 
-	let allHits: ExtensionHit[] = $state([]);
-	let currentPage = $state(0);
-	let totalHits = $state(0);
-	let totalPages = $state(0);
-	let facets: Record<string, Record<string, number>> = $state({});
+	// Client-side search state — only used after user interaction
+	let clientHits: ExtensionHit[] = $state([]);
+	let clientPage = $state(0);
+	let clientTotalHits = $state(0);
+	let clientTotalPages = $state(0);
+	let clientFacets: Record<string, Record<string, number>> = $state({});
 	let loading = $state(false);
 	let loadingMore = $state(false);
+	let hasClientResults = $state(false);
 
+	// Track the SSR search key to avoid redundant client fetch
+	let ssrSearchKey = $derived(`${data.ssrQuery}|${data.ssrCategory}|${data.ssrSort}`);
 	let lastSearchKey = $state('');
 
 	$effect(() => {
 		const searchKey = `${query}|${category}|${sort}`;
+		// Skip if this matches what SSR already returned
+		if (searchKey === ssrSearchKey && !hasClientResults) {
+			lastSearchKey = searchKey;
+			return;
+		}
 		if (searchKey !== lastSearchKey) {
 			lastSearchKey = searchKey;
-			currentPage = 0;
+			clientPage = 0;
 			loading = true;
 
 			searchExtensions(query, { category, sort, page: 0 })
 				.then((r) => {
-					allHits = r.hits;
-					totalHits = r.nbHits;
-					totalPages = r.nbPages;
-					facets = r.facets;
+					clientHits = r.hits;
+					clientTotalHits = r.nbHits;
+					clientTotalPages = r.nbPages;
+					clientFacets = r.facets;
+					hasClientResults = true;
 				})
 				.catch(() => {})
 				.finally(() => {
@@ -48,15 +64,16 @@
 	});
 
 	function loadMore() {
-		if (loadingMore || currentPage + 1 >= totalPages) return;
-		const nextPage = currentPage + 1;
+		if (loadingMore || clientPage + 1 >= displayTotalPages) return;
+		const nextPage = clientPage + 1;
 		loadingMore = true;
 
 		searchExtensions(query, { category, sort, page: nextPage })
 			.then((r) => {
-				allHits = [...allHits, ...r.hits];
-				currentPage = nextPage;
-				facets = r.facets;
+				clientHits = [...displayHits, ...r.hits];
+				clientPage = nextPage;
+				clientFacets = r.facets;
+				hasClientResults = true;
 			})
 			.catch(() => {})
 			.finally(() => {
@@ -64,58 +81,26 @@
 			});
 	}
 
-	const hasMore = $derived(currentPage + 1 < totalPages);
-	const remaining = $derived(totalHits - allHits.length);
-
-	const displayHits = $derived(allHits.length > 0 ? allHits : data.initialResults.hits);
+	// Use client results if available, otherwise SSR data
+	const displayHits = $derived(hasClientResults ? clientHits : data.initialResults.hits);
 	const displayFacets = $derived(
-		Object.keys(facets).length > 0 ? facets : (data.initialResults.facets ?? {})
+		hasClientResults ? clientFacets : (data.initialResults.facets ?? {})
 	);
-	const displayTotalHits = $derived(totalHits || data.initialResults.nbHits);
+	const displayTotalHits = $derived(
+		hasClientResults ? clientTotalHits : data.initialResults.nbHits
+	);
+	const displayTotalPages = $derived(
+		hasClientResults ? clientTotalPages : data.initialResults.nbPages
+	);
+
+	const hasMore = $derived(
+		hasClientResults
+			? clientPage + 1 < clientTotalPages
+			: data.initialResults.page + 1 < data.initialResults.nbPages
+	);
+	const remaining = $derived(displayTotalHits - displayHits.length);
 
 	let viewMode = $derived(getViewMode());
-
-	const filterProvides = (provides: string[]) =>
-		provides.filter((p) => !['grammars', 'slash-commands', 'indexed-docs-providers'].includes(p));
-
-	const hoverBorders: Record<string, string> = {
-		themes: 'hover:border-violet-400 dark:hover:border-violet-500',
-		'icon-themes': 'hover:border-fuchsia-400 dark:hover:border-fuchsia-500',
-		languages: 'hover:border-sky-400 dark:hover:border-sky-500',
-		'language-servers': 'hover:border-emerald-400 dark:hover:border-emerald-500',
-		'context-servers': 'hover:border-orange-400 dark:hover:border-orange-500',
-		'agent-servers': 'hover:border-amber-400 dark:hover:border-amber-500',
-		'debug-adapters': 'hover:border-rose-400 dark:hover:border-rose-500',
-		snippets: 'hover:border-teal-400 dark:hover:border-teal-500'
-	};
-
-	function getHoverBorder(hit: ExtensionHit): string {
-		const provides = filterProvides(hit.provides);
-		if (provides.length === 0) return '';
-		return hoverBorders[provides[0]] ?? '';
-	}
-
-	const provideLabel: Record<string, string> = {
-		themes: 'Theme',
-		'icon-themes': 'Icons',
-		languages: 'Language',
-		'language-servers': 'LSP',
-		'context-servers': 'MCP',
-		'agent-servers': 'Agent',
-		snippets: 'Snippets',
-		'debug-adapters': 'Debug'
-	};
-
-	const provideDotColor: Record<string, string> = {
-		themes: 'bg-violet-400',
-		'icon-themes': 'bg-fuchsia-400',
-		languages: 'bg-sky-400',
-		'language-servers': 'bg-emerald-400',
-		'context-servers': 'bg-orange-400',
-		'agent-servers': 'bg-amber-400',
-		'debug-adapters': 'bg-rose-400',
-		snippets: 'bg-teal-400'
-	};
 
 	const sortOptions = [
 		{ value: 'downloads', label: 'popular' },

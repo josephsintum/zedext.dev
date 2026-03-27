@@ -1,12 +1,7 @@
 <script lang="ts">
 	import type { ZedExtension, GitHubRepo } from '$lib/types.js';
 	import { formatNumber, timeAgo } from '$lib/utils/format.js';
-	function parseAuthorNames(authors: string[]): string[] {
-		return authors.map((a) => {
-			const match = a.match(/^(.+?)\s*<[^>]+>$/);
-			return match ? match[1].trim() : a.trim();
-		});
-	}
+	import { parseAuthorNames } from '$lib/utils/parse-author.js';
 	import ProvideTag from './ProvideTag.svelte';
 	import VersionHistory from './VersionHistory.svelte';
 	import InstallButton from './InstallButton.svelte';

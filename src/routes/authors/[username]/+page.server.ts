@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { getGitHubUser } from '$lib/server/github-api.js';
 import { getAllExtensions } from '$lib/server/zed-api.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
-import { parseAuthorNames } from '$lib/server/parse-author.js';
+import { parseAuthorNames } from '$lib/utils/parse-author.js';
 import type { ExtensionHit } from '$lib/types.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {

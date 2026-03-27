@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { cn } from '$lib/utils.js';
+	import clsx from 'clsx';
 	import { CATEGORIES } from '$lib/utils/constants.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
@@ -24,7 +24,7 @@
 		{@const count = cat.provides ? facets[cat.provides] : totalCount || undefined}
 		<button
 			onclick={() => selectCategory(cat.slug)}
-			class={cn(
+			class={clsx(
 				'group relative shrink-0 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150',
 				active === cat.slug
 					? 'bg-[var(--color-text)] text-[var(--color-surface)] shadow-sm'
@@ -34,7 +34,7 @@
 			<span>{cat.label}</span>
 			{#if count !== undefined}
 				<span
-					class={cn(
+					class={clsx(
 						'ml-1.5 tabular-nums',
 						active === cat.slug
 							? 'text-[var(--color-surface)]/60'

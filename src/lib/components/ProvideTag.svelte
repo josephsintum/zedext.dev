@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn } from '$lib/utils.js';
+	import clsx from 'clsx';
 
 	let { provide, class: className }: { provide: string; class?: string } = $props();
 
@@ -75,13 +75,13 @@
 </script>
 
 <span
-	class={cn(
+	class={clsx(
 		'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase',
 		s.bg,
 		s.text,
 		className
 	)}
 >
-	<span class={cn('h-1.5 w-1.5 rounded-full', s.dot)}></span>
+	<span class={clsx('h-1.5 w-1.5 rounded-full', s.dot)}></span>
 	{label[provide] ?? provide}
 </span>

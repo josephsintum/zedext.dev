@@ -1,31 +1,11 @@
 <script lang="ts">
 	import ProvideTag from '$lib/components/ProvideTag.svelte';
 	import { formatNumber } from '$lib/utils/format.js';
-	import type { ExtensionHit } from '$lib/types.js';
+	import { filterProvides, getHoverBorder } from '$lib/utils/extension-ui.js';
 
 	let { data } = $props();
 	const user = $derived(data.user);
 	const extensions = $derived(data.extensions);
-
-	const filterProvides = (provides: string[]) =>
-		provides.filter((p) => !['grammars', 'slash-commands', 'indexed-docs-providers'].includes(p));
-
-	const hoverBorders: Record<string, string> = {
-		themes: 'hover:border-violet-400 dark:hover:border-violet-500',
-		'icon-themes': 'hover:border-fuchsia-400 dark:hover:border-fuchsia-500',
-		languages: 'hover:border-sky-400 dark:hover:border-sky-500',
-		'language-servers': 'hover:border-emerald-400 dark:hover:border-emerald-500',
-		'context-servers': 'hover:border-orange-400 dark:hover:border-orange-500',
-		'agent-servers': 'hover:border-amber-400 dark:hover:border-amber-500',
-		'debug-adapters': 'hover:border-rose-400 dark:hover:border-rose-500',
-		snippets: 'hover:border-teal-400 dark:hover:border-teal-500'
-	};
-
-	function getHoverBorder(hit: ExtensionHit): string {
-		const provides = filterProvides(hit.provides);
-		if (provides.length === 0) return '';
-		return hoverBorders[provides[0]] ?? '';
-	}
 </script>
 
 <svelte:head>

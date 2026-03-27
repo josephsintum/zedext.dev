@@ -8,7 +8,10 @@
 	class="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]/90 backdrop-blur-md"
 >
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-		<a href="/" class="font-mono text-sm font-semibold tracking-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-accent)]">
+		<a
+			href="/"
+			class="font-mono text-sm font-semibold tracking-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-accent)]"
+		>
 			ZedExt
 		</a>
 

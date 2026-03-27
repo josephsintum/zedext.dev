@@ -1,7 +1,7 @@
 import { algoliasearch } from 'algoliasearch';
 import { parse as parseToml } from 'smol-toml';
 import { parseRepoUrl } from '../utils/parse-repo-url.js';
-import { parseAuthorNames } from './parse-author.js';
+import { parseAuthorNames } from '../utils/parse-author.js';
 import type { AlgoliaExtension, GitHubRepo, ZedExtension, ZedExtensionResponse } from '../types.js';
 
 const ZED_API = 'https://api.zed.dev';
