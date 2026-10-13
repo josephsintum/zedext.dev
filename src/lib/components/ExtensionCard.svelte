@@ -2,6 +2,8 @@
 	import type { ExtensionHit } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
 	import ProvideTag from './ProvideTag.svelte';
+	import ThemeStrip from './ThemeStrip.svelte';
+	import IconStrip from './IconStrip.svelte';
 
 	let { hit }: { hit: ExtensionHit } = $props();
 
@@ -33,6 +35,11 @@
 	href="/extensions/{hit.id}"
 	class="card-hover group bg-surface-raised flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
 >
+	{#if hit.swatch}
+		<ThemeStrip colors={hit.swatch} />
+	{:else if hit.iconPreview}
+		<IconStrip id={hit.id} version={hit.version} />
+	{/if}
 	<div class="mb-1.5 flex items-start justify-between gap-2">
 		<h3
 			class="min-w-0 truncate font-mono text-[14px] font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent-hover)]"
