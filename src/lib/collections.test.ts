@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	browseAllHref,
 	COLLECTION_REDIRECTS,
 	COLLECTIONS,
 	getCollection,
@@ -146,5 +147,17 @@ describe('resolveCollection', () => {
 			items: [],
 			total: 0
 		});
+	});
+});
+
+describe('browseAllHref', () => {
+	it('points collections that can outgrow their limit at the full category page', () => {
+		expect(browseAllHref(getCollection('mcp-servers')!)).toBe('/mcp-servers');
+		expect(browseAllHref(getCollection('dark-themes')!)).toBe('/themes');
+		expect(browseAllHref(getCollection('light-themes')!)).toBe('/themes');
+	});
+
+	it('is null for keyword collections, which have no category page', () => {
+		expect(browseAllHref(getCollection('web-dev')!)).toBeNull();
 	});
 });

@@ -1,3 +1,4 @@
+import { categoryHref } from './categories.js';
 import type { PreviewBundle } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 import { hasKeyword, nameWords } from './words.js';
@@ -178,4 +179,11 @@ export function resolveCollection(
 		.sort((a, b) => b.download_count - a.download_count);
 	const all = [...pinned, ...matched];
 	return { items: all.slice(0, limit), total: all.length };
+}
+
+/** The full category page behind a collection, linked when the collection page is capped */
+export function browseAllHref(c: Collection): string | null {
+	if (c.match.appearance) return '/themes';
+	if (c.match.provides?.length === 1 && !c.match.keywords) return categoryHref(c.match.provides[0]);
+	return null;
 }

@@ -3,7 +3,12 @@ import type { PageServerLoad } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
 import { pageCacheControl } from '$lib/server/browse.js';
-import { COLLECTION_REDIRECTS, getCollection, resolveCollection } from '$lib/collections.js';
+import {
+	browseAllHref,
+	COLLECTION_REDIRECTS,
+	getCollection,
+	resolveCollection
+} from '$lib/collections.js';
 import { themeTile } from '$lib/theme-tile.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
@@ -22,5 +27,5 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 
 	const { items, total } = resolveCollection(collection, snapshot.extensions, previews);
 	const tiles = appearance ? items.flatMap((r) => themeTile(previews, r, appearance) ?? []) : null;
-	return { collection, items, total, tiles };
+	return { collection, items, total, tiles, browseAll: browseAllHref(collection) };
 };

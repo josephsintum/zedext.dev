@@ -39,11 +39,6 @@
 				<ThemeTile {tile} />
 			{/each}
 		</div>
-		{#if data.total > data.items.length}
-			<a href="/themes" class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
-				>Browse all themes →</a
-			>
-		{/if}
 	{:else if !data.tiles && data.items.length > 0}
 		<div class="mt-8 grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.items as hit (hit.id)}
@@ -54,5 +49,11 @@
 		<p class="mt-8 text-[14px] text-[var(--color-text-tertiary)]">
 			These extensions are temporarily unavailable.
 		</p>
+	{/if}
+
+	{#if data.browseAll && data.total > data.items.length}
+		<a href={data.browseAll} class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
+			>Browse all {data.collection.match.appearance ? 'themes' : data.collection.title} →</a
+		>
 	{/if}
 </div>
