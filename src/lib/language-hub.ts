@@ -74,6 +74,9 @@ export function matchesHub(hub: LanguageHub, r: ExtensionRecord): boolean {
 }
 
 function groupFor(r: ExtensionRecord): HubGroupKey {
+	// MCP and agent servers often have "server" in their names but aren't language servers
+	if (r.provides.includes('context-servers') || r.provides.includes('agent-servers'))
+		return 'other';
 	const words = nameWords(r);
 	if ([...words].some((w) => TOOLING_WORDS.has(w) || w.endsWith('refactoring'))) return 'tooling';
 	if (r.provides.includes('snippets') || words.has('snippets')) return 'snippets';

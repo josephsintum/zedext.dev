@@ -100,6 +100,27 @@ describe('buildHub', () => {
 		expect(data.total).toBe(7);
 	});
 
+	it('never lists MCP or agent servers as language servers', () => {
+		const js = getLanguageHub('javascript')!;
+		const hub = buildHub(js, [
+			record({
+				id: 'svelte-mcp',
+				name: 'Svelte MCP Server',
+				provides: ['context-servers'],
+				download_count: 38_000
+			}),
+			record({
+				id: 'vue',
+				name: 'Vue',
+				provides: ['languages', 'language-servers'],
+				download_count: 679_000
+			})
+		]);
+		const group = (key: string) => hub.groups.find((g) => g.key === key)?.items.map((r) => r.id);
+		expect(group('language-servers')).toEqual(['vue']);
+		expect(group('other')).toEqual(['svelte-mcp']);
+	});
+
 	it('flags extensions that duplicate built-in support', () => {
 		expect(data.alsoBuiltIn.sort()).toEqual(['ruff', 'ty']);
 	});
