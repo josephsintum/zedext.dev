@@ -53,7 +53,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
 		slug: 'snippets',
 		provides: 'snippets',
 		title: 'Zed snippets',
-		description: 'Snippet collections for the Zed editor, ranked by downloads.'
+		description: 'Snippet packs for the Zed editor, ranked by downloads.'
 	}
 ];
 

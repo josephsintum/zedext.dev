@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
 	browseAllHref,
-	COLLECTION_REDIRECTS,
-	COLLECTIONS,
-	getCollection,
-	resolveCollection,
-	type Collection
-} from './collections.js';
+	DISCOVER_LISTS,
+	getDiscoverList,
+	resolveList,
+	type DiscoverList
+} from './discover.js';
 import type { PreviewBundle, ThemeVariant } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 
@@ -38,7 +37,7 @@ const previews = (themes: Record<string, ('dark' | 'light')[]>): PreviewBundle =
 	)
 });
 
-const web: Collection = {
+const web: DiscoverList = {
 	slug: 'web',
 	title: 'Web',
 	emoji: '🌐',
@@ -47,34 +46,26 @@ const web: Collection = {
 	match: { keywords: ['vue', 'svelte', 'html'] }
 };
 
-describe('COLLECTIONS', () => {
-	it('have unique slugs that are not redirected', () => {
-		const slugs = COLLECTIONS.map((c) => c.slug);
+describe('DISCOVER_LISTS', () => {
+	it('have unique slugs', () => {
+		const slugs = DISCOVER_LISTS.map((c) => c.slug);
 		expect(new Set(slugs).size).toBe(slugs.length);
-		for (const s of slugs) expect(Object.hasOwn(COLLECTION_REDIRECTS, s)).toBe(false);
-	});
-
-	it('redirect the old language setups to their language pages', () => {
-		expect(COLLECTION_REDIRECTS).toEqual({
-			'python-setup': '/languages/python',
-			'rust-setup': '/languages/rust'
-		});
 	});
 
 	it('look up by slug without matching prototype keys', () => {
-		expect(getCollection('web-dev')?.title).toBe('Web development');
-		expect(getCollection('constructor')).toBeUndefined();
+		expect(getDiscoverList('web-dev')?.title).toBe('Web development');
+		expect(getDiscoverList('constructor')).toBeUndefined();
 	});
 });
 
-describe('resolveCollection', () => {
+describe('resolveList', () => {
 	it('ranks keyword matches by downloads and counts the total', () => {
 		const records = [
 			record({ id: 'svelte', download_count: 10 }),
 			record({ id: 'vue', download_count: 30 }),
 			record({ id: 'go', download_count: 99 })
 		];
-		expect(resolveCollection(web, records, null)).toEqual({
+		expect(resolveList(web, records, null)).toEqual({
 			items: [records[1], records[0]],
 			total: 2
 		});
@@ -88,19 +79,19 @@ describe('resolveCollection', () => {
 			record({ id: 'html-agent', provides: ['agent-servers'] }),
 			record({ id: 'vue-icons', provides: ['icon-themes'] })
 		];
-		expect(resolveCollection(web, records, null).items.map((r) => r.id)).toEqual(['vue']);
+		expect(resolveList(web, records, null).items.map((r) => r.id)).toEqual(['vue']);
 	});
 
 	it('honors an explicit excludeProvides', () => {
 		const c = { ...web, match: { keywords: ['vue'], excludeProvides: [] } };
 		const records = [record({ id: 'vue-theme', provides: ['themes'] })];
-		expect(resolveCollection(c, records, null).total).toBe(1);
+		expect(resolveList(c, records, null).total).toBe(1);
 	});
 
 	it('matches provides rules', () => {
-		const c: Collection = { ...web, match: { provides: ['context-servers'] } };
+		const c: DiscoverList = { ...web, match: { provides: ['context-servers'] } };
 		const records = [record({ id: 'a', provides: ['context-servers'] }), record({ id: 'b' })];
-		expect(resolveCollection(c, records, null).items.map((r) => r.id)).toEqual(['a']);
+		expect(resolveList(c, records, null).items.map((r) => r.id)).toEqual(['a']);
 	});
 
 	it('puts pins first in their order, once, and skips pins missing from the snapshot', () => {
@@ -110,7 +101,7 @@ describe('resolveCollection', () => {
 			record({ id: 'svelte', download_count: 10 }),
 			record({ id: 'pinned-other', download_count: 1 })
 		];
-		const { items, total } = resolveCollection(c, records, null);
+		const { items, total } = resolveList(c, records, null);
 		expect(items.map((r) => r.id)).toEqual(['svelte', 'pinned-other', 'vue']);
 		expect(total).toBe(3);
 	});
@@ -118,18 +109,18 @@ describe('resolveCollection', () => {
 	it('never shows hidden ids, even pinned ones', () => {
 		const c = { ...web, pin: ['vue'], hide: ['vue', 'html'] };
 		const records = [record({ id: 'vue' }), record({ id: 'html' }), record({ id: 'svelte' })];
-		expect(resolveCollection(c, records, null).items.map((r) => r.id)).toEqual(['svelte']);
+		expect(resolveList(c, records, null).items.map((r) => r.id)).toEqual(['svelte']);
 	});
 
 	it('caps items at the limit but reports the full total', () => {
 		const records = ['vue', 'svelte', 'html'].map((id) => record({ id }));
-		expect(resolveCollection(web, records, null, 2)).toMatchObject({ total: 3 });
-		expect(resolveCollection(web, records, null, 2).items).toHaveLength(2);
+		expect(resolveList(web, records, null, 2)).toMatchObject({ total: 3 });
+		expect(resolveList(web, records, null, 2).items).toHaveLength(2);
 	});
 
-	it('matches theme collections by preview appearance', () => {
-		const dark = getCollection('dark-themes')!;
-		const light = getCollection('light-themes')!;
+	it('matches theme lists by preview appearance', () => {
+		const dark = getDiscoverList('dark-themes')!;
+		const light = getDiscoverList('light-themes')!;
 		const records = [
 			record({ id: 'both', provides: ['themes'], download_count: 2 }),
 			record({ id: 'dark', provides: ['themes'], download_count: 1 }),
@@ -137,13 +128,13 @@ describe('resolveCollection', () => {
 			record({ id: 'constructor', provides: ['themes'] })
 		];
 		const p = previews({ both: ['light', 'dark'], dark: ['dark'] });
-		expect(resolveCollection(dark, records, p).items.map((r) => r.id)).toEqual(['both', 'dark']);
-		expect(resolveCollection(light, records, p).items.map((r) => r.id)).toEqual(['both']);
+		expect(resolveList(dark, records, p).items.map((r) => r.id)).toEqual(['both', 'dark']);
+		expect(resolveList(light, records, p).items.map((r) => r.id)).toEqual(['both']);
 	});
 
-	it('returns nothing for theme collections when previews are unavailable', () => {
+	it('returns nothing for theme lists when previews are unavailable', () => {
 		const records = [record({ id: 'dark', provides: ['themes'] })];
-		expect(resolveCollection(getCollection('dark-themes')!, records, null)).toEqual({
+		expect(resolveList(getDiscoverList('dark-themes')!, records, null)).toEqual({
 			items: [],
 			total: 0
 		});
@@ -151,13 +142,13 @@ describe('resolveCollection', () => {
 });
 
 describe('browseAllHref', () => {
-	it('points collections that can outgrow their limit at the full category page', () => {
-		expect(browseAllHref(getCollection('mcp-servers')!)).toBe('/mcp-servers');
-		expect(browseAllHref(getCollection('dark-themes')!)).toBe('/themes');
-		expect(browseAllHref(getCollection('light-themes')!)).toBe('/themes');
+	it('points lists that can outgrow their limit at the full category page', () => {
+		expect(browseAllHref(getDiscoverList('mcp-servers')!)).toBe('/mcp-servers');
+		expect(browseAllHref(getDiscoverList('dark-themes')!)).toBe('/themes');
+		expect(browseAllHref(getDiscoverList('light-themes')!)).toBe('/themes');
 	});
 
-	it('is null for keyword collections, which have no category page', () => {
-		expect(browseAllHref(getCollection('web-dev')!)).toBeNull();
+	it('is null for keyword lists, which have no category page', () => {
+		expect(browseAllHref(getDiscoverList('web-dev')!)).toBeNull();
 	});
 });

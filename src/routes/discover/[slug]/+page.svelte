@@ -7,23 +7,22 @@
 </script>
 
 <Seo
-	title="{data.collection.title} for Zed — ZedExt"
-	description={data.collection.description}
-	path="/collections/{data.collection.slug}"
-	ogTitle="{data.collection.emoji} {data.collection.title}"
+	title="{data.list.title} for Zed — ZedExt"
+	description={data.list.description}
+	path="/discover/{data.list.slug}"
+	ogTitle="{data.list.emoji} {data.list.title}"
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
 	<nav class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/collections" class="hover:text-[var(--color-text)]">Discover</a> › {data.collection
-			.title}
+		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a> › {data.list.title}
 	</nav>
 	<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">
-		{data.collection.emoji}
-		{data.collection.title}
+		{data.list.emoji}
+		{data.list.title}
 	</h1>
 	<p class="mt-2 max-w-2xl text-[15px] text-[var(--color-text-secondary)]">
-		{data.collection.description}
+		{data.list.description}
 	</p>
 
 	{#if data.total > 0}
@@ -53,7 +52,7 @@
 
 	{#if data.browseAll && data.total > data.items.length}
 		<a href={data.browseAll} class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
-			>Browse all {data.collection.match.appearance ? 'themes' : data.collection.title} →</a
+			>Browse all {data.list.match.appearance ? 'themes' : data.list.title} →</a
 		>
 	{/if}
 </div>

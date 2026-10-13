@@ -22,7 +22,7 @@
 
 <div class="mx-auto max-w-6xl px-6 py-10">
 	<nav class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/collections" class="hover:text-[var(--color-text)]">Discover</a> › {data.hub.name}
+		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a> › {data.hub.name}
 	</nav>
 	<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">
 		{data.hub.emoji}

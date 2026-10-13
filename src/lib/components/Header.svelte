@@ -15,7 +15,7 @@
 
 		<nav class="flex items-center gap-5">
 			<a
-				href="/collections"
+				href="/discover"
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
 				Discover

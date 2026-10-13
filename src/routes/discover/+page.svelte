@@ -17,7 +17,7 @@
 <Seo
 	title="Discover Zed extensions — ZedExt"
 	description="New and recently updated Zed extensions, the best extensions for each language, web development, everyday file types, dark and light themes, and MCP servers."
-	path="/collections"
+	path="/discover"
 	ogTitle="Discover Zed extensions"
 />
 
@@ -108,13 +108,13 @@
 		>
 			{section.title}
 		</h2>
-		{#each section.rows as row (row.collection.slug)}
+		{#each section.rows as row (row.list.slug)}
 			<section class="mt-6">
 				{@render heading(
-					`c-${row.collection.slug}`,
-					`${row.collection.emoji} ${row.collection.title}`,
-					row.collection.description,
-					`/collections/${row.collection.slug}`,
+					`c-${row.list.slug}`,
+					`${row.list.emoji} ${row.list.title}`,
+					row.list.description,
+					`/discover/${row.list.slug}`,
 					`See all ${row.total}`
 				)}
 				{#if row.tiles}

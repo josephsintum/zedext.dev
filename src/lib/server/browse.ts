@@ -22,7 +22,7 @@ export function browseCacheControl(degraded: boolean): string {
 	return degraded ? 'public, s-maxage=60' : 'public, s-maxage=300, stale-while-revalidate=3600';
 }
 
-/** Hub and collection pages change at most daily. */
+/** Language hub and Discover pages change at most daily. */
 export function pageCacheControl(degraded: boolean): string {
 	return degraded ? 'public, s-maxage=60' : 'public, s-maxage=3600, stale-while-revalidate=86400';
 }

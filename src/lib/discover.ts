@@ -3,20 +3,20 @@ import type { PreviewBundle } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 import { hasKeyword, nameWords } from './words.js';
 
-export type CollectionSection = 'stacks' | 'themes' | 'ai';
+export type DiscoverSection = 'stacks' | 'themes' | 'ai';
 
-export interface Collection {
+export interface DiscoverList {
 	slug: string;
 	title: string;
 	emoji: string;
 	description: string;
-	section: CollectionSection;
+	section: DiscoverSection;
 	match: {
 		/** Any of these */
 		provides?: string[];
 		/** Exact words in id + name, as on the language hubs */
 		keywords?: string[];
-		/** Theme collections: a preview variant of this appearance */
+		/** Theme lists: a preview variant of this appearance */
 		appearance?: 'dark' | 'light';
 		/** Keyword rules skip extensions providing any of these (default KEYWORD_EXCLUDES) */
 		excludeProvides?: string[];
@@ -25,21 +25,21 @@ export interface Collection {
 	pin?: string[];
 	/** Never shown */
 	hide?: string[];
-	/** Most items on the collection page (default 48) */
+	/** Most items on the list page (default 48) */
 	limit?: number;
 }
 
-/** Keyword rules match names; these kinds have their own collections */
+/** Keyword rules match names; these kinds have their own lists */
 const KEYWORD_EXCLUDES = ['themes', 'icon-themes', 'context-servers', 'agent-servers'];
 const DEFAULT_LIMIT = 48;
 
-export const COLLECTION_SECTIONS: { key: CollectionSection; title: string }[] = [
+export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
 	{ key: 'stacks', title: 'Stacks' },
 	{ key: 'themes', title: 'Themes' },
 	{ key: 'ai', title: 'AI' }
 ];
 
-export const COLLECTIONS: Collection[] = [
+export const DISCOVER_LISTS: DiscoverList[] = [
 	{
 		slug: 'web-dev',
 		title: 'Web development',
@@ -131,18 +131,12 @@ export const COLLECTIONS: Collection[] = [
 	}
 ];
 
-/** Collections folded into the language hubs */
-export const COLLECTION_REDIRECTS: Record<string, string> = {
-	'python-setup': '/languages/python',
-	'rust-setup': '/languages/rust'
-};
-
-export function getCollection(slug: string): Collection | undefined {
-	return COLLECTIONS.find((c) => c.slug === slug);
+export function getDiscoverList(slug: string): DiscoverList | undefined {
+	return DISCOVER_LISTS.find((c) => c.slug === slug);
 }
 
-export function matchesCollection(
-	c: Collection,
+export function matchesList(
+	c: DiscoverList,
 	r: ExtensionRecord,
 	previews: PreviewBundle | null
 ): boolean {
@@ -161,8 +155,8 @@ export function matchesCollection(
 }
 
 /** Pins first (in order), then matches by downloads; hidden ids never appear. */
-export function resolveCollection(
-	c: Collection,
+export function resolveList(
+	c: DiscoverList,
 	records: ExtensionRecord[],
 	previews: PreviewBundle | null,
 	limit = c.limit ?? DEFAULT_LIMIT
@@ -175,14 +169,14 @@ export function resolveCollection(
 	});
 	const pinnedIds = new Set(pinned.map((r) => r.id));
 	const matched = records
-		.filter((r) => !hidden.has(r.id) && !pinnedIds.has(r.id) && matchesCollection(c, r, previews))
+		.filter((r) => !hidden.has(r.id) && !pinnedIds.has(r.id) && matchesList(c, r, previews))
 		.sort((a, b) => b.download_count - a.download_count);
 	const all = [...pinned, ...matched];
 	return { items: all.slice(0, limit), total: all.length };
 }
 
-/** The full category page behind a collection, linked when the collection page is capped */
-export function browseAllHref(c: Collection): string | null {
+/** The full category page behind a list, linked when the list page is capped */
+export function browseAllHref(c: DiscoverList): string | null {
 	if (c.match.appearance) return '/themes';
 	if (c.match.provides?.length === 1 && !c.match.keywords) return categoryHref(c.match.provides[0]);
 	return null;

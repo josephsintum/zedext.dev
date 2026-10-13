@@ -36,7 +36,7 @@ describe('category pages', () => {
 		for (const other of [
 			'about',
 			'languages',
-			'collections',
+			'discover',
 			'authors',
 			'extensions',
 			'sitemap.xml',

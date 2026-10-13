@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { CATEGORY_PAGES } from '$lib/categories.js';
 import { LANGUAGE_HUBS } from '$lib/languages.js';
-import { COLLECTIONS } from '$lib/collections.js';
+import { DISCOVER_LISTS } from '$lib/discover.js';
 
 const SITE = 'https://zedext.dev';
 
@@ -35,9 +35,9 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 			priority: '0.9',
 			lastmod: today
 		})),
-		{ loc: `${SITE}/collections`, changefreq: 'weekly', priority: '0.7' },
-		...COLLECTIONS.map((c) => ({
-			loc: `${SITE}/collections/${c.slug}`,
+		{ loc: `${SITE}/discover`, changefreq: 'weekly', priority: '0.7' },
+		...DISCOVER_LISTS.map((c) => ({
+			loc: `${SITE}/discover/${c.slug}`,
 			changefreq: 'weekly',
 			priority: '0.7'
 		})),
