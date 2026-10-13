@@ -31,7 +31,7 @@
 
 <a
 	href="/extensions/{hit.id}"
-	class="card-hover group bg-surface-raised flex min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
+	class="card-hover group bg-surface-raised flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
 		<h3

@@ -73,7 +73,7 @@
 	{#each data.groups as group (group.key)}
 		<section class="mt-8">
 			<h2 class="mb-3 text-[15px] font-semibold text-[var(--color-text)]">{group.title}</h2>
-			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			<div class="grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each group.items as hit (hit.id)}
 					<div class="relative">
 						<ExtensionCard {hit} />

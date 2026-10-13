@@ -26,7 +26,7 @@
 	</p>
 
 	{#if data.items.length > 0}
-		<div class="mt-8 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+		<div class="mt-8 grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.items as hit (hit.id)}
 				<ExtensionCard {hit} />
 			{/each}
