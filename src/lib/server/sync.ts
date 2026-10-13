@@ -10,7 +10,7 @@ import { parseRepoUrl } from '../utils/parse-repo-url.js';
 import { parseAuthorNames } from '../utils/parse-author.js';
 import type { ExtensionRecord, Snapshot, ZedExtension, ZedExtensionResponse } from '../types.js';
 import type { PreviewBundle } from '../theme-preview.js';
-import { applyPreviews, buildPreviews, PREVIEWS_PATH } from './previews-sync.js';
+import { buildPreviews, PREVIEWS_PATH } from './previews-sync.js';
 import {
 	defaultDeps,
 	FatalError,
@@ -348,7 +348,6 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		limit: config.previewLimit,
 		log
 	});
-	applyPreviews(records, previews.bundle);
 	assertPublishable(records, previous);
 
 	const snapshot: Snapshot = { generatedAt: new Date().toISOString(), extensions: records };

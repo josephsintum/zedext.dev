@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyPreviews, buildPreviews } from './previews-sync.js';
+import { buildPreviews } from './previews-sync.js';
 import { tarGz } from './testing/tar.js';
 import type { ExtensionRecord } from '$lib/types.js';
 import type { PreviewBundle } from '$lib/theme-preview.js';
@@ -124,47 +124,5 @@ describe('buildPreviews', () => {
 			deps: deps({ broken: tarGz({ 'themes/x.json': '{"themes":[{"style":{}}]}' }) })
 		});
 		expect(bundle.themes.broken).toBeUndefined();
-	});
-});
-
-describe('applyPreviews', () => {
-	it('sets swatches on color themes and the flag on icon themes', () => {
-		const records = [
-			rec('dark', ['themes']),
-			rec('icons', ['icon-themes']),
-			rec('plain', ['themes'])
-		];
-		const variant = {
-			name: 'V',
-			appearance: 'dark' as const,
-			colors: {
-				bg: '#000',
-				fg: '#fff',
-				gutter: '#111',
-				status: '#000',
-				border: '#222',
-				keyword: '#f00',
-				string: '#0f0',
-				function: '#00f',
-				type: '#ff0',
-				comment: '#111',
-				number: '#0ff',
-				punct: '#fff',
-				variable: '#fff'
-			}
-		};
-		applyPreviews(records, {
-			generatedAt: '',
-			themes: { dark: { version: '1', variants: [variant] } },
-			icons: {
-				icons: {
-					version: '1',
-					variants: [{ name: 'I', appearance: 'dark', folder: '<svg/>', files: [] }]
-				}
-			}
-		});
-		expect(records[0].swatch).toEqual(['#000', '#f00', '#0f0', '#00f', '#ff0']);
-		expect(records[1].iconPreview).toBe(true);
-		expect(records[2].swatch).toBeUndefined();
 	});
 });

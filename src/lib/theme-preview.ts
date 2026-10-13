@@ -181,12 +181,6 @@ export function parseIconThemeFile(
 		});
 }
 
-/** Card strip: background plus four syntax colors from the first variant. */
-export function swatchOf(variants: ThemeVariant[]): string[] | undefined {
-	const c = variants[0]?.colors;
-	return c ? [c.bg, c.keyword, c.string, c.function, c.type] : undefined;
-}
-
 /** For <img src>: an SVG shown as an image can't run scripts or touch the page. */
 export function svgDataUri(svg: string): string {
 	return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;

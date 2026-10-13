@@ -13,12 +13,7 @@ import {
 	withRetry,
 	type NetDeps
 } from './net.js';
-import {
-	parseIconThemeFile,
-	parseThemeFile,
-	swatchOf,
-	type PreviewBundle
-} from '../theme-preview.js';
+import { parseIconThemeFile, parseThemeFile, type PreviewBundle } from '../theme-preview.js';
 import type { ExtensionRecord } from '../types.js';
 
 export const PREVIEWS_PATH = 'theme-previews.json';
@@ -90,14 +85,4 @@ export async function buildPreviews(
 		`Previews: ${batch.length - failed} downloaded, ${failed} failed, ${pending} left for later runs`
 	);
 	return { bundle, downloaded: batch.length - failed, failed, pending };
-}
-
-export function applyPreviews(records: ExtensionRecord[], bundle: PreviewBundle): void {
-	for (const r of records) {
-		const swatch = bundle.themes[r.id] && swatchOf(bundle.themes[r.id].variants);
-		if (swatch) r.swatch = swatch;
-		if (bundle.icons[r.id]?.variants.some((v) => v.folder || v.files.some((f) => f.svg))) {
-			r.iconPreview = true;
-		}
-	}
 }

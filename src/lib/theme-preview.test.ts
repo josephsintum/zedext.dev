@@ -4,8 +4,7 @@ import {
 	parseIconThemeFile,
 	parseJsonLenient,
 	parseThemeFile,
-	svgDataUri,
-	swatchOf
+	svgDataUri
 } from './theme-preview.js';
 
 const theme = (style: Record<string, unknown>, extra: Record<string, unknown> = {}) =>
@@ -87,19 +86,6 @@ describe('parseThemeFile', () => {
 		}`;
 		expect(parseThemeFile(jsonc)[0]).toMatchObject({ name: 'X', appearance: 'light' });
 		expect(parseJsonLenient('{"url": "https://a//b"}')).toEqual({ url: 'https://a//b' });
-	});
-});
-
-describe('swatchOf', () => {
-	it('uses the first variant: background then four syntax colors', () => {
-		expect(swatchOf(parseThemeFile(theme(fullStyle)))).toEqual([
-			'#1e1e2e',
-			'#cba6f7',
-			'#a6e3a1',
-			'#89b4fa',
-			'#f9e2af'
-		]);
-		expect(swatchOf([])).toBeUndefined();
 	});
 });
 
