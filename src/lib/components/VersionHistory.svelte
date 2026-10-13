@@ -9,9 +9,7 @@
 	const displayVersions = $derived(showAll ? versions : versions.slice(0, 10));
 
 	const parsed = $derived(parseRepoUrl(versions[0]?.repository ?? ''));
-	const repoBase = $derived(
-		parsed ? `https://github.com/${parsed.owner}/${parsed.repo}` : null
-	);
+	const repoBase = $derived(parsed ? `https://github.com/${parsed.owner}/${parsed.repo}` : null);
 
 	function compareUrl(version: string, prevVersion: string | null): string | null {
 		if (!repoBase || !prevVersion) return null;
@@ -40,11 +38,15 @@
 					class="flex items-center justify-between border-b border-[var(--color-border)] py-2 transition-colors last:border-0 hover:text-[var(--color-accent)]"
 				>
 					<span
-						class="font-mono text-[13px] {i === 0 ? 'font-semibold text-[var(--color-accent)]' : 'text-[var(--color-text)]'}"
+						class="font-mono text-[13px] {i === 0
+							? 'font-semibold text-[var(--color-accent)]'
+							: 'text-[var(--color-text)]'}"
 					>
 						v{v.version}
 						{#if i === 0}
-							<span class="ml-1 text-[10px] font-normal text-[var(--color-text-tertiary)]">latest</span>
+							<span class="ml-1 text-[10px] font-normal text-[var(--color-text-tertiary)]"
+								>latest</span
+							>
 						{/if}
 					</span>
 					<span class="text-[12px] text-[var(--color-text-tertiary)]">
@@ -56,11 +58,15 @@
 					class="flex items-center justify-between border-b border-[var(--color-border)] py-2 last:border-0"
 				>
 					<span
-						class="font-mono text-[13px] {i === 0 ? 'font-semibold text-[var(--color-accent)]' : 'text-[var(--color-text)]'}"
+						class="font-mono text-[13px] {i === 0
+							? 'font-semibold text-[var(--color-accent)]'
+							: 'text-[var(--color-text)]'}"
 					>
 						v{v.version}
 						{#if i === 0}
-							<span class="ml-1 text-[10px] font-normal text-[var(--color-text-tertiary)]">latest</span>
+							<span class="ml-1 text-[10px] font-normal text-[var(--color-text-tertiary)]"
+								>latest</span
+							>
 						{/if}
 					</span>
 					<span class="text-[12px] text-[var(--color-text-tertiary)]">

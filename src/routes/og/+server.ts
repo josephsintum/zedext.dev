@@ -28,12 +28,7 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 
 	const [fontRegular, fontBold] = await Promise.all([loadFont(400), loadFont(700)]);
 
-	const badge =
-		type === 'extension'
-			? 'Extension'
-			: type === 'author'
-				? 'Author'
-				: null;
+	const badge = type === 'extension' ? 'Extension' : type === 'author' ? 'Author' : null;
 
 	let svg: string;
 	try {

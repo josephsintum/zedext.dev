@@ -62,7 +62,7 @@
 	--font-mono: 'Geist Mono', ui-monospace, monospace;
 
 	--color-accent: oklch(0.53 0.21 260);
-	--color-accent-soft: oklch(0.90 0.06 260);
+	--color-accent-soft: oklch(0.9 0.06 260);
 	--color-accent-hover: oklch(0.48 0.22 260);
 
 	--color-surface: oklch(0.995 0.002 260);
@@ -89,7 +89,7 @@
 .dark {
 	--color-accent: oklch(0.72 0.16 260);
 	--color-accent-soft: oklch(0.25 0.06 260);
-	--color-accent-hover: oklch(0.80 0.15 260);
+	--color-accent-hover: oklch(0.8 0.15 260);
 
 	--color-surface: oklch(0.17 0.01 270);
 	--color-surface-hover: oklch(0.21 0.01 270);

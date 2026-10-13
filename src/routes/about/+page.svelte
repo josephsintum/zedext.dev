@@ -56,37 +56,57 @@
 
 	<!-- What ZedExt is -->
 	<section class="mb-14">
-		<h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)]">
+		<h2
+			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
+		>
 			What ZedExt is
 		</h2>
 		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
 			<p>
-				ZedExt is an <strong class="text-[var(--color-text)]">alternative extension marketplace</strong> for the Zed editor.
-				Zed's official extension page at
+				ZedExt is an <strong class="text-[var(--color-text)]"
+					>alternative extension marketplace</strong
+				>
+				for the Zed editor. Zed's official extension page at
 				<a
 					href="https://zed.dev/extensions"
 					class="text-[var(--color-accent)] hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">zed.dev/extensions</a
 				>
-				shows only a name, one-line description, and download count. No README, no GitHub stats, no version history.
+				shows only a name, one-line description, and download count. No README, no GitHub stats, no version
+				history.
 			</p>
-			<p>
-				We believe extension discovery should be better. ZedExt provides:
-			</p>
+			<p>We believe extension discovery should be better. ZedExt provides:</p>
 			<ul class="ml-1 list-inside list-disc space-y-2 marker:text-[var(--color-border-hover)]">
-				<li><strong class="text-[var(--color-text)]">Rich extension pages</strong> — full README rendered with syntax highlighting and properly resolved images</li>
-				<li><strong class="text-[var(--color-text)]">GitHub context</strong> — stars, license, last commit, forks, and open issues so you can assess extension health</li>
-				<li><strong class="text-[var(--color-text)]">Better search</strong> — typo-tolerant, faceted search with category filters and multiple sort options</li>
-				<li><strong class="text-[var(--color-text)]">Version history</strong> — all published versions with dates</li>
-				<li><strong class="text-[var(--color-text)]">SEO-friendly</strong> — every extension has a unique, indexable page with proper meta tags</li>
+				<li>
+					<strong class="text-[var(--color-text)]">Rich extension pages</strong> — full README rendered
+					with syntax highlighting and properly resolved images
+				</li>
+				<li>
+					<strong class="text-[var(--color-text)]">GitHub context</strong> — stars, license, last commit,
+					forks, and open issues so you can assess extension health
+				</li>
+				<li>
+					<strong class="text-[var(--color-text)]">Better search</strong> — typo-tolerant, faceted search
+					with category filters and multiple sort options
+				</li>
+				<li>
+					<strong class="text-[var(--color-text)]">Version history</strong> — all published versions with
+					dates
+				</li>
+				<li>
+					<strong class="text-[var(--color-text)]">SEO-friendly</strong> — every extension has a unique,
+					indexable page with proper meta tags
+				</li>
 			</ul>
 		</div>
 	</section>
 
 	<!-- What ZedExt is NOT -->
 	<section class="mb-14">
-		<h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)]">
+		<h2
+			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
+		>
 			What ZedExt is not
 		</h2>
 		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
@@ -102,19 +122,23 @@
 			</p>
 			<p>
 				<strong class="text-[var(--color-text)]">Not affiliated with Zed Industries.</strong>
-				This is an independent community project. We use publicly available data from the Zed API and GitHub.
+				This is an independent community project. We use publicly available data from the Zed API and
+				GitHub.
 			</p>
 		</div>
 	</section>
 
 	<!-- How it works -->
 	<section class="mb-14">
-		<h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)]">
+		<h2
+			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
+		>
 			How it works
 		</h2>
 		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
 			<p>
-				ZedExt has <strong class="text-[var(--color-text)]">no database</strong>. All data is fetched on-demand from the
+				ZedExt has <strong class="text-[var(--color-text)]">no database</strong>. All data is
+				fetched on-demand from the
 				<a
 					href="https://zed.dev"
 					class="text-[var(--color-accent)] hover:underline"
@@ -127,35 +151,50 @@
 					class="text-[var(--color-accent)] hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">GitHub API</a
-				>, then cached in memory. Search runs in your browser over a snapshot of the whole
-				registry, refreshed daily.
+				>, then cached in memory. Search runs in your browser over a snapshot of the whole registry,
+				refreshed daily.
 			</p>
 			<p>
 				Built with
-				<a href="https://svelte.dev" class="text-[var(--color-accent)] hover:underline" target="_blank" rel="noopener noreferrer">SvelteKit</a>,
-				<a href="https://tailwindcss.com" class="text-[var(--color-accent)] hover:underline" target="_blank" rel="noopener noreferrer">Tailwind CSS</a>, and deployed on
-				<a href="https://vercel.com" class="text-[var(--color-accent)] hover:underline" target="_blank" rel="noopener noreferrer">Vercel</a>.
-				Inspired by the architecture of <a href="https://npmx.dev" class="text-[var(--color-accent)] hover:underline" target="_blank" rel="noopener noreferrer">npmx.dev</a>.
+				<a
+					href="https://svelte.dev"
+					class="text-[var(--color-accent)] hover:underline"
+					target="_blank"
+					rel="noopener noreferrer">SvelteKit</a
+				>,
+				<a
+					href="https://tailwindcss.com"
+					class="text-[var(--color-accent)] hover:underline"
+					target="_blank"
+					rel="noopener noreferrer">Tailwind CSS</a
+				>, and deployed on
+				<a
+					href="https://vercel.com"
+					class="text-[var(--color-accent)] hover:underline"
+					target="_blank"
+					rel="noopener noreferrer">Vercel</a
+				>. Inspired by the architecture of
+				<a
+					href="https://npmx.dev"
+					class="text-[var(--color-accent)] hover:underline"
+					target="_blank"
+					rel="noopener noreferrer">npmx.dev</a
+				>.
 			</p>
 		</div>
 	</section>
 
 	<!-- Tech stack -->
 	<section class="mb-14">
-		<h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)]">
+		<h2
+			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
+		>
 			Stack
 		</h2>
 		<div
 			class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-3"
 		>
-			{#each [
-				{ name: 'SvelteKit', desc: 'Framework' },
-				{ name: 'Tailwind CSS v4', desc: 'Styling' },
-				{ name: 'MiniSearch', desc: 'Search' },
-				{ name: 'Shiki', desc: 'Syntax highlighting' },
-				{ name: 'Vercel', desc: 'Hosting' },
-				{ name: 'GitHub API', desc: 'Extension data' }
-			] as item}
+			{#each [{ name: 'SvelteKit', desc: 'Framework' }, { name: 'Tailwind CSS v4', desc: 'Styling' }, { name: 'MiniSearch', desc: 'Search' }, { name: 'Shiki', desc: 'Syntax highlighting' }, { name: 'Vercel', desc: 'Hosting' }, { name: 'GitHub API', desc: 'Extension data' }] as item}
 				<div class="bg-[var(--color-surface)] px-4 py-3">
 					<div class="text-[13px] font-medium text-[var(--color-text)]">{item.name}</div>
 					<div class="text-[12px] text-[var(--color-text-tertiary)]">{item.desc}</div>
@@ -166,13 +205,13 @@
 
 	<!-- Contributors -->
 	<section class="mb-14">
-		<h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--color-text-tertiary)]">
+		<h2
+			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
+		>
 			Contributors
 		</h2>
 		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
-			<p>
-				ZedExt is open source and built by the community.
-			</p>
+			<p>ZedExt is open source and built by the community.</p>
 			<a
 				href="https://github.com/josephsintum/zedext.dev"
 				class="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-[13px] font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)]"
@@ -197,8 +236,19 @@
 		class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6"
 	>
 		<div class="flex items-start gap-3">
-			<div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-soft)] text-[var(--color-accent)]">
-				<svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<div
+				class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+			>
+				<svg
+					aria-hidden="true"
+					class="h-4 w-4"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
 				</svg>
 			</div>

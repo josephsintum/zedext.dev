@@ -4,9 +4,7 @@
 	const isDark = $derived(getTheme() === 'dark');
 </script>
 
-<header
-	class="sticky top-0 z-50 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)]/90 backdrop-blur-md"
->
+<header class="border-border bg-surface-raised/90 sticky top-0 z-50 border-b backdrop-blur-md">
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
 		<a
 			href="/"
@@ -23,7 +21,16 @@
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
 				Create Extension
-				<svg aria-hidden="true" class="inline h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+				<svg
+					aria-hidden="true"
+					class="inline h-3 w-3 opacity-50"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg
+				>
 			</a>
 			<a
 				href="https://zed.dev"
@@ -32,7 +39,16 @@
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
 				Zed Editor
-				<svg aria-hidden="true" class="inline h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+				<svg
+					aria-hidden="true"
+					class="inline h-3 w-3 opacity-50"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg
+				>
 			</a>
 			<button
 				onclick={toggleTheme}
