@@ -5,7 +5,6 @@
 	import ThemePreview from '$lib/components/ThemePreview.svelte';
 	import IconThemePreview from '$lib/components/IconThemePreview.svelte';
 	import VersionTable from '$lib/components/VersionTable.svelte';
-	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import { badgeFor, healthPills } from '$lib/extension-page.js';
 	import type { DetailContent } from './+page.server.js';
 
@@ -270,26 +269,12 @@
 					{/if}
 				</div>
 			{/if}
-			{#if data.similar.length > 0}
-				<section class="mt-10" aria-labelledby="similar-heading">
-					<div class="mb-3 flex items-baseline justify-between">
-						<h2 id="similar-heading" class="text-[15px] font-semibold text-[var(--color-text)]">
-							{extension.provides.includes('themes') ? 'Similar themes' : 'Similar extensions'}
-						</h2>
-						<a
-							href="/extensions/{extension.id}/alternatives"
-							class="text-[13px] text-[var(--color-accent)] hover:underline"
-						>
-							See all alternatives →
-						</a>
-					</div>
-					<div class="grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-						{#each data.similar as hit (hit.id)}
-							<ExtensionCard {hit} />
-						{/each}
-					</div>
-				</section>
-			{/if}
+			<a
+				href="/extensions/{extension.id}/alternatives"
+				class="mt-4 inline-block text-[13px] text-[var(--color-accent)] hover:underline"
+			>
+				Alternatives to {extension.name} →
+			</a>
 		</div>
 
 		<!-- Sidebar -->

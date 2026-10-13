@@ -11,9 +11,8 @@ import {
 import { renderMarkdown } from '$lib/server/markdown.js';
 import { getSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
-import { findSimilar } from '$lib/search/similar.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
-import type { ExtensionRecord, GitHubRepo } from '$lib/types.js';
+import type { GitHubRepo } from '$lib/types.js';
 
 export interface DetailContent {
 	github: GitHubRepo | null;
@@ -42,10 +41,6 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 	extensionRequest.catch(() => {});
 	// Cached bundle (or null); fetched alongside Zed's data, never fails the page
 	const previewsRequest = getPreviews();
-	// From the in-memory index; never fails the page
-	const similarRequest: Promise<ExtensionRecord[]> = getSnapshot()
-		.then((s) => findSimilar(s.index, params.id, 6))
-		.catch(() => []);
 
 	// The snapshot usually knows the repo already, so GitHub work can start alongside Zed's.
 	// It's only a hint: never wait on it or fail because of it.
@@ -85,8 +80,7 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 		isMonorepo,
 		repoOwner: parsed?.owner ?? null,
 		themePreview: (await previewsRequest)?.themes[extension.id]?.variants ?? null,
-		iconPreview: (await previewsRequest)?.icons[extension.id]?.variants ?? null,
-		similar: await similarRequest
+		iconPreview: (await previewsRequest)?.icons[extension.id]?.variants ?? null
 	};
 
 	// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
