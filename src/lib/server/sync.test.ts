@@ -1,5 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { assertPublishable, buildRecords, repoKey, type GitHubStats } from './sync.js';
+import { describe, expect, it, vi } from 'vitest';
+import {
+	assertPublishable,
+	buildRecords,
+	fetchGitHubStats,
+	fetchZedExtensions,
+	repoKey,
+	type GitHubStats
+} from './sync.js';
 import type { ExtensionRecord, Snapshot, ZedExtension } from '../types.js';
 
 function zed(id: string, repository: string): ZedExtension {
@@ -89,5 +96,94 @@ describe('assertPublishable', () => {
 	it('refuses an empty snapshot or a large drop', () => {
 		expect(() => assertPublishable([], null)).toThrow(/empty/);
 		expect(() => assertPublishable(records(89), previous)).toThrow(/Refusing/);
+	});
+});
+
+// --- Network steps, with fetch stubbed ---
+
+type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
+const deps = (handler: Handler) => ({
+	fetch: vi.fn(async (input: string | URL | Request, init?: RequestInit) =>
+		handler(String(input), init)
+	),
+	sleep: async () => {}
+});
+const json = (body: unknown, status = 200) =>
+	new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+const silent = () => {};
+
+describe('fetchGitHubStats', () => {
+	const keys = Array.from({ length: 150 }, (_, i) => `o/r${i}`); // two batches: 100 + 50
+	const okBatch = (init?: RequestInit) => {
+		const query: string = JSON.parse(String(init?.body)).query;
+		const aliases = [...query.matchAll(/(r\d+): repository/g)].map((m) => m[1]);
+		return json({
+			data: Object.fromEntries(
+				aliases.map((a) => [a, { stargazerCount: 1, pushedAt: null, licenseInfo: null }])
+			)
+		});
+	};
+
+	it('retries a transient batch failure', async () => {
+		let calls = 0;
+		const d = deps((_, init) =>
+			++calls === 1 ? new Response('', { status: 502 }) : okBatch(init)
+		);
+		const stats = await fetchGitHubStats(keys, 'token', silent, d);
+		expect([...stats.values()].every((s) => s?.github_stars === 1)).toBe(true);
+	});
+
+	it('marks a persistently failing batch as failed and keeps the rest', async () => {
+		// The first batch (repos r0–r99) always fails; the second (r100–r149) works
+		const d = deps((_, init) =>
+			String(init?.body).includes('name: \\"r0\\"')
+				? new Response('', { status: 502 })
+				: okBatch(init)
+		);
+		const stats = await fetchGitHubStats(keys, 'token', silent, d);
+		expect(stats.get('o/r0')).toBeNull(); // first batch failed → carried forward later
+		expect(stats.get('o/r120')?.github_stars).toBe(1);
+	});
+
+	it('fails the sync when every batch fails', async () => {
+		const d = deps(() => new Response('', { status: 502 }));
+		await expect(fetchGitHubStats(keys, 'token', silent, d)).rejects.toThrow(/every batch/);
+	});
+
+	it('fails immediately on a rejected token', async () => {
+		const d = deps(() => new Response('', { status: 401 }));
+		await expect(fetchGitHubStats(keys, 'token', silent, d)).rejects.toThrow(/401/);
+		expect(d.fetch).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('fetchZedExtensions', () => {
+	const bulk = () => json({ data: [zed('a', '')] });
+
+	it('retries rate-limited lookups', async () => {
+		let calls = 0;
+		const d = deps((url) =>
+			url.includes('max_schema_version')
+				? bulk()
+				: ++calls === 1
+					? new Response('', { status: 429 })
+					: json({ data: [zed('b', '')] })
+		);
+		const { extensions } = await fetchZedExtensions(['a', 'b'], silent, d);
+		expect(extensions.map((e) => e.id).sort()).toEqual(['a', 'b']);
+	});
+
+	it('treats an empty result as a removed extension, not a failure', async () => {
+		const d = deps((url) => (url.includes('max_schema_version') ? bulk() : json({ data: [] })));
+		const { extensions } = await fetchZedExtensions(['a', 'gone'], silent, d);
+		expect(extensions.map((e) => e.id)).toEqual(['a']);
+	});
+
+	it('fails the sync when many lookups still fail after retries', async () => {
+		const ids = ['a', ...Array.from({ length: 50 }, (_, i) => `x${i}`)];
+		const d = deps((url) =>
+			url.includes('max_schema_version') ? bulk() : new Response('', { status: 503 })
+		);
+		await expect(fetchZedExtensions(ids, silent, d)).rejects.toThrow(/lookups failed/);
 	});
 });

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { formatNumber } from '$lib/utils/format.js';
 	import { currentSearchParams, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
 
@@ -12,9 +13,18 @@
 		totalHits > 0 ? `Search ${formatNumber(totalHits)}+ extensions…` : 'Search extensions…'
 	);
 
-	let input = $state(value);
+	let input = $state(untrack(() => value));
 	let focused = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;
+
+	// Follow outside URL changes (back button, links), but never overwrite what's being typed
+	$effect(() => {
+		const next = value;
+		if (!untrack(() => focused)) input = next;
+	});
+
+	// A pending search must not fire after the page is gone
+	$effect(() => () => clearTimeout(debounceTimer));
 
 	function performSearch(q: string) {
 		const params = currentSearchParams();
@@ -68,7 +78,7 @@
 			type="search"
 			aria-label="Search extensions"
 			{placeholder}
-			{value}
+			value={input}
 			oninput={handleInput}
 			onkeydown={handleKeydown}
 			onfocus={() => {

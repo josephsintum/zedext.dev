@@ -162,44 +162,103 @@ async function fetchRegistryIds(log: LogFn): Promise<string[]> {
 	return ids;
 }
 
-async function fetchZedExtensions(
+/** Network access, injectable so the retry and failure handling can be tested. */
+export interface NetDeps {
+	fetch: typeof fetch;
+	sleep: (ms: number) => Promise<void>;
+}
+
+const defaultDeps: NetDeps = {
+	fetch: (input, init) => fetch(input, init),
+	sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+};
+
+/** Not worth retrying (e.g. a rejected token): fail the sync straight away. */
+class FatalError extends Error {}
+
+const isTransient = (status: number) => status === 429 || status >= 500;
+
+/** Up to 3 attempts with 0.5s / 1s backoff. */
+async function withRetry<T>(fn: () => Promise<T>, deps: NetDeps): Promise<T> {
+	for (let attempt = 1; ; attempt++) {
+		try {
+			return await fn();
+		} catch (err) {
+			if (err instanceof FatalError || attempt >= 3) throw err;
+			await deps.sleep(500 * 2 ** (attempt - 1));
+		}
+	}
+}
+
+/** Fail the sync rather than publish a snapshot missing more than this share of lookups. */
+const MAX_FAILED_LOOKUP_RATIO = 0.02;
+
+export async function fetchZedExtensions(
 	ids: string[],
-	log: LogFn
+	log: LogFn,
+	deps: NetDeps = defaultDeps
 ): Promise<{ extensions: ZedExtension[]; lookedUp: number }> {
 	// The bulk endpoint caps at 1,000 results; look up the rest one by one
-	const res = await fetch(`${ZED_API}/extensions?max_schema_version=1`);
-	if (!res.ok) throw new Error(`Zed API error: ${res.status}`);
-	const bulk: ZedExtensionResponse = await res.json();
+	const bulk = await withRetry(async () => {
+		const res = await deps.fetch(`${ZED_API}/extensions?max_schema_version=1`);
+		if (!res.ok) throw new Error(`Zed API error: ${res.status}`);
+		return (await res.json()) as ZedExtensionResponse;
+	}, deps);
 	const byId = new Map(bulk.data.map((ext) => [ext.id, ext]));
 
 	const missing = ids.filter((id) => !byId.has(id));
+	let failed = 0;
 	const fetched = await mapConcurrent(missing, ZED_CONCURRENCY, async (id) => {
 		try {
-			const res = await fetch(`${ZED_API}/extensions/${id}`);
-			if (!res.ok) return null;
-			const data: ZedExtensionResponse = await res.json();
-			return data.data[0] ?? null;
+			return await withRetry(async () => {
+				const res = await deps.fetch(`${ZED_API}/extensions/${id}`);
+				if (isTransient(res.status)) throw new Error(`Zed API ${res.status} for ${id}`);
+				if (!res.ok) throw new FatalError(`Zed API ${res.status} for ${id}`);
+				const data: ZedExtensionResponse = await res.json();
+				// An empty result means the extension was removed: not a failure
+				return data.data[0] ?? null;
+			}, deps);
 		} catch {
+			failed++;
 			return null;
 		}
 	});
 	for (const ext of fetched) if (ext) byId.set(ext.id, ext);
 
 	const lookedUp = byId.size - bulk.data.length;
-	log(`Zed API: ${bulk.data.length} bulk + ${lookedUp}/${missing.length} looked up`);
+	log(
+		`Zed API: ${bulk.data.length} bulk + ${lookedUp}/${missing.length} looked up, ${failed} failed`
+	);
+	if (failed > Math.max(3, missing.length * MAX_FAILED_LOOKUP_RATIO)) {
+		throw new Error(`Too many Zed lookups failed (${failed}/${missing.length})`);
+	}
 	return { extensions: [...byId.values()], lookedUp };
 }
 
-/** One GraphQL query per 100 repos. A null entry means the lookup failed for that repo. */
-async function fetchGitHubStats(
+type GraphQLRepo = {
+	stargazerCount: number;
+	pushedAt: string | null;
+	licenseInfo: { spdxId: string } | null;
+} | null;
+
+/**
+ * One GraphQL query per 100 repos. A null entry means the lookup failed for that repo,
+ * so the previous snapshot's stats carry forward. A batch that still fails after retries
+ * only nulls its own repos; the sync fails only if every batch failed.
+ */
+export async function fetchGitHubStats(
 	keys: string[],
 	token: string,
-	log: LogFn
+	log: LogFn,
+	deps: NetDeps = defaultDeps
 ): Promise<Map<string, GitHubStats | null>> {
 	const stats = new Map<string, GitHubStats | null>();
+	let batches = 0;
+	let failedBatches = 0;
 
 	for (let i = 0; i < keys.length; i += GITHUB_BATCH_SIZE) {
 		const batch = keys.slice(i, i + GITHUB_BATCH_SIZE);
+		batches++;
 		const fields = batch
 			.map((key, j) => {
 				const [owner, name] = key.split('/');
@@ -207,43 +266,46 @@ async function fetchGitHubStats(
 			})
 			.join('\n');
 
-		const res = await fetch(GITHUB_GRAPHQL, {
-			method: 'POST',
-			headers: { Authorization: `bearer ${token}`, 'Content-Type': 'application/json' },
-			body: JSON.stringify({ query: `query {\n${fields}\n}` })
-		});
-		// A rejected token fails the whole sync rather than publishing zeroed stars
-		if (res.status === 401) throw new Error('GITHUB_TOKEN was rejected (401)');
-		if (!res.ok) throw new Error(`GitHub GraphQL error: ${res.status}`);
+		try {
+			const data = await withRetry(async () => {
+				const res = await deps.fetch(GITHUB_GRAPHQL, {
+					method: 'POST',
+					headers: { Authorization: `bearer ${token}`, 'Content-Type': 'application/json' },
+					body: JSON.stringify({ query: `query {\n${fields}\n}` })
+				});
+				// A rejected token fails the whole sync rather than publishing zeroed stars
+				if (res.status === 401) throw new FatalError('GITHUB_TOKEN was rejected (401)');
+				if (!res.ok) throw new Error(`GitHub GraphQL error: ${res.status}`);
+				// Missing repos come back as null alongside NOT_FOUND errors; that's expected
+				const body: { data?: Record<string, GraphQLRepo> } = await res.json();
+				if (!body.data) throw new Error('GitHub GraphQL returned no data');
+				return body.data;
+			}, deps);
 
-		// Missing repos come back as null alongside NOT_FOUND errors; that's expected
-		const body: {
-			data?: Record<
-				string,
-				{
-					stargazerCount: number;
-					pushedAt: string | null;
-					licenseInfo: { spdxId: string } | null;
-				} | null
-			>;
-		} = await res.json();
-		if (!body.data) throw new Error('GitHub GraphQL returned no data');
-
-		batch.forEach((key, j) => {
-			const repo = body.data![`r${j}`];
-			stats.set(
-				key,
-				repo
-					? {
-							github_stars: repo.stargazerCount,
-							github_license: repo.licenseInfo?.spdxId ?? null,
-							github_pushed_at: repo.pushedAt
-						}
-					: null
-			);
-		});
+			batch.forEach((key, j) => {
+				const repo = data[`r${j}`];
+				stats.set(
+					key,
+					repo
+						? {
+								github_stars: repo.stargazerCount,
+								github_license: repo.licenseInfo?.spdxId ?? null,
+								github_pushed_at: repo.pushedAt
+							}
+						: null
+				);
+			});
+		} catch (err) {
+			if (err instanceof FatalError) throw err;
+			failedBatches++;
+			log(`GitHub batch ${batches} failed, keeping previous stats: ${(err as Error).message}`);
+			for (const key of batch) stats.set(key, null);
+		}
 	}
 
+	if (batches > 0 && failedBatches === batches) {
+		throw new Error('GitHub GraphQL failed for every batch');
+	}
 	log(`GitHub: ${[...stats.values()].filter(Boolean).length}/${keys.length} repos resolved`);
 	return stats;
 }

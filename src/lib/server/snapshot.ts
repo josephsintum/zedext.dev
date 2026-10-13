@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import { createIndex, type SearchIndex } from '$lib/search/engine.js';
 import { fetchSnapshot, toRecord } from './sync.js';
@@ -17,9 +18,30 @@ export interface LoadedSnapshot {
 let current: (LoadedSnapshot & { expires: number }) | null = null;
 let pending: Promise<LoadedSnapshot> | null = null;
 
-/** The extension snapshot and its search index, cached in memory per server instance. */
+/**
+ * The extension snapshot and its search index, cached in memory per server instance.
+ * Once loaded, an expired copy is returned immediately while a refresh runs in the
+ * background, so no request waits on Blob after the first. Rejects only when nothing
+ * has ever loaded and both Blob and the Zed API fail.
+ */
 export function getSnapshot(): Promise<LoadedSnapshot> {
-	if (current && Date.now() < current.expires) return Promise.resolve(current);
+	if (current) {
+		if (Date.now() >= current.expires) refreshOnce().catch(() => {});
+		return Promise.resolve(current);
+	}
+	return refreshOnce();
+}
+
+/** For routes: like getSnapshot, but a total outage becomes an (uncached) 503. */
+export async function requireSnapshot(): Promise<LoadedSnapshot> {
+	try {
+		return await getSnapshot();
+	} catch {
+		throw error(503, 'Extension data is temporarily unavailable');
+	}
+}
+
+function refreshOnce(): Promise<LoadedSnapshot> {
 	pending ??= refresh().finally(() => {
 		pending = null;
 	});
@@ -29,18 +51,37 @@ export function getSnapshot(): Promise<LoadedSnapshot> {
 async function refresh(): Promise<LoadedSnapshot> {
 	try {
 		if (!env.SNAPSHOT_URL) throw new Error('SNAPSHOT_URL is not configured');
-		return keep(await fetchSnapshot(env.SNAPSHOT_URL), false, FRESH_MS);
-	} catch (err) {
-		console.error('Snapshot load failed:', err);
-		// Stale data beats no data; retry Blob again soon
-		if (current) {
-			current.expires = Date.now() + RETRY_MS;
+		const snapshot = await fetchSnapshot(env.SNAPSHOT_URL);
+		// Same sync as the copy we hold: keep the built index
+		if (current && !current.degraded && current.snapshot.generatedAt === snapshot.generatedAt) {
+			current.expires = Date.now() + FRESH_MS;
 			return current;
 		}
-		// Cold start with Blob unreachable: Zed's bulk list (no GitHub stats, max 1,000)
-		const extensions = (await getAllExtensions()).map((ext) => toRecord(ext, null));
-		return keep({ generatedAt: new Date().toISOString(), extensions }, true, RETRY_MS);
+		return keep(snapshot, false, FRESH_MS);
+	} catch (err) {
+		console.error('Snapshot load failed:', err);
+		// A real snapshot, even a stale one, beats the reduced fallback
+		if (current && !current.degraded) return retrySoon(current);
+		try {
+			return keep(await zedFallback(), true, RETRY_MS);
+		} catch (fallbackErr) {
+			console.error('Zed fallback failed:', fallbackErr);
+			if (current) return retrySoon(current);
+			throw fallbackErr;
+		}
 	}
+}
+
+/** Zed's bulk list: no GitHub stats and at most 1,000 entries, but enough to browse. */
+async function zedFallback(): Promise<Snapshot> {
+	const extensions = (await getAllExtensions()).map((ext) => toRecord(ext, null));
+	if (extensions.length === 0) throw new Error('Zed API returned no extensions');
+	return { generatedAt: new Date().toISOString(), extensions };
+}
+
+function retrySoon(loaded: LoadedSnapshot & { expires: number }): LoadedSnapshot {
+	loaded.expires = Date.now() + RETRY_MS;
+	return loaded;
 }
 
 function keep(snapshot: Snapshot, degraded: boolean, ttl: number): LoadedSnapshot {

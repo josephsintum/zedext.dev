@@ -1,19 +1,29 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getGitHubUser } from '$lib/server/github-api.js';
-import { getSnapshot } from '$lib/server/snapshot.js';
+import { requireSnapshot } from '$lib/server/snapshot.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
-	setHeaders({
-		'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-	});
-
 	const username = params.username.toLowerCase();
 
-	const [user, { snapshot }] = await Promise.all([getGitHubUser(username), getSnapshot()]);
+	const [user, { snapshot, degraded }] = await Promise.all([
+		getGitHubUser(username).catch((err) => {
+			// A GitHub failure isn't "author not found"
+			console.error(`GitHub user lookup failed for ${username}:`, err);
+			throw error(503, 'GitHub is temporarily unavailable');
+		}),
+		requireSnapshot()
+	]);
 
 	if (!user) throw error(404, `Author "${params.username}" not found`);
+
+	// Set after the data loads so errors aren't cached
+	setHeaders({
+		'cache-control': degraded
+			? 'public, s-maxage=60'
+			: 'public, s-maxage=3600, stale-while-revalidate=86400'
+	});
 
 	// Pick only the fields we need to avoid serializing the full GitHub response
 	const { login, name, avatar_url, html_url, bio, company, location } = user;

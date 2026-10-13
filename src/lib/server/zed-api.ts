@@ -7,7 +7,8 @@ const ONE_HOUR = 60 * 60 * 1000;
 export async function getAllExtensions(): Promise<ZedExtension[]> {
 	return getCached('zed:all-extensions', ONE_HOUR, async () => {
 		const res = await fetch(`${ZED_API}/extensions?max_schema_version=1`);
-		if (!res.ok) return [];
+		// Throw rather than return [] so a failure isn't cached as "no extensions"
+		if (!res.ok) throw new Error(`Zed API ${res.status}`);
 		const data: ZedExtensionResponse = await res.json();
 		return data.data ?? [];
 	});
@@ -19,7 +20,9 @@ export async function getExtensionWithVersions(id: string): Promise<{
 } | null> {
 	return getCached(`zed:ext:${id}`, ONE_HOUR, async () => {
 		const res = await fetch(`${ZED_API}/extensions/${id}`);
-		if (!res.ok) return null;
+		// An unknown id is 200 with empty data (→ null below); anything non-OK is a real failure,
+		// so throw instead of caching it as "not found"
+		if (!res.ok) throw new Error(`Zed API ${res.status} for ${id}`);
 
 		const data: ZedExtensionResponse = await res.json();
 		if (!data.data || data.data.length === 0) return null;

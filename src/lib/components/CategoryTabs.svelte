@@ -9,7 +9,7 @@
 		const params = currentSearchParams();
 		if (slug === 'all') params.delete('category');
 		else params.set('category', slug);
-		setSearchParams(params);
+		setSearchParams(params, { scroll: true });
 	}
 </script>
 

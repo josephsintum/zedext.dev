@@ -12,58 +12,48 @@ function headers(): Record<string, string> {
 	return h;
 }
 
+/**
+ * null only when GitHub says the thing doesn't exist (404), which is safe to cache.
+ * Any other failure (rate limit, 5xx, bad token, network) throws, so it isn't cached
+ * and callers can tell "no README" apart from "GitHub had a hiccup".
+ */
+async function fetchOrNull(url: string): Promise<Response | null> {
+	const res = await fetch(url, { headers: headers() });
+	if (res.status === 404) return null;
+	if (!res.ok) throw new Error(`GitHub ${res.status} for ${url}`);
+	return res;
+}
+
 export async function getRepoMetadata(owner: string, repo: string): Promise<GitHubRepo | null> {
 	return getCached(`gh:meta:${owner}/${repo}`, ONE_HOUR, async () => {
-		try {
-			const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, { headers: headers() });
-			if (!res.ok) return null;
-			return await res.json();
-		} catch {
-			return null;
-		}
+		const res = await fetchOrNull(`${GITHUB_API}/repos/${owner}/${repo}`);
+		return res ? await res.json() : null;
 	});
 }
 
 export async function getLanguageDocsMarkdown(langId: string): Promise<string | null> {
 	return getCached(`gh:lang-docs:${langId}`, TWENTY_FOUR_HOURS, async () => {
-		try {
-			const res = await fetch(
-				`https://raw.githubusercontent.com/zed-industries/zed/main/docs/src/languages/${langId}.md`,
-				{ headers: headers() }
-			);
-			if (!res.ok) return null;
-			const text = await res.text();
-			return text.replace(/^---\n[\s\S]*?\n---\n/, '');
-		} catch {
-			return null;
-		}
+		const res = await fetchOrNull(
+			`https://raw.githubusercontent.com/zed-industries/zed/main/docs/src/languages/${langId}.md`
+		);
+		if (!res) return null;
+		const text = await res.text();
+		return text.replace(/^---\n[\s\S]*?\n---\n/, '');
 	});
 }
 
 export async function getGitHubUser(username: string): Promise<GitHubUser | null> {
 	return getCached(`gh:user:${username}`, ONE_HOUR, async () => {
-		try {
-			const res = await fetch(`${GITHUB_API}/users/${username}`, { headers: headers() });
-			if (!res.ok) return null;
-			return await res.json();
-		} catch {
-			return null;
-		}
+		const res = await fetchOrNull(`${GITHUB_API}/users/${username}`);
+		return res ? await res.json() : null;
 	});
 }
 
 export async function getReadmeMarkdown(owner: string, repo: string): Promise<string | null> {
 	return getCached(`gh:readme:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
-		try {
-			const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, {
-				headers: headers()
-			});
-			if (!res.ok) return null;
-
-			const data: GitHubReadme = await res.json();
-			return Buffer.from(data.content, 'base64').toString('utf-8');
-		} catch {
-			return null;
-		}
+		const res = await fetchOrNull(`${GITHUB_API}/repos/${owner}/${repo}/readme`);
+		if (!res) return null;
+		const data: GitHubReadme = await res.json();
+		return Buffer.from(data.content, 'base64').toString('utf-8');
 	});
 }

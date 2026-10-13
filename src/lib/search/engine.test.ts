@@ -111,6 +111,25 @@ describe('searchIndex', () => {
 		expect(ids(r)).toEqual(['pyright-extra']);
 	});
 
+	it('keeps a name match above description matches when the description has a near-miss word', () => {
+		const idx = createIndex([
+			record({
+				id: 'catppuccin-theme',
+				name: 'Catppuccin Theme',
+				description: 'One of these pastel flavours',
+				download_count: 900_000
+			}),
+			record({ id: 'random-thing', name: 'Random Thing', description: 'A minimal theme' })
+		]);
+		expect(ids(searchIndex(idx, 'theme'))).toEqual(['catppuccin-theme', 'random-thing']);
+	});
+
+	it('ignores unknown or prototype sort keys', () => {
+		for (const sort of ['__proto__', 'valueOf', 'constructor', 'bogus']) {
+			expect(ids(searchIndex(index, '', { sort }))).toEqual(ids(searchIndex(index, '')));
+		}
+	});
+
 	it('returns no hits for nonsense', () => {
 		expect(searchIndex(index, 'zzzzqqq').nbHits).toBe(0);
 	});

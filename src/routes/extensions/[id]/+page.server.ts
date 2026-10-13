@@ -18,85 +18,113 @@ export interface DetailContent {
 	zedDocsHtml: string | null;
 	zedDocsUrl: string | null;
 	repoOwnerAvatar: string | null;
+	/** False when a GitHub request failed (as opposed to "no README"), so the page isn't cached long. */
+	complete: boolean;
 }
 
-export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }) => {
-	setHeaders({
-		// Fresh for a day (READMEs and stats change slowly; the snapshot syncs daily), then served
-		// stale for up to 30 days while refreshing in the background, so visitors rarely wait
-		'cache-control': 'public, s-maxage=86400, stale-while-revalidate=2592000'
-	});
+// Fresh for a day (READMEs and stats change slowly; the snapshot syncs daily), then served
+// stale for up to 30 days while refreshing in the background, so visitors rarely wait
+const COMPLETE_CACHE = 'public, s-maxage=86400, stale-while-revalidate=2592000';
+// Streamed pages send headers before GitHub answers, so a failed README could be cached;
+// a short fresh window bounds that, while stale-while-revalidate keeps visits instant
+const STREAMED_CACHE = 'public, s-maxage=600, stale-while-revalidate=2592000';
+const DEGRADED_CACHE = 'public, s-maxage=60';
 
+export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }) => {
 	const extensionRequest = getExtensionWithVersions(params.id);
 	// Handled when awaited below; this only stops an early rejection being reported as unhandled
 	extensionRequest.catch(() => {});
 
-	// The snapshot (in memory) already knows the repo, so GitHub work can start alongside Zed's
-	const known = (await getSnapshot()).index.byId.get(params.id);
-	const early = known ? loadContent(params.id, known.repository) : null;
+	// The snapshot usually knows the repo already, so GitHub work can start alongside Zed's.
+	// It's only a hint: never wait on it or fail because of it.
+	let started: { repository: string | null; promise: Promise<DetailContent> } | undefined;
+	const contentFor = (repository: string | null) => {
+		if (started?.repository !== repository) {
+			started = { repository, promise: loadContent(params.id, repository) };
+		}
+		return started.promise;
+	};
+	getSnapshot()
+		.then((s) => {
+			const known = s.index.byId.get(params.id);
+			if (known && !started) contentFor(known.repository);
+		})
+		.catch(() => {});
 
-	const extData = await extensionRequest;
+	let extData: Awaited<typeof extensionRequest>;
+	try {
+		extData = await extensionRequest;
+	} catch (err) {
+		console.error(`Zed API failed for ${params.id}:`, err);
+		throw error(503, 'Extension data is temporarily unavailable');
+	}
 	if (!extData) throw error(404, `Extension "${params.id}" not found`);
 
 	const { extension, versions } = extData;
 	const parsed = parseRepoUrl(extension.repository);
 	const isMonorepo = parsed?.owner === 'zed-industries' && parsed?.repo === 'zed';
 
-	const content =
-		early && known?.repository === extension.repository
-			? early
-			: loadContent(extension.id, extension.repository);
+	// Reuses the early request when the snapshot's repo URL matches; otherwise starts it now
+	const content = contentFor(extension.repository);
 
-	return {
+	const base = {
 		extension,
 		versions,
 		isMonorepo,
-		repoOwner: parsed?.owner ?? null,
-		// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
-		content: isDataRequest ? content : await content
+		repoOwner: parsed?.owner ?? null
 	};
+
+	// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
+	if (isDataRequest) {
+		setHeaders({ 'cache-control': STREAMED_CACHE });
+		return { ...base, content };
+	}
+
+	const resolved = await content;
+	setHeaders({ 'cache-control': resolved.complete ? COMPLETE_CACHE : DEGRADED_CACHE });
+	return { ...base, content: resolved };
 };
 
 /** Everything that comes from GitHub. Never rejects: failures render as "no README". */
 async function loadContent(id: string, repository: string | null): Promise<DetailContent> {
-	const empty: DetailContent = {
-		github: null,
-		readmeHtml: null,
-		zedDocsHtml: null,
-		zedDocsUrl: null,
-		repoOwnerAvatar: null
-	};
+	const parsed = parseRepoUrl(repository ?? '');
+	const isMonorepo = parsed?.owner === 'zed-industries' && parsed?.repo === 'zed';
+	const ownRepo = parsed && !isMonorepo ? parsed : null;
 
+	const [langDocs, repoMeta, readme, owner] = await Promise.allSettled([
+		getLanguageDocsMarkdown(id),
+		ownRepo ? getRepoMetadata(ownRepo.owner, ownRepo.repo) : null,
+		ownRepo ? getReadmeMarkdown(ownRepo.owner, ownRepo.repo) : null,
+		parsed ? getGitHubUser(parsed.owner) : null
+	]);
+	const value = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null);
+	let complete = [langDocs, repoMeta, readme, owner].every((r) => r.status === 'fulfilled');
+	if (!complete) console.error(`GitHub request failed for ${id}`);
+
+	const github = value(repoMeta);
+	let zedDocsHtml: string | null = null;
+	let readmeHtml: string | null = null;
 	try {
-		const parsed = parseRepoUrl(repository ?? '');
-		const isMonorepo = parsed?.owner === 'zed-industries' && parsed?.repo === 'zed';
-
-		const [langDocsMarkdown, repoMeta, readmeMarkdown, repoOwnerUser] = await Promise.all([
-			getLanguageDocsMarkdown(id),
-			parsed && !isMonorepo ? getRepoMetadata(parsed.owner, parsed.repo) : null,
-			parsed && !isMonorepo ? getReadmeMarkdown(parsed.owner, parsed.repo) : null,
-			parsed ? getGitHubUser(parsed.owner) : null
-		]);
-
-		const zedDocsHtml = langDocsMarkdown
-			? await renderMarkdown(langDocsMarkdown, 'zed-industries', 'zed', 'main')
-			: null;
-
-		let readmeHtml: string | null = null;
-		if (parsed && !isMonorepo && readmeMarkdown) {
-			const branch = repoMeta?.default_branch ?? 'main';
-			readmeHtml = await renderMarkdown(readmeMarkdown, parsed.owner, parsed.repo, branch);
+		const docsMarkdown = value(langDocs);
+		if (docsMarkdown) {
+			zedDocsHtml = await renderMarkdown(docsMarkdown, 'zed-industries', 'zed', 'main');
 		}
-
-		return {
-			github: parsed && !isMonorepo ? repoMeta : null,
-			readmeHtml,
-			zedDocsHtml,
-			zedDocsUrl: zedDocsHtml ? `https://zed.dev/docs/languages/${id}` : null,
-			repoOwnerAvatar: repoOwnerUser?.avatar_url ?? null
-		};
+		const readmeMarkdown = value(readme);
+		if (ownRepo && readmeMarkdown) {
+			const branch = github?.default_branch ?? 'main';
+			readmeHtml = await renderMarkdown(readmeMarkdown, ownRepo.owner, ownRepo.repo, branch);
+		}
 	} catch (err) {
-		console.error(`Failed to load GitHub content for ${id}:`, err);
-		return empty;
+		console.error(`Markdown render failed for ${id}:`, err);
+		complete = false;
 	}
+
+	return {
+		github,
+		readmeHtml,
+		zedDocsHtml,
+		zedDocsUrl: zedDocsHtml ? `https://zed.dev/docs/languages/${id}` : null,
+		repoOwnerAvatar: value(owner)?.avatar_url ?? null,
+		complete
+	};
 }

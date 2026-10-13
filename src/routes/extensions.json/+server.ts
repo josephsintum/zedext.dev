@@ -1,10 +1,10 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getSnapshot } from '$lib/server/snapshot.js';
+import { requireSnapshot } from '$lib/server/snapshot.js';
 
 /** The full snapshot, for client-side search. Same origin and CDN-cached. */
 export const GET: RequestHandler = async ({ url, setHeaders }) => {
-	const { snapshot, degraded } = await getSnapshot();
+	const { snapshot, degraded } = await requireSnapshot();
 
 	// ?v=<generatedAt> names one snapshot forever, so it can be cached for a year.
 	// Any other request (no version, or a version this instance doesn't hold) is cached briefly,

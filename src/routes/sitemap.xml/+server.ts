@@ -1,15 +1,18 @@
 import type { RequestHandler } from './$types';
-import { getSnapshot } from '$lib/server/snapshot.js';
+import { requireSnapshot } from '$lib/server/snapshot.js';
 
 const SITE = 'https://zedext.dev';
 
 export const GET: RequestHandler = async ({ setHeaders }) => {
+	const { snapshot, degraded } = await requireSnapshot();
+
+	// The fallback snapshot lists at most 1,000 extensions; don't let crawlers cache that for long
 	setHeaders({
 		'content-type': 'application/xml',
-		'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+		'cache-control': degraded
+			? 'public, s-maxage=300'
+			: 'public, s-maxage=3600, stale-while-revalidate=86400'
 	});
-
-	const { snapshot } = await getSnapshot();
 
 	const today = new Date().toISOString().split('T')[0];
 

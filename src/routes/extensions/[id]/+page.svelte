@@ -2,6 +2,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import ReadmeRenderer from '$lib/components/ReadmeRenderer.svelte';
 	import InstallButton from '$lib/components/InstallButton.svelte';
+	import type { DetailContent } from './+page.server.js';
 
 	let { data } = $props();
 	const extension = $derived(data.extension);
@@ -9,6 +10,20 @@
 	const isMonorepo = $derived(data.isMonorepo);
 	const repoOwner = $derived(data.repoOwner);
 	let activeTab = $state<'docs' | 'readme'>('docs');
+
+	// The sidebar stays mounted (keeping its own state) and fills in when streamed content
+	// arrives. Full page loads deliver content inline, so it's there during SSR too.
+	let streamed = $state<DetailContent | null>(null);
+	$effect(() => {
+		const pending = data.content;
+		streamed = null;
+		if (pending instanceof Promise) {
+			pending.then((c) => {
+				if (data.content === pending) streamed = c;
+			});
+		}
+	});
+	const content = $derived(data.content instanceof Promise ? streamed : data.content);
 </script>
 
 <svelte:head>
@@ -167,27 +182,15 @@
 
 		<!-- Sidebar -->
 		<div class="w-full shrink-0 lg:w-72 xl:w-80">
-			{#await data.content}
-				<Sidebar
-					{extension}
-					{versions}
-					github={null}
-					{isMonorepo}
-					zedDocsUrl={null}
-					{repoOwner}
-					repoOwnerAvatar={null}
-				/>
-			{:then { github, zedDocsUrl, repoOwnerAvatar }}
-				<Sidebar
-					{extension}
-					{versions}
-					{github}
-					{isMonorepo}
-					{zedDocsUrl}
-					{repoOwner}
-					{repoOwnerAvatar}
-				/>
-			{/await}
+			<Sidebar
+				{extension}
+				{versions}
+				github={content?.github ?? null}
+				{isMonorepo}
+				zedDocsUrl={content?.zedDocsUrl ?? null}
+				{repoOwner}
+				repoOwnerAvatar={content?.repoOwnerAvatar ?? null}
+			/>
 		</div>
 	</div>
 </div>

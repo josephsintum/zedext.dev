@@ -3,6 +3,7 @@
 	import {
 		currentSearchParams,
 		getIndex,
+		getIndexStatus,
 		loadIndex,
 		setSearchParams
 	} from '$lib/search/client.svelte.js';
@@ -46,11 +47,14 @@
 	const displayTotalHits = $derived(results.nbHits);
 	const hasMore = $derived(displayHits.length < displayTotalHits);
 	const remaining = $derived(displayTotalHits - displayHits.length);
-	const loading = $derived(navigating.to !== null);
-	const loadingMore = $derived(pages > 1 && !index);
+	// Only a search on this page dims the list, not navigating to an extension
+	const loading = $derived(navigating.to?.route.id === '/');
+	const loadingMore = $derived(pages > 1 && !index && getIndexStatus() === 'loading');
 
 	function loadMore() {
-		shown = { key: searchKey, pages: pages + 1 };
+		// Without the index, queue one extra page and load it; if loading fails the button
+		// re-enables and the next click retries
+		shown = { key: searchKey, pages: index ? pages + 1 : Math.max(pages, 2) };
 		loadIndex();
 	}
 
@@ -67,7 +71,7 @@
 		const next = currentSearchParams();
 		if (value === 'downloads') next.delete('sort');
 		else next.set('sort', value);
-		setSearchParams(next);
+		setSearchParams(next, { scroll: true });
 	}
 </script>
 
