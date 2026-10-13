@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { formatNumber } from '$lib/utils/format.js';
-	import { currentSearchParams, setSearchParams } from '$lib/search/client.svelte.js';
+	import { currentSearchParams, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
 
 	let {
 		value = '',
@@ -45,7 +45,7 @@
 >
 	<div
 		class="relative overflow-hidden rounded-xl border transition-all duration-200 motion-reduce:transition-none {focused
-			? 'border-[var(--color-accent)] shadow-lg shadow-[var(--color-accent)]/10'
+			? 'border-[var(--color-accent)] shadow-[var(--color-accent)]/10 shadow-lg'
 			: 'border-[var(--color-border)] shadow-sm'}"
 	>
 		<svg
@@ -71,7 +71,11 @@
 			{value}
 			oninput={handleInput}
 			onkeydown={handleKeydown}
-			onfocus={() => (focused = true)}
+			onfocus={() => {
+				focused = true;
+				// Start loading the search index as soon as someone looks like they'll search
+				loadIndex();
+			}}
 			onblur={() => (focused = false)}
 			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
 		/>

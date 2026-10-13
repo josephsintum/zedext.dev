@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { navigating } from '$app/state';
-	import { currentSearchParams, getIndex, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
+	import {
+		currentSearchParams,
+		getIndex,
+		loadIndex,
+		setSearchParams
+	} from '$lib/search/client.svelte.js';
 	import { searchIndex } from '$lib/search/engine.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import CategoryTabs from '$lib/components/CategoryTabs.svelte';
@@ -29,11 +34,6 @@
 	// Pages shown for the current search; resets when the search changes
 	let shown = $state({ key: '', pages: 1 });
 	const pages = $derived(shown.key === searchKey ? shown.pages : 1);
-
-	// Load the local index after first paint; until then the server renders results
-	$effect(() => {
-		loadIndex();
-	});
 
 	const index = $derived(getIndex());
 	const results = $derived(

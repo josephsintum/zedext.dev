@@ -5,9 +5,10 @@ import { createIndex, type SearchIndex } from './engine.js';
 import type { Snapshot } from '$lib/types.js';
 
 /**
- * Browser-side search. Until the index has loaded, search changes navigate
- * normally and the server renders results. Once loaded, they update the URL
- * shallowly and search runs locally.
+ * Browser-side search. The index loads on the first sign of search intent
+ * (focus, typing, tab, sort, show more), not on page load. Until it has loaded,
+ * search changes navigate normally and the server renders results. Once loaded,
+ * they update the URL shallowly and search runs locally.
  */
 
 let index = $state.raw<SearchIndex | null>(null);
@@ -19,7 +20,9 @@ export function getIndex(): SearchIndex | null {
 
 export function loadIndex(): Promise<void> {
 	if (!browser) return Promise.resolve();
-	loading ??= fetch('/extensions.json')
+	const version = page.data.snapshotVersion as string | undefined;
+	const url = version ? `/extensions.json?v=${encodeURIComponent(version)}` : '/extensions.json';
+	loading ??= fetch(url)
 		.then((res) => {
 			if (!res.ok) throw new Error(`Snapshot fetch failed: ${res.status}`);
 			return res.json() as Promise<Snapshot>;
@@ -44,5 +47,8 @@ export function setSearchParams(params: URLSearchParams): void {
 	const search = params.toString();
 	const url = search ? `?${search}` : page.url.pathname;
 	if (index) replaceState(url, { search });
-	else goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+	else {
+		goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+		loadIndex();
+	}
 }

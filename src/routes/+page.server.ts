@@ -11,8 +11,9 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	const category = url.searchParams.get('category') ?? 'all';
 	const sort = url.searchParams.get('sort') ?? 'downloads';
 
-	const { index } = await getSnapshot();
+	const { index, snapshot } = await getSnapshot();
 	const initialResults = searchIndex(index, query, { category, sort });
 
-	return { initialResults };
+	// Lets the browser fetch this exact snapshot from a long-cached, versioned URL
+	return { initialResults, snapshotVersion: snapshot.generatedAt };
 };
