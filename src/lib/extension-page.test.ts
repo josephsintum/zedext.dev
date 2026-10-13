@@ -12,6 +12,14 @@ describe('badgeFor', () => {
 		expect(badgeFor('https://github.com/catppuccin/zed')).toBeNull();
 		expect(badgeFor(null)).toBeNull();
 	});
+
+	it('only trusts the owner of a real github.com URL', () => {
+		// Repository URLs are set by extension authors, so a look-alike must not earn a badge
+		expect(badgeFor('https://evil.example/github.com/zed-industries/zed')).toBeNull();
+		expect(badgeFor('https://github.com.evil.example/zed-industries/zed')).toBeNull();
+		expect(badgeFor('https://gitlab.com/x/github.com/zed-extensions/java')).toBeNull();
+		expect(badgeFor('https://www.github.com/zed-extensions/java/')?.label).toBe('Zed org');
+	});
 });
 
 describe('firstReleased', () => {
