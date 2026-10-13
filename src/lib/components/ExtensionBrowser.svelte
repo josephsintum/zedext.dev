@@ -11,8 +11,6 @@
 	} from '$lib/search/client.svelte.js';
 	import { searchIndex } from '$lib/search/engine.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
-	import ThemeStrip from '$lib/components/ThemeStrip.svelte';
-	import IconStrip from '$lib/components/IconStrip.svelte';
 	import CategoryTabs from '$lib/components/CategoryTabs.svelte';
 	import ProvideTag from '$lib/components/ProvideTag.svelte';
 	import { formatNumber, timeAgo } from '$lib/utils/format.js';
@@ -205,16 +203,11 @@
 				{@const provides = filterProvides(hit.provides)}
 				{@const owner = parseRepoUrl(hit.repository ?? '')?.owner}
 				<div
-					class="group flex flex-col overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 transition-colors duration-150 {getHoverBorder(
+					class="group flex flex-col rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 transition-colors duration-150 {getHoverBorder(
 						hit
 					)}"
 				>
 					<a href="/extensions/{hit.id}" class="contents">
-						{#if hit.swatch}
-							<ThemeStrip colors={hit.swatch} />
-						{:else if hit.iconPreview}
-							<IconStrip id={hit.id} version={hit.version} />
-						{/if}
 						<!-- Name + downloads -->
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
