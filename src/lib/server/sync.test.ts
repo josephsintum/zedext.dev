@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
 	assertPublishable,
+	buildHistory,
 	buildRecords,
 	fetchGitHubStats,
 	fetchZedExtensions,
@@ -81,6 +82,22 @@ describe('buildRecords', () => {
 	it('leaves stats empty for a failed lookup with no history', () => {
 		const { records } = buildRecords(exts, new Map([['o/b', null]]), null);
 		expect(records[1].github_stars).toBe(0);
+	});
+});
+
+describe('buildHistory', () => {
+	it('records each extension download count under the snapshot UTC date', () => {
+		const { records } = buildRecords(
+			[
+				{ ...zed('a', ''), download_count: 5 },
+				{ ...zed('b', ''), download_count: 7 }
+			],
+			new Map(),
+			null
+		);
+		// 23:30 in UTC-8 is already the next day in UTC
+		const history = buildHistory({ generatedAt: '2026-10-14T07:30:00.000Z', extensions: records });
+		expect(history).toEqual({ date: '2026-10-14', downloads: { a: 5, b: 7 } });
 	});
 });
 

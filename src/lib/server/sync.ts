@@ -15,6 +15,8 @@ const GITHUB_GRAPHQL = 'https://api.github.com/graphql';
 const EXTENSIONS_TOML_URL =
 	'https://raw.githubusercontent.com/zed-industries/extensions/main/extensions.toml';
 export const SNAPSHOT_PATH = 'extensions.json';
+/** One small file per day of download counts, for trending and charts later. Never deleted. */
+export const HISTORY_PREFIX = 'history/';
 const ZED_CONCURRENCY = 10;
 const GITHUB_BATCH_SIZE = 100;
 /** Refuse to publish a snapshot that shrank by more than this. */
@@ -37,6 +39,7 @@ export interface SyncResult {
 	missingFetched: number;
 	githubRepos: number;
 	githubCarriedForward: number;
+	historySaved: boolean;
 }
 
 interface SyncConfig {
@@ -123,6 +126,19 @@ export function buildRecords(
 	});
 
 	return { records, carriedForward };
+}
+
+export interface DownloadHistory {
+	/** UTC day of the sync, YYYY-MM-DD */
+	date: string;
+	downloads: Record<string, number>;
+}
+
+export function buildHistory(snapshot: Snapshot): DownloadHistory {
+	return {
+		date: snapshot.generatedAt.slice(0, 10),
+		downloads: Object.fromEntries(snapshot.extensions.map((r) => [r.id, r.download_count]))
+	};
 }
 
 /** Throws instead of letting a broken run replace a good snapshot. */
@@ -357,6 +373,28 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		token: config.blobToken
 	});
 
+	// Lost days can't be backfilled, so retry; but a failure here mustn't undo the publish above.
+	// A second sync on the same day overwrites that day's file.
+	const history = buildHistory(snapshot);
+	let historySaved = true;
+	try {
+		await withRetry(
+			() =>
+				put(`${HISTORY_PREFIX}${history.date}.json`, JSON.stringify(history), {
+					access: 'public',
+					addRandomSuffix: false,
+					allowOverwrite: true,
+					contentType: 'application/json',
+					token: config.blobToken
+				}),
+			defaultDeps
+		);
+		log(`History saved for ${history.date}`);
+	} catch (err) {
+		historySaved = false;
+		log(`History write failed for ${history.date}: ${(err as Error).message}`);
+	}
+
 	const completedAt = new Date();
 	const elapsedSeconds = Number(((completedAt.getTime() - start.getTime()) / 1000).toFixed(1));
 	log(`=== Published ${records.length} extensions in ${elapsedSeconds}s → ${blob.url} ===`);
@@ -369,6 +407,7 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		total: records.length,
 		missingFetched: lookedUp,
 		githubRepos: keys.length,
-		githubCarriedForward: carriedForward
+		githubCarriedForward: carriedForward,
+		historySaved
 	};
 }
