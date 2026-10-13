@@ -6,14 +6,8 @@
 	let { data } = $props();
 	const extension = $derived(data.extension);
 	const versions = $derived(data.versions);
-	const github = $derived(data.github);
-	const readmeHtml = $derived(data.readmeHtml);
-	const zedDocsHtml = $derived(data.zedDocsHtml);
-	const zedDocsUrl = $derived(data.zedDocsUrl);
 	const isMonorepo = $derived(data.isMonorepo);
 	const repoOwner = $derived(data.repoOwner);
-	const repoOwnerAvatar = $derived(data.repoOwnerAvatar);
-	const hasBoth = $derived(zedDocsHtml && readmeHtml);
 	let activeTab = $state<'docs' | 'readme'>('docs');
 </script>
 
@@ -79,97 +73,121 @@
 	<div class="flex flex-col gap-8 lg:flex-row">
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
-			{#if hasBoth}
-				<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]" role="tablist">
-					<button
-						role="tab"
-						aria-selected={activeTab === 'docs'}
-						aria-controls="tabpanel-docs"
-						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
-							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
-							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
-						onclick={() => (activeTab = 'docs')}
+			{#await data.content}
+				<div
+					class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+					aria-busy="true"
+				>
+					<div class="h-5 w-1/3 rounded bg-[var(--color-surface-hover)]"></div>
+					<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
+					<div class="h-3 w-5/6 rounded bg-[var(--color-surface-hover)]"></div>
+					<div class="h-3 w-2/3 rounded bg-[var(--color-surface-hover)]"></div>
+				</div>
+			{:then { readmeHtml, zedDocsHtml }}
+				{#if zedDocsHtml && readmeHtml}
+					<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]" role="tablist">
+						<button
+							role="tab"
+							aria-selected={activeTab === 'docs'}
+							aria-controls="tabpanel-docs"
+							class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
+								? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
+								: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+							onclick={() => (activeTab = 'docs')}
+						>
+							Zed Docs
+						</button>
+						<button
+							role="tab"
+							aria-selected={activeTab === 'readme'}
+							aria-controls="tabpanel-readme"
+							class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
+								? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
+								: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+							onclick={() => (activeTab = 'readme')}
+						>
+							README
+						</button>
+					</div>
+					<div
+						id="tabpanel-{activeTab}"
+						role="tabpanel"
+						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
 					>
-						Zed Docs
-					</button>
-					<button
-						role="tab"
-						aria-selected={activeTab === 'readme'}
-						aria-controls="tabpanel-readme"
-						class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
-							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
-							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
-						onclick={() => (activeTab = 'readme')}
-					>
-						README
-					</button>
-				</div>
-				<div
-					id="tabpanel-{activeTab}"
-					role="tabpanel"
-					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-				>
-					{#if activeTab === 'docs'}
-						<ReadmeRenderer html={zedDocsHtml!} />
-					{:else}
-						<ReadmeRenderer html={readmeHtml!} />
-					{/if}
-				</div>
-			{:else if zedDocsHtml}
-				<div
-					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-				>
-					<ReadmeRenderer html={zedDocsHtml} />
-				</div>
-			{:else if readmeHtml}
-				<div
-					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-				>
-					<ReadmeRenderer html={readmeHtml} />
-				</div>
-			{:else}
-				<div
-					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 text-center"
-				>
-					{#if isMonorepo}
-						<p class="text-[var(--color-text-secondary)]">
-							This extension is maintained as part of the
-							<a
-								href="https://github.com/zed-industries/zed"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="font-medium text-[var(--color-accent)] hover:underline"
-								>core Zed repository</a
-							>.
-						</p>
-					{:else}
-						<p class="text-[var(--color-text-tertiary)]">No README available</p>
-						{#if extension.repository}
-							<a
-								href={extension.repository}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="mt-2 inline-block text-[13px] font-medium text-[var(--color-accent)] hover:underline"
-							>
-								View on GitHub
-							</a>
+						{#if activeTab === 'docs'}
+							<ReadmeRenderer html={zedDocsHtml} />
+						{:else}
+							<ReadmeRenderer html={readmeHtml} />
 						{/if}
-					{/if}
-				</div>
-			{/if}
+					</div>
+				{:else if zedDocsHtml}
+					<div
+						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+					>
+						<ReadmeRenderer html={zedDocsHtml} />
+					</div>
+				{:else if readmeHtml}
+					<div
+						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+					>
+						<ReadmeRenderer html={readmeHtml} />
+					</div>
+				{:else}
+					<div
+						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 text-center"
+					>
+						{#if isMonorepo}
+							<p class="text-[var(--color-text-secondary)]">
+								This extension is maintained as part of the
+								<a
+									href="https://github.com/zed-industries/zed"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="font-medium text-[var(--color-accent)] hover:underline"
+									>core Zed repository</a
+								>.
+							</p>
+						{:else}
+							<p class="text-[var(--color-text-tertiary)]">No README available</p>
+							{#if extension.repository}
+								<a
+									href={extension.repository}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="mt-2 inline-block text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+								>
+									View on GitHub
+								</a>
+							{/if}
+						{/if}
+					</div>
+				{/if}
+			{/await}
 		</div>
 
 		<!-- Sidebar -->
 		<div class="w-full shrink-0 lg:w-72 xl:w-80">
-			<Sidebar
-				{extension}
-				{versions}
-				{github}
-				{isMonorepo}
-				{zedDocsUrl}
-				{repoOwner}
-				{repoOwnerAvatar}
-			/>
+			{#await data.content}
+				<Sidebar
+					{extension}
+					{versions}
+					github={null}
+					{isMonorepo}
+					zedDocsUrl={null}
+					{repoOwner}
+					repoOwnerAvatar={null}
+				/>
+			{:then { github, zedDocsUrl, repoOwnerAvatar }}
+				<Sidebar
+					{extension}
+					{versions}
+					{github}
+					{isMonorepo}
+					{zedDocsUrl}
+					{repoOwner}
+					{repoOwnerAvatar}
+				/>
+			{/await}
 		</div>
 	</div>
 </div>
