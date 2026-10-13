@@ -9,6 +9,18 @@ import { parse as parseToml } from 'smol-toml';
 import { parseRepoUrl } from '../utils/parse-repo-url.js';
 import { parseAuthorNames } from '../utils/parse-author.js';
 import type { ExtensionRecord, Snapshot, ZedExtension, ZedExtensionResponse } from '../types.js';
+import type { PreviewBundle } from '../theme-preview.js';
+import { applyPreviews, buildPreviews, PREVIEWS_PATH } from './previews-sync.js';
+import {
+	defaultDeps,
+	FatalError,
+	isTransient,
+	mapConcurrent,
+	withRetry,
+	type NetDeps
+} from './net.js';
+
+export type { NetDeps } from './net.js';
 
 const ZED_API = 'https://api.zed.dev';
 const GITHUB_GRAPHQL = 'https://api.github.com/graphql';
@@ -40,12 +52,17 @@ export interface SyncResult {
 	githubRepos: number;
 	githubCarriedForward: number;
 	historySaved: boolean;
+	previewsDownloaded: number;
+	previewsFailed: number;
+	previewsPending: number;
+	previewsSaved: boolean;
 }
 
 interface SyncConfig {
 	githubToken: string;
 	blobToken: string;
 	snapshotUrl?: string;
+	previewLimit: number;
 }
 
 let activeSync: Promise<SyncResult> | null = null;
@@ -55,7 +72,12 @@ function getSyncConfig(env: NodeJS.ProcessEnv): SyncConfig {
 	const blobToken = env.BLOB_READ_WRITE_TOKEN;
 	if (!githubToken) throw new Error('Missing GITHUB_TOKEN (GitHub GraphQL requires a token)');
 	if (!blobToken) throw new Error('Missing BLOB_READ_WRITE_TOKEN');
-	return { githubToken, blobToken, snapshotUrl: env.SNAPSHOT_URL || undefined };
+	return {
+		githubToken,
+		blobToken,
+		snapshotUrl: env.SNAPSHOT_URL || undefined,
+		previewLimit: Number(env.PREVIEW_DOWNLOAD_LIMIT) || 150
+	};
 }
 
 // --- Shared with the runtime loader ---
@@ -153,57 +175,12 @@ export function assertPublishable(records: ExtensionRecord[], previous: Snapshot
 
 // --- Network steps ---
 
-async function mapConcurrent<T, R>(
-	items: T[],
-	limit: number,
-	fn: (item: T) => Promise<R>
-): Promise<R[]> {
-	const results: R[] = [];
-	let next = 0;
-	const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-		while (next < items.length) {
-			const i = next++;
-			results[i] = await fn(items[i]);
-		}
-	});
-	await Promise.all(workers);
-	return results;
-}
-
 async function fetchRegistryIds(log: LogFn): Promise<string[]> {
 	const res = await fetch(EXTENSIONS_TOML_URL);
 	if (!res.ok) throw new Error(`Failed to fetch extensions.toml: ${res.status}`);
 	const ids = Object.keys(parseToml(await res.text()));
 	log(`Registry: ${ids.length} extensions in extensions.toml`);
 	return ids;
-}
-
-/** Network access, injectable so the retry and failure handling can be tested. */
-export interface NetDeps {
-	fetch: typeof fetch;
-	sleep: (ms: number) => Promise<void>;
-}
-
-const defaultDeps: NetDeps = {
-	fetch: (input, init) => fetch(input, init),
-	sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-};
-
-/** Not worth retrying (e.g. a rejected token): fail the sync straight away. */
-class FatalError extends Error {}
-
-const isTransient = (status: number) => status === 429 || status >= 500;
-
-/** Up to 3 attempts with 0.5s / 1s backoff. */
-async function withRetry<T>(fn: () => Promise<T>, deps: NetDeps): Promise<T> {
-	for (let attempt = 1; ; attempt++) {
-		try {
-			return await fn();
-		} catch (err) {
-			if (err instanceof FatalError || attempt >= 3) throw err;
-			await deps.sleep(500 * 2 ** (attempt - 1));
-		}
-	}
 }
 
 /** Fail the sync rather than publish a snapshot missing more than this share of lookups. */
@@ -360,6 +337,18 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 	const github = await fetchGitHubStats(keys, config.githubToken, log);
 
 	const { records, carriedForward } = buildRecords(extensions, github, previous);
+
+	// Theme previews: reuse last run's bundle, download only what changed
+	const previousPreviews = config.snapshotUrl
+		? await fetch(new URL(PREVIEWS_PATH, config.snapshotUrl))
+				.then((res) => (res.ok ? (res.json() as Promise<PreviewBundle>) : null))
+				.catch(() => null)
+		: null;
+	const previews = await buildPreviews(records, previousPreviews, {
+		limit: config.previewLimit,
+		log
+	});
+	applyPreviews(records, previews.bundle);
 	assertPublishable(records, previous);
 
 	const snapshot: Snapshot = { generatedAt: new Date().toISOString(), extensions: records };
@@ -395,6 +384,25 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		log(`History write failed for ${history.date}: ${(err as Error).message}`);
 	}
 
+	let previewsSaved = true;
+	try {
+		await withRetry(
+			() =>
+				put(PREVIEWS_PATH, JSON.stringify(previews.bundle), {
+					access: 'public',
+					addRandomSuffix: false,
+					allowOverwrite: true,
+					contentType: 'application/json',
+					cacheControlMaxAge: 300,
+					token: config.blobToken
+				}),
+			defaultDeps
+		);
+	} catch (err) {
+		previewsSaved = false;
+		log(`Theme previews write failed: ${(err as Error).message}`);
+	}
+
 	const completedAt = new Date();
 	const elapsedSeconds = Number(((completedAt.getTime() - start.getTime()) / 1000).toFixed(1));
 	log(`=== Published ${records.length} extensions in ${elapsedSeconds}s → ${blob.url} ===`);
@@ -408,6 +416,10 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		missingFetched: lookedUp,
 		githubRepos: keys.length,
 		githubCarriedForward: carriedForward,
-		historySaved
+		historySaved,
+		previewsDownloaded: previews.downloaded,
+		previewsFailed: previews.failed,
+		previewsPending: previews.pending,
+		previewsSaved
 	};
 }

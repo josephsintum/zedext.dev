@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib';
 export function tarGz(
 	files: Record<string, string | Uint8Array>,
 	{ longNames = false }: { longNames?: boolean } = {}
-): Uint8Array {
+): Uint8Array<ArrayBuffer> {
 	const enc = new TextEncoder();
 	const blocks: Uint8Array[] = [];
 	const header = (name: string, size: number, type: string) => {
