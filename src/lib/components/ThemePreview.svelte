@@ -105,15 +105,10 @@
 						<button
 							aria-pressed={current === v}
 							onclick={() => (picked = i)}
-							class="flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] transition-colors {current ===
-							v
+							class="rounded-full border px-3 py-1 text-[12px] transition-colors {current === v
 								? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'
 								: 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]'}"
 						>
-							<span
-								class="h-2.5 w-2.5 rounded-full border border-black/10"
-								style:background-color={v.colors.bg}
-							></span>
 							{v.name}
 						</button>
 					{/each}
