@@ -34,6 +34,8 @@ export const SNAPSHOT_PATH = 'extensions.json';
 /** One small file per day of download counts, for trending and charts later. Never deleted. */
 export const HISTORY_PREFIX = 'history/';
 const ZED_CONCURRENCY = 10;
+/** First release date lookups per sync, so a slow Zed API can't push the sync past its time limit */
+const FIRST_PUBLISHED_LIMIT = 300;
 const GITHUB_BATCH_SIZE = 100;
 /** Refuse to publish a snapshot that shrank by more than this. */
 const MIN_RETAINED_RATIO = 0.9;
@@ -173,6 +175,23 @@ export function buildHistory(snapshot: Snapshot): DownloadHistory {
 		date: snapshot.generatedAt.slice(0, 10),
 		downloads: Object.fromEntries(snapshot.extensions.map((r) => [r.id, r.download_count]))
 	};
+}
+
+/**
+ * Extensions still without a first release date, up to `limit`. Dates never change, so
+ * each one is looked up once; the cap spreads the initial backfill over a few syncs.
+ */
+export function idsNeedingFirstPublished(
+	extensions: ZedExtension[],
+	firstPublished: Map<string, string>,
+	previous: Snapshot | null,
+	limit: number
+): string[] {
+	const known = new Set(previous?.extensions.filter((r) => r.first_published_at).map((r) => r.id));
+	return extensions
+		.map((e) => e.id)
+		.filter((id) => !firstPublished.has(id) && !known.has(id))
+		.slice(0, limit);
 }
 
 /** Throws instead of letting a broken run replace a good snapshot. */
@@ -377,11 +396,12 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 
 	const ids = await fetchRegistryIds(log);
 	const { extensions, lookedUp, firstPublished } = await fetchZedExtensions(ids, log);
-	// Release dates never change, so each extension is only looked up once
-	const prevFirst = new Map(previous?.extensions.map((r) => [r.id, r.first_published_at]));
-	const needFirst = extensions
-		.map((e) => e.id)
-		.filter((id) => !firstPublished.has(id) && !prevFirst.get(id));
+	const needFirst = idsNeedingFirstPublished(
+		extensions,
+		firstPublished,
+		previous,
+		FIRST_PUBLISHED_LIMIT
+	);
 	for (const [id, date] of await fetchFirstPublished(needFirst, log)) firstPublished.set(id, date);
 
 	const keys = [...new Set(extensions.map((e) => repoKey(e.repository)).filter((k) => k !== null))];

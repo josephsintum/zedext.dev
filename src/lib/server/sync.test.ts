@@ -6,6 +6,7 @@ import {
 	fetchFirstPublished,
 	fetchGitHubStats,
 	fetchZedExtensions,
+	idsNeedingFirstPublished,
 	repoKey,
 	type GitHubStats
 } from './sync.js';
@@ -233,6 +234,21 @@ describe('fetchZedExtensions', () => {
 			url.includes('max_schema_version') ? bulk() : new Response('', { status: 503 })
 		);
 		await expect(fetchZedExtensions(ids, silent, d)).rejects.toThrow(/lookups failed/);
+	});
+});
+
+describe('idsNeedingFirstPublished', () => {
+	const exts = ['a', 'b', 'c', 'd'].map((id) => zed(id, ''));
+
+	it('skips ids dated this run or in the previous snapshot, up to a per-run cap', () => {
+		const previous = snapshotOf([
+			{ id: 'b', first_published_at: '2025-01-01T00:00:00Z' },
+			{ id: 'c', first_published_at: null }
+		]);
+		const thisRun = new Map([['a', '2024-01-01T00:00:00Z']]);
+		expect(idsNeedingFirstPublished(exts, thisRun, previous, 10)).toEqual(['c', 'd']);
+		// The cap keeps a first run's backfill bounded; later syncs pick up the rest
+		expect(idsNeedingFirstPublished(exts, thisRun, previous, 1)).toEqual(['c']);
 	});
 });
 
