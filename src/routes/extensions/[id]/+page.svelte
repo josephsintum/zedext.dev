@@ -269,12 +269,6 @@
 					{/if}
 				</div>
 			{/if}
-			<a
-				href="/extensions/{extension.id}/alternatives"
-				class="mt-4 inline-block text-[13px] text-[var(--color-accent)] hover:underline"
-			>
-				Alternatives to {extension.name} →
-			</a>
 		</div>
 
 		<!-- Sidebar -->

@@ -3,7 +3,6 @@ import { requireSnapshot } from '$lib/server/snapshot.js';
 import { CATEGORY_PAGES } from '$lib/categories.js';
 import { LANGUAGE_HUBS } from '$lib/languages.js';
 import { COLLECTIONS } from '$lib/collections.js';
-import { ALTERNATIVES_MIN_DOWNLOADS } from '$lib/search/similar.js';
 
 const SITE = 'https://zedext.dev';
 
@@ -42,13 +41,6 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 			changefreq: 'weekly',
 			priority: '0.7'
 		})),
-		...snapshot.extensions
-			.filter((ext) => ext.download_count >= ALTERNATIVES_MIN_DOWNLOADS)
-			.map((ext) => ({
-				loc: `${SITE}/extensions/${ext.id}/alternatives`,
-				changefreq: 'weekly',
-				priority: '0.5'
-			})),
 		...snapshot.extensions.map((ext) => ({
 			loc: `${SITE}/extensions/${ext.id}`,
 			changefreq: 'weekly' as const,
