@@ -37,7 +37,7 @@
 	{/if}
 
 	<div
-		class="rounded-lg border border-[var(--color-border)] p-4 font-mono text-[13px] {v.appearance ===
+		class="font-code rounded-lg border border-[var(--color-border)] p-4 text-[13px] {v.appearance ===
 		'dark'
 			? 'bg-zinc-900 text-zinc-200'
 			: 'bg-white text-zinc-800'}"

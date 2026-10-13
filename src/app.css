@@ -57,9 +57,34 @@
 	font-display: swap;
 }
 
+/*
+ * Lilex: the font Zed uses for code (".ZedMono" maps to Lilex in Zed). Served by Fontsource on
+ * jsDelivr like Geist, pinned so previews don't change unannounced. Browsers only download a
+ * face when text uses it, so only pages with a theme preview fetch these (~20 KB each).
+ */
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-400-normal.woff2')
+		format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-400-italic.woff2')
+		format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
 @theme {
 	--font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Geist Mono', ui-monospace, monospace;
+	/* Code in theme previews; falls back to Geist Mono (already loaded), then the system's */
+	--font-code: 'Lilex', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	--color-accent: oklch(0.53 0.21 260);
 	--color-accent-soft: oklch(0.9 0.06 260);

@@ -92,11 +92,14 @@
 	<div class="flex flex-col gap-8 lg:flex-row">
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
-			{#if data.themePreview?.length}
-				<ThemePreview variants={data.themePreview} />
-			{:else if data.iconPreview?.length}
-				<IconThemePreview variants={data.iconPreview} />
-			{/if}
+			<!-- Keyed so light/dark and variant choices reset when moving between themes -->
+			{#key extension.id}
+				{#if data.themePreview?.length}
+					<ThemePreview variants={data.themePreview} />
+				{:else if data.iconPreview?.length}
+					<IconThemePreview variants={data.iconPreview} />
+				{/if}
+			{/key}
 			{#await data.content}
 				<div
 					class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
