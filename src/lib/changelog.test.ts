@@ -26,6 +26,26 @@ describe('trimChangelog', () => {
 		expect(trimChangelog(changelog(3), 20)).toBe(changelog(3));
 	});
 
+	it('keeps Keep a Changelog link definitions from the part it cuts', () => {
+		const md = [
+			'# Changelog',
+			'## [3.0.0] - 2026-03-01',
+			'- c',
+			'## [2.0.0] - 2026-02-01',
+			'- b',
+			'## [1.0.0] - 2026-01-01',
+			'- a',
+			'[3.0.0]: https://github.com/o/r/compare/v2.0.0...v3.0.0',
+			'[2.0.0]: https://github.com/o/r/compare/v1.0.0...v2.0.0'
+		].join('\n\n');
+		const out = trimChangelog(md, 2);
+		expect(out).not.toContain('## [1.0.0]');
+		expect(out).toContain('[3.0.0]: https://github.com/o/r/compare/v2.0.0...v3.0.0');
+		expect(out).toContain('[2.0.0]: https://github.com/o/r/compare/v1.0.0...v2.0.0');
+		// After a blank line: a definition can't interrupt the list item above it
+		expect(out).toContain('- b\n\n[3.0.0]:');
+	});
+
 	it('caps a changelog with no entry structure by size', () => {
 		const prose = 'word '.repeat(50_000); // 250,000 characters, no headings
 		expect(trimChangelog(prose).length).toBeLessThanOrEqual(100_000);

@@ -26,7 +26,7 @@
 	// Fetched on first open, once per extension; a failure can be retried by reopening
 	let changelog = $state<{
 		id: string;
-		status: 'loading' | 'ready' | 'error';
+		status: 'loading' | 'ready' | 'none' | 'error';
 		html?: string;
 		url?: string;
 	} | null>(null);
@@ -35,6 +35,11 @@
 		changelog = { id, status: 'loading' };
 		try {
 			const res = await fetch(`/extensions/${encodeURIComponent(id)}/changelog`);
+			// 404: the changelog went away since the sync saw it; retrying won't help
+			if (res.status === 404) {
+				if (changelog?.id === id) changelog = { id, status: 'none' };
+				return;
+			}
 			if (!res.ok) throw new Error(String(res.status));
 			const body: { html: string; url: string } = await res.json();
 			if (changelog?.id === id) changelog = { id, status: 'ready', ...body };
@@ -159,7 +164,8 @@
 						role="tab"
 						aria-selected={pageTab === t.id}
 						aria-controls="page-tab-{t.id}"
-						class="-mb-px px-4 py-2 text-[13px] font-medium transition-colors {pageTab === t.id
+						class="-mb-px px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
+						t.id
 							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
 							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
 						onclick={() => choose(t.id)}
@@ -289,6 +295,10 @@
 						>
 							Full changelog on GitHub →
 						</a>
+					{:else if changelog?.id === extension.id && changelog.status === 'none'}
+						<p class="text-[13px] text-[var(--color-text-tertiary)]">
+							This extension doesn't have a changelog yet.
+						</p>
 					{:else if changelog?.id === extension.id && changelog.status === 'error'}
 						<p class="text-[13px] text-[var(--color-text-tertiary)]">
 							Couldn't load the changelog right now.

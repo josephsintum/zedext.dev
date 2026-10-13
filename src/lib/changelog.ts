@@ -9,6 +9,7 @@ import { formatDate } from './utils/format.js';
 export const MAX_CHANGELOG_ENTRIES = 20;
 /** Some changelogs run to hundreds of KB; the page shows the start and links to the rest */
 const MAX_CHANGELOG_CHARS = 100_000;
+const LINK_DEFINITION = /^\[[^\]]+\]:\s*\S+/;
 
 /** Checked in this order; together they cover every changelog file found in Zed extension repos */
 export const CHANGELOG_FILES = ['CHANGELOG.md', 'changelog.md'];
@@ -38,7 +39,13 @@ export function trimChangelog(markdown: string, maxEntries = MAX_CHANGELOG_ENTRI
 	if (level !== undefined) {
 		const entries = headings.filter((h) => h.level === level);
 		if (entries.length > maxEntries) {
-			out = lines.slice(0, entries[maxEntries].line).join('\n').trimEnd();
+			const cut = entries[maxEntries].line;
+			// Keep a Changelog puts "[1.2.0]: <url>" at the bottom; without them the
+			// kept headings would show literal brackets
+			const refs = lines.slice(cut).filter((l) => LINK_DEFINITION.test(l));
+			const kept = lines.slice(0, cut).join('\n').trimEnd();
+			// A blank line first: a definition can't interrupt a paragraph or list item
+			out = refs.length > 0 ? `${kept}\n\n${refs.join('\n')}` : kept;
 		}
 	}
 	if (out.length > MAX_CHANGELOG_CHARS) {
