@@ -2,6 +2,8 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import ReadmeRenderer from '$lib/components/ReadmeRenderer.svelte';
 	import InstallButton from '$lib/components/InstallButton.svelte';
+	import ThemePreview from '$lib/components/ThemePreview.svelte';
+	import IconThemePreview from '$lib/components/IconThemePreview.svelte';
 	import type { DetailContent } from './+page.server.js';
 
 	let { data } = $props();
@@ -88,6 +90,11 @@
 	<div class="flex flex-col gap-8 lg:flex-row">
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
+			{#if data.themePreview?.length}
+				<ThemePreview variants={data.themePreview} />
+			{:else if data.iconPreview?.length}
+				<IconThemePreview variants={data.iconPreview} />
+			{/if}
 			{#await data.content}
 				<div
 					class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
