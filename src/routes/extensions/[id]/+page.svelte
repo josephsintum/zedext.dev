@@ -45,7 +45,9 @@
 	/>
 	<meta
 		property="og:image"
-		content={`https://zedext.dev/og?title=${encodeURIComponent(extension.name)}&description=${encodeURIComponent(extension.description ?? `${extension.name} extension for the Zed editor`)}&type=extension`}
+		content={data.themePreview?.length
+			? `https://zedext.dev/og?type=theme&id=${encodeURIComponent(extension.id)}&title=${encodeURIComponent(extension.name)}`
+			: `https://zedext.dev/og?title=${encodeURIComponent(extension.name)}&description=${encodeURIComponent(extension.description ?? `${extension.name} extension for the Zed editor`)}&type=extension`}
 	/>
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
