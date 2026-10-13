@@ -1,13 +1,19 @@
 import { gunzipSync } from 'node:zlib';
 
 const decoder = new TextDecoder();
+/** Real archives decompress to under ~10 MB (the largest icon themes); this caps a malicious one. */
+const MAX_TAR_BYTES = 64 * 1024 * 1024;
 
 /**
  * Regular files in a .tar.gz, keyed by path without a leading "./". Handles ustar names
  * (with prefix) and GNU long names, which is all Zed's extension archives use.
  */
-export function readTarGz(data: Uint8Array): Map<string, Uint8Array> {
-	const tar = gunzipSync(data);
+export function readTarGz(
+	data: Uint8Array,
+	{ maxBytes = MAX_TAR_BYTES }: { maxBytes?: number } = {}
+): Map<string, Uint8Array> {
+	// Throws past maxBytes instead of inflating an archive bomb into memory
+	const tar = gunzipSync(data, { maxOutputLength: maxBytes });
 	const files = new Map<string, Uint8Array>();
 	let offset = 0;
 	let longName: string | null = null;
@@ -22,6 +28,8 @@ export function readTarGz(data: Uint8Array): Map<string, Uint8Array> {
 		};
 
 		const size = parseInt(field(124, 12).trim() || '0', 8);
+		// A negative or garbage size would stop the offset advancing and loop forever
+		if (!Number.isFinite(size) || size < 0) throw new Error('Corrupt tar header');
 		const type = field(156, 1);
 		const body = tar.subarray(offset + 512, offset + 512 + size);
 		offset += 512 + Math.ceil(size / 512) * 512;
