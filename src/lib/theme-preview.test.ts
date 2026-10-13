@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	FILE_SAMPLES,
+	fontStyleOf,
 	parseIconThemeFile,
 	parseJsonLenient,
 	parseThemeFile,
@@ -138,6 +139,46 @@ describe('parseIconThemeFile', () => {
 
 	it('keeps at most maxVariants variants', () => {
 		expect(parseIconThemeFile(doc(['A', 'B', 'C'].map(variant)), files, 2)).toHaveLength(2);
+	});
+});
+
+describe('font styles', () => {
+	const styled = (syntax: Record<string, unknown>) =>
+		JSON.stringify({
+			themes: [
+				{
+					name: 'S',
+					appearance: 'dark',
+					style: { ...fullStyle, syntax: { ...fullStyle.syntax, ...syntax } }
+				}
+			]
+		});
+
+	it('reads italic and bold for the roles the preview draws', () => {
+		const [v] = parseThemeFile(
+			styled({
+				comment: { color: '#6c7086', font_style: 'italic' },
+				keyword: { color: '#cba6f7', font_style: 'italic', font_weight: 700 },
+				type: { color: '#f9e2af', font_weight: 'bold' },
+				punctuation: { color: '#94e2d5', font_weight: '800' },
+				string: { color: '#a6e3a1', font_weight: 400 }
+			})
+		);
+		expect(v.italic?.sort()).toEqual(['comment', 'keyword']);
+		expect(v.bold?.sort()).toEqual(['keyword', 'punct', 'type']);
+	});
+
+	it('stores nothing for a theme without styles, so comments are not forced italic', () => {
+		const [v] = parseThemeFile(theme(fullStyle));
+		expect(v.italic).toBeUndefined();
+		expect(v.bold).toBeUndefined();
+		expect(fontStyleOf(v, 'comment')).toEqual({ italic: false, bold: false });
+	});
+
+	it('answers per role, including roles a theme never styles', () => {
+		const [v] = parseThemeFile(styled({ comment: { color: '#6c7086', font_style: 'italic' } }));
+		expect(fontStyleOf(v, 'comment')).toEqual({ italic: true, bold: false });
+		expect(fontStyleOf(v, 'fg')).toEqual({ italic: false, bold: false });
 	});
 });
 

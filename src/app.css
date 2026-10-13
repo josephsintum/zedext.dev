@@ -80,6 +80,25 @@
 	font-display: swap;
 }
 
+/* Bold faces: only fetched for themes that draw some tokens in bold */
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-700-normal.woff2')
+		format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-700-italic.woff2')
+		format('woff2');
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
+}
+
 @theme {
 	--font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Geist Mono', ui-monospace, monospace;

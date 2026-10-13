@@ -23,7 +23,7 @@ const DOWNLOAD_CONCURRENCY = 8;
 /** A 1 MB archive takes ~1.4 s; a stalled connection must not eat the whole cron. */
 const DOWNLOAD_TIMEOUT_MS = 15_000;
 /** Bump when parsing changes: entries from older bundles are then re-downloaded. */
-export const PREVIEW_FORMAT = 2;
+export const PREVIEW_FORMAT = 3;
 /** Refuse to publish a bundle that lost more than this share of the previous themes. */
 const MIN_RETAINED_RATIO = 0.9;
 

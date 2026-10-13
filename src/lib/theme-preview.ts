@@ -20,10 +20,24 @@ export interface ThemeColors {
 	variable: string;
 }
 
+/** The syntax roles the preview draws, keyed as in ThemeColors */
+export type StyledRole =
+	| 'comment'
+	| 'keyword'
+	| 'function'
+	| 'type'
+	| 'variable'
+	| 'string'
+	| 'number'
+	| 'punct';
+
 export interface ThemeVariant {
 	name: string;
 	appearance: 'light' | 'dark';
 	colors: ThemeColors;
+	/** Roles the theme draws in italic / bold; omitted when none (most themes) */
+	italic?: StyledRole[];
+	bold?: StyledRole[];
 }
 
 export interface IconFile {
@@ -81,6 +95,26 @@ function opaque(color: string, appearance: 'light' | 'dark'): string {
 	return `#${channel(0)}${channel(2)}${channel(4)}`;
 }
 
+/** Theme JSON syntax key for each role (only punctuation differs) */
+const SYNTAX_KEYS: Record<StyledRole, string> = {
+	comment: 'comment',
+	keyword: 'keyword',
+	function: 'function',
+	type: 'type',
+	variable: 'variable',
+	string: 'string',
+	number: 'number',
+	punct: 'punctuation'
+};
+
+/** Weights appear as numbers (700) and as words or strings ("bold", "800") in real themes */
+function isBold(weight: unknown): boolean {
+	if (typeof weight === 'number') return weight >= 600;
+	if (typeof weight !== 'string') return false;
+	const w = weight.trim().toLowerCase();
+	return Number(w) >= 600 || ['bold', 'bolder', 'semibold', 'extrabold', 'black'].includes(w);
+}
+
 function hex(value: unknown): string | null {
 	return typeof value === 'string' && HEX.test(value.trim()) ? value.trim() : null;
 }
@@ -122,7 +156,12 @@ export function parseJsonLenient(text: string): unknown {
 type RawVariant = {
 	name?: unknown;
 	appearance?: unknown;
-	style?: Record<string, unknown> & { syntax?: Record<string, { color?: unknown } | undefined> };
+	style?: Record<string, unknown> & {
+		syntax?: Record<
+			string,
+			{ color?: unknown; font_style?: unknown; font_weight?: unknown } | undefined
+		>;
+	};
 	directory_icons?: { collapsed?: unknown };
 	file_suffixes?: Record<string, unknown>;
 	file_icons?: Record<string, { path?: unknown } | undefined>;
@@ -149,6 +188,9 @@ export function parseThemeFile(text: string): ThemeVariant[] {
 		const comment = s('comment') ?? fg;
 		const appearance = appearanceOf(v);
 		const status = hex(style['status_bar.background']) ?? hex(style['title_bar.background']) ?? bg;
+		const roles = Object.keys(SYNTAX_KEYS) as StyledRole[];
+		const italic = roles.filter((r) => syntax[SYNTAX_KEYS[r]]?.font_style === 'italic');
+		const bold = roles.filter((r) => isBold(syntax[SYNTAX_KEYS[r]]?.font_weight));
 		out.push({
 			name: nameOf(v),
 			appearance,
@@ -166,7 +208,9 @@ export function parseThemeFile(text: string): ThemeVariant[] {
 				number: s('number') ?? fg,
 				punct: s('punctuation') ?? fg,
 				variable: s('variable') ?? fg
-			}
+			},
+			...(italic.length > 0 && { italic }),
+			...(bold.length > 0 && { bold })
 		});
 	}
 	return out;
@@ -205,6 +249,14 @@ export function parseIconThemeFile(
 			.filter((v) => v.folder || v.files.some((f) => f.svg))
 			.slice(0, maxVariants)
 	);
+}
+
+/** How a preview token of `role` should be drawn in this variant. */
+export function fontStyleOf(v: ThemeVariant, role: string): { italic: boolean; bold: boolean } {
+	return {
+		italic: (v.italic as string[] | undefined)?.includes(role) ?? false,
+		bold: (v.bold as string[] | undefined)?.includes(role) ?? false
+	};
 }
 
 /** For <img src>: an SVG shown as an image can't run scripts or touch the page. */
