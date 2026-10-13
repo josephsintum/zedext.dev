@@ -30,7 +30,7 @@
 				href="https://zed.dev/docs/extensions/developing-extensions"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+				class="hidden text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)] sm:inline"
 			>
 				Create Extension
 				<svg
@@ -48,7 +48,7 @@
 				href="https://zed.dev"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+				class="hidden text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)] sm:inline"
 			>
 				Zed Editor
 				<svg
