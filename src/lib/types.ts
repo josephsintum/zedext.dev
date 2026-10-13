@@ -74,6 +74,22 @@ export interface GitHubReadme {
 	download_url: string;
 }
 
+export interface GitHubRelease {
+	tag_name: string;
+	name: string | null;
+	body: string | null;
+	published_at: string | null;
+	draft: boolean;
+}
+
+/** One entry of a repo directory listing (GET /repos/{owner}/{repo}/contents/) */
+export interface GitHubContentEntry {
+	name: string;
+	type: 'file' | 'dir' | 'symlink' | 'submodule';
+	download_url: string | null;
+	html_url: string;
+}
+
 // --- GitHub User types ---
 
 export interface GitHubUser {
