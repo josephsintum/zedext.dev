@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { searchExtensions } from '$lib/search/algolia.js';
+	import { navigating } from '$app/state';
+	import { currentSearchParams, getIndex, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
+	import { searchIndex } from '$lib/search/engine.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import CategoryTabs from '$lib/components/CategoryTabs.svelte';
 	import ProvideTag from '$lib/components/ProvideTag.svelte';
 	import { formatNumber, timeAgo } from '$lib/utils/format.js';
 	import { getViewMode, setViewMode } from '$lib/stores/viewMode.svelte.js';
-	import type { ExtensionHit } from '$lib/types.js';
 	import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 	import {
 		filterProvides,
@@ -19,88 +18,41 @@
 
 	let { data } = $props();
 
-	let query = $derived(page.url.searchParams.get('q') ?? '');
-	let category = $derived(page.url.searchParams.get('category') ?? 'all');
-	let sort = $derived(page.url.searchParams.get('sort') ?? 'downloads');
+	const params = $derived(currentSearchParams());
+	let query = $derived(params.get('q') ?? '');
+	let category = $derived(params.get('category') ?? 'all');
+	let sort = $derived(params.get('sort') ?? 'downloads');
 	const builtinMatches = $derived(getMatchingBuiltinFeatures(query));
 
-	// Client-side search state — only used after user interaction
-	let clientHits: ExtensionHit[] = $state([]);
-	let clientPage = $state(0);
-	let clientTotalHits = $state(0);
-	let clientTotalPages = $state(0);
-	let clientFacets: Record<string, Record<string, number>> = $state({});
-	let loading = $state(false);
-	let loadingMore = $state(false);
-	let hasClientResults = $state(false);
+	const PER_PAGE = 24;
+	const searchKey = $derived(`${query}|${category}|${sort}`);
+	// Pages shown for the current search; resets when the search changes
+	let shown = $state({ key: '', pages: 1 });
+	const pages = $derived(shown.key === searchKey ? shown.pages : 1);
 
-	// Track the SSR search key to avoid redundant client fetch
-	let ssrSearchKey = $derived(`${data.ssrQuery}|${data.ssrCategory}|${data.ssrSort}`);
-	let lastSearchKey = $state('');
-
+	// Load the local index after first paint; until then the server renders results
 	$effect(() => {
-		const searchKey = `${query}|${category}|${sort}`;
-		// Skip if this matches what SSR already returned
-		if (searchKey === ssrSearchKey && !hasClientResults) {
-			lastSearchKey = searchKey;
-			return;
-		}
-		if (searchKey !== lastSearchKey) {
-			lastSearchKey = searchKey;
-			clientPage = 0;
-			loading = true;
-
-			searchExtensions(query, { category, sort, page: 0 })
-				.then((r) => {
-					clientHits = r.hits;
-					clientTotalHits = r.nbHits;
-					clientTotalPages = r.nbPages;
-					clientFacets = r.facets;
-					hasClientResults = true;
-				})
-				.catch(() => {})
-				.finally(() => {
-					loading = false;
-				});
-		}
+		loadIndex();
 	});
 
-	function loadMore() {
-		if (loadingMore || clientPage + 1 >= displayTotalPages) return;
-		const nextPage = clientPage + 1;
-		loadingMore = true;
-
-		searchExtensions(query, { category, sort, page: nextPage })
-			.then((r) => {
-				clientHits = [...displayHits, ...r.hits];
-				clientPage = nextPage;
-				clientFacets = r.facets;
-				hasClientResults = true;
-			})
-			.catch(() => {})
-			.finally(() => {
-				loadingMore = false;
-			});
-	}
-
-	// Use client results if available, otherwise SSR data
-	const displayHits = $derived(hasClientResults ? clientHits : data.initialResults.hits);
-	const displayFacets = $derived(
-		hasClientResults ? clientFacets : (data.initialResults.facets ?? {})
-	);
-	const displayTotalHits = $derived(
-		hasClientResults ? clientTotalHits : data.initialResults.nbHits
-	);
-	const displayTotalPages = $derived(
-		hasClientResults ? clientTotalPages : data.initialResults.nbPages
+	const index = $derived(getIndex());
+	const results = $derived(
+		index
+			? searchIndex(index, query, { category, sort, hitsPerPage: PER_PAGE * pages })
+			: data.initialResults
 	);
 
-	const hasMore = $derived(
-		hasClientResults
-			? clientPage + 1 < clientTotalPages
-			: data.initialResults.page + 1 < data.initialResults.nbPages
-	);
+	const displayHits = $derived(results.hits);
+	const displayTotalHits = $derived(results.nbHits);
+	const hasMore = $derived(displayHits.length < displayTotalHits);
 	const remaining = $derived(displayTotalHits - displayHits.length);
+	const loading = $derived(navigating.to !== null);
+	const loadingMore = $derived(pages > 1 && !index);
+
+	function loadMore() {
+		shown = { key: searchKey, pages: pages + 1 };
+		loadIndex();
+	}
 
 	let viewMode = $derived(getViewMode());
 
@@ -112,11 +64,10 @@
 	];
 
 	function selectSort(value: string) {
-		const params = new URLSearchParams(page.url.searchParams);
-		if (value === 'downloads') params.delete('sort');
-		else params.set('sort', value);
-		params.delete('page');
-		goto(`?${params}`, { replaceState: true });
+		const next = currentSearchParams();
+		if (value === 'downloads') next.delete('sort');
+		else next.set('sort', value);
+		setSearchParams(next);
 	}
 </script>
 
@@ -271,7 +222,7 @@
 			class:pointer-events-none={loading}
 			style="transition: opacity 0.15s ease"
 		>
-			{#each displayHits as hit (hit.objectID)}
+			{#each displayHits as hit (hit.id)}
 				{@const provides = filterProvides(hit.provides)}
 				{@const owner = parseRepoUrl(hit.repository ?? '')?.owner}
 				<div
@@ -279,7 +230,7 @@
 						hit
 					)}"
 				>
-					<a href="/extensions/{hit.objectID}" class="contents">
+					<a href="/extensions/{hit.id}" class="contents">
 						<!-- Name + downloads -->
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
@@ -414,11 +365,11 @@
 				</button>
 			</div>
 
-			{#each displayHits as hit (hit.objectID)}
+			{#each displayHits as hit (hit.id)}
 				{@const provides = filterProvides(hit.provides)}
 				<!-- Desktop: grid row -->
 				<a
-					href="/extensions/{hit.objectID}"
+					href="/extensions/{hit.id}"
 					class="hidden border-b border-[var(--color-border)]/50 py-2.5 text-[13px] transition-colors hover:bg-[var(--color-surface-hover)] sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
 				>
 					<span class="min-w-0 truncate">
@@ -489,7 +440,7 @@
 
 				<!-- Mobile: simple row -->
 				<a
-					href="/extensions/{hit.objectID}"
+					href="/extensions/{hit.id}"
 					class="flex items-center justify-between gap-4 border-b border-[var(--color-border)]/50 py-2.5 text-[13px] transition-colors hover:bg-[var(--color-surface-hover)] sm:hidden"
 				>
 					<span class="min-w-0 truncate font-mono font-semibold text-[var(--color-text)]"

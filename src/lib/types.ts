@@ -31,10 +31,10 @@ export interface ZedExtensionResponse {
 	data: ZedExtension[];
 }
 
-// --- Algolia index document ---
+// --- Search snapshot ---
 
-export interface AlgoliaExtension {
-	objectID: string;
+export interface ExtensionRecord {
+	id: string;
 	name: string;
 	description: string | null;
 	authors: string[];
@@ -44,9 +44,13 @@ export interface AlgoliaExtension {
 	github_license: string | null;
 	github_pushed_at: string | null;
 	published_at: string;
-	published_at_timestamp: number;
 	version: string;
 	repository: string | null;
+}
+
+export interface Snapshot {
+	generatedAt: string;
+	extensions: ExtensionRecord[];
 }
 
 // --- GitHub API types ---
@@ -85,9 +89,7 @@ export interface GitHubUser {
 
 // --- UI types ---
 
-export interface ExtensionHit extends AlgoliaExtension {
-	_highlightResult?: Record<string, { value: string; matchLevel: string }>;
-}
+export type ExtensionHit = ExtensionRecord;
 
 export interface SearchResults {
 	hits: ExtensionHit[];

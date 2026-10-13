@@ -127,13 +127,8 @@
 					class="text-[var(--color-accent)] hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">GitHub API</a
-				>, then cached in memory. Search is powered by
-				<a
-					href="https://algolia.com"
-					class="text-[var(--color-accent)] hover:underline"
-					target="_blank"
-					rel="noopener noreferrer">Algolia</a
-				>, with the index refreshed every 6 hours.
+				>, then cached in memory. Search runs in your browser over a snapshot of the whole
+				registry, refreshed daily.
 			</p>
 			<p>
 				Built with
@@ -156,7 +151,7 @@
 			{#each [
 				{ name: 'SvelteKit', desc: 'Framework' },
 				{ name: 'Tailwind CSS v4', desc: 'Styling' },
-				{ name: 'Algolia', desc: 'Search' },
+				{ name: 'MiniSearch', desc: 'Search' },
 				{ name: 'Shiki', desc: 'Syntax highlighting' },
 				{ name: 'Vercel', desc: 'Hosting' },
 				{ name: 'GitHub API', desc: 'Extension data' }

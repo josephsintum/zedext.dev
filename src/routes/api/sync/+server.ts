@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
-import { runAlgoliaSync } from '$lib/server/algolia-sync.js';
+import { runSync } from '$lib/server/sync.js';
 
 export const config = {
 	maxDuration: 300
@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const result = await runAlgoliaSync();
+		const result = await runSync();
 		return json({ ok: true, result });
 	} catch (error) {
 		console.error('Vercel cron sync failed:', error);

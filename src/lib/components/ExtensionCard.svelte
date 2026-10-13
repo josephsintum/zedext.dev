@@ -30,7 +30,7 @@
 </script>
 
 <a
-	href="/extensions/{hit.objectID}"
+	href="/extensions/{hit.id}"
 	class="card-hover group bg-surface-raised flex min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">

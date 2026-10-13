@@ -133,10 +133,10 @@
 
 		{#if extensions.length > 0}
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{#each extensions as hit (hit.objectID)}
+				{#each extensions as hit (hit.id)}
 					{@const provides = filterProvides(hit.provides)}
 					<a
-						href="/extensions/{hit.objectID}"
+						href="/extensions/{hit.id}"
 						class="group flex flex-col rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 transition-colors duration-150 {getHoverBorder(
 							hit
 						)}"

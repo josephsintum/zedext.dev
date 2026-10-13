@@ -5,7 +5,10 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			/** Search params set by a shallow update, see $lib/search/client.svelte.ts */
+			search?: string;
+		}
 		// interface Platform {}
 	}
 }

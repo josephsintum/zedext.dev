@@ -1,17 +1,15 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { currentSearchParams, setSearchParams } from '$lib/search/client.svelte.js';
 	import clsx from 'clsx';
 	import { CATEGORIES } from '$lib/utils/constants.js';
 
 	let { active = 'all' }: { active?: string } = $props();
 
 	function selectCategory(slug: string) {
-		const params = new URLSearchParams(page.url.searchParams);
+		const params = currentSearchParams();
 		if (slug === 'all') params.delete('category');
 		else params.set('category', slug);
-		params.delete('page');
-		goto(`?${params}`, { replaceState: true });
+		setSearchParams(params);
 	}
 </script>
 

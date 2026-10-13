@@ -10,28 +10,30 @@ Zed's official extension page at [zed.dev/extensions](https://zed.dev/extensions
 
 - **Rich extension pages** — full README with syntax highlighting and resolved images
 - **GitHub context** — stars, license, last commit, forks, open issues
-- **Better search** — typo-tolerant, faceted search with category filters and sort options (powered by Algolia)
+- **Better search** — typo-tolerant, instant search with category filters and sort options, running in the browser
 - **Version history** — all published versions with dates
 - **SEO-friendly** — every extension has a unique, indexable page with proper meta/OG tags
 - **Dark mode** — system-aware with manual toggle
 
 ## Architecture
 
-No database. All data is fetched on-demand from the Zed API and GitHub API, then cached in memory. Search is powered by Algolia, with the index refreshed daily via Vercel cron hitting a protected `/api/sync` route.
+No database and no search service. A daily Vercel cron hits a protected `/api/sync` route, which builds a snapshot of the whole registry (Zed API + GitHub stats) and writes it to Vercel Blob as `extensions.json`. The server renders the first page of results from that snapshot, then the browser loads it and searches locally with [MiniSearch](https://github.com/lucaong/minisearch). Detail pages are fetched on demand from the Zed and GitHub APIs and cached in memory.
 
 ```
-Browser ──► Algolia        (client-side search)
+Browser ──► /extensions.json (snapshot → local search)
 Server  ──► Zed API        (extension metadata + versions)
         ──► GitHub API     (stars, README, license)
         ──► In-memory cache (1h metadata, 24h README)
-Cron    ──► /api/sync      (Vercel cron → Algolia refresh)
+        ──► Vercel Blob    (extensions.json snapshot)
+Cron    ──► /api/sync      (registry + GitHub → snapshot)
 ```
 
 ## Stack
 
 - [SvelteKit](https://svelte.dev) — framework
 - [Tailwind CSS v4](https://tailwindcss.com) — styling
-- [Algolia](https://algolia.com) — search
+- [MiniSearch](https://github.com/lucaong/minisearch) — search
+- [Vercel Blob](https://vercel.com/docs/vercel-blob) — snapshot storage
 - [Shiki](https://shiki.style) — syntax highlighting
 - [Vercel](https://vercel.com) — hosting
 
@@ -47,7 +49,7 @@ cp .env.example .env
 # Start dev server
 pnpm dev
 
-# Sync extensions to Algolia (requires GITHUB_TOKEN + ALGOLIA_ADMIN_KEY)
+# Rebuild the snapshot (requires GITHUB_TOKEN + BLOB_READ_WRITE_TOKEN)
 pnpm sync
 ```
 
@@ -55,9 +57,8 @@ pnpm sync
 
 ```bash
 GITHUB_TOKEN=ghp_...                    # GitHub API (server + sync)
-PUBLIC_ALGOLIA_APP_ID=XXXXXXXXXX        # Algolia app ID (public)
-PUBLIC_ALGOLIA_SEARCH_KEY=xxxxxxxxxxxx  # Algolia search key (public, read-only)
-ALGOLIA_ADMIN_KEY=xxxxxxxxxxxx          # Algolia admin key (sync only)
+SNAPSHOT_URL=https://….public.blob.vercel-storage.com/extensions.json  # Snapshot to read
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_…  # Blob write access (sync only)
 CRON_SECRET=replace-with-long-random    # Vercel cron bearer token
 PUBLIC_SITE_URL=https://zedext.dev      # Site URL
 ```

@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
-import { searchExtensionsServer } from '$lib/server/algolia-search.js';
+import { getSnapshot } from '$lib/server/snapshot.js';
+import { searchIndex } from '$lib/search/engine.js';
 
 export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	setHeaders({
@@ -10,7 +11,8 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	const category = url.searchParams.get('category') ?? 'all';
 	const sort = url.searchParams.get('sort') ?? 'downloads';
 
-	const initialResults = await searchExtensionsServer(query, { category, sort });
+	const { index } = await getSnapshot();
+	const initialResults = searchIndex(index, query, { category, sort });
 
-	return { initialResults, ssrQuery: query, ssrCategory: category, ssrSort: sort };
+	return { initialResults };
 };

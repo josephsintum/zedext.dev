@@ -1,13 +1,13 @@
 /**
- * Sync script: Zed API + GitHub API → Algolia index
+ * Sync script: Zed API + GitHub API → snapshot in Vercel Blob
  *
  * Usage: bun run scripts/sync.ts
  */
 
-import { runAlgoliaSync } from '../src/lib/server/algolia-sync.js';
+import { runSync } from '../src/lib/server/sync.js';
 
 async function main() {
-	const result = await runAlgoliaSync();
+	const result = await runSync();
 	console.log(result);
 }
 

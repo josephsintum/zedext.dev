@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-
 	import { formatNumber } from '$lib/utils/format.js';
+	import { currentSearchParams, setSearchParams } from '$lib/search/client.svelte.js';
 
 	let {
 		value = '',
@@ -19,11 +17,10 @@
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	function performSearch(q: string) {
-		const params = new URLSearchParams(page.url.searchParams);
+		const params = currentSearchParams();
 		if (q) params.set('q', q);
 		else params.delete('q');
-		params.delete('page');
-		goto(`?${params}`, { replaceState: true, keepFocus: true });
+		setSearchParams(params);
 		onSearch?.(q);
 	}
 
