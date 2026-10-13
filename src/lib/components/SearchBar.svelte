@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { page } from '$app/state';
 	import { formatNumber } from '$lib/utils/format.js';
 	import { currentSearchParams, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
 
@@ -26,25 +27,27 @@
 	// A pending search must not fire after the page is gone
 	$effect(() => () => clearTimeout(debounceTimer));
 
-	function performSearch(q: string) {
+	function performSearch(q: string, path: string) {
 		const params = currentSearchParams();
 		if (q) params.set('q', q);
 		else params.delete('q');
-		setSearchParams(params);
+		setSearchParams(params, { path });
 		onSearch?.(q);
 	}
 
 	function handleInput(e: Event) {
 		input = (e.target as HTMLInputElement).value;
+		// Remember where the typing happened; the debounced search is dropped if we've left
+		const path = page.url.pathname;
 		clearTimeout(debounceTimer);
-		debounceTimer = setTimeout(() => performSearch(input), 300);
+		debounceTimer = setTimeout(() => performSearch(input, path), 300);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			input = '';
 			clearTimeout(debounceTimer);
-			performSearch('');
+			performSearch('', page.url.pathname);
 		}
 	}
 </script>

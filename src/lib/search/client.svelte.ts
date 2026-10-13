@@ -54,12 +54,16 @@ export function currentSearchParams(): URLSearchParams {
 }
 
 /**
- * Apply new search params. `scroll` returns to the top, for changes that replace the
- * whole list (tabs, sort) rather than refine it as you type.
+ * Apply new search params on the current browse page. `scroll` returns to the top, for
+ * changes that replace the whole list (sort) rather than refine it as you type. `path` is
+ * the page the change was made on; if the user has since left it, nothing happens.
  */
-export function setSearchParams(params: URLSearchParams, { scroll = false } = {}): void {
+export function setSearchParams(
+	params: URLSearchParams,
+	{ scroll = false, path = page.url.pathname }: { scroll?: boolean; path?: string } = {}
+): void {
 	// e.g. a debounced search firing after the user already left the page
-	if (page.route.id !== '/') return;
+	if (page.url.pathname !== path) return;
 	params.delete('page');
 	const search = params.toString();
 	latest = search;
@@ -75,7 +79,7 @@ export function setSearchParams(params: URLSearchParams, { scroll = false } = {}
 		.then(() => {
 			// If the index arrived while this navigation was in flight, newer searches were
 			// applied shallowly and this navigation just overwrote them: reapply the newest
-			if (index && latest !== null && page.route.id === '/' && latest !== currentSearch()) {
+			if (index && latest !== null && page.url.pathname === path && latest !== currentSearch()) {
 				applyShallow(latest);
 			}
 		});
