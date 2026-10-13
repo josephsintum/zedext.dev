@@ -20,14 +20,25 @@ export const PREVIEWS_PATH = 'theme-previews.json';
 const ZED_API = 'https://api.zed.dev';
 const USER_AGENT = 'zedext-sync (+https://zedext.dev)';
 const DOWNLOAD_CONCURRENCY = 8;
+/** A 1 MB archive takes ~1.4 s; a stalled connection must not eat the whole cron. */
+const DOWNLOAD_TIMEOUT_MS = 15_000;
+/** Bump when parsing changes: entries from older bundles are then re-downloaded. */
+export const PREVIEW_FORMAT = 2;
+/** Refuse to publish a bundle that lost more than this share of the previous themes. */
+const MIN_RETAINED_RATIO = 0.9;
 
 const isTheme = (r: ExtensionRecord) => r.provides.includes('themes');
 const isIconTheme = (r: ExtensionRecord) => r.provides.includes('icon-themes');
 
-async function download(id: string, deps: NetDeps): Promise<Map<string, Uint8Array>> {
+async function download(
+	id: string,
+	deps: NetDeps,
+	timeoutMs: number
+): Promise<Map<string, Uint8Array>> {
 	return withRetry(async () => {
 		const res = await deps.fetch(`${ZED_API}/extensions/${id}/download`, {
-			headers: { 'User-Agent': USER_AGENT }
+			headers: { 'User-Agent': USER_AGENT },
+			signal: AbortSignal.timeout(timeoutMs)
 		});
 		if (isTransient(res.status)) throw new Error(`download ${res.status}`);
 		// 404 etc. won't fix themselves within this run: don't retry them
@@ -36,30 +47,84 @@ async function download(id: string, deps: NetDeps): Promise<Map<string, Uint8Arr
 	}, deps);
 }
 
+/**
+ * The previous bundle, if any. `ok: false` means it exists but couldn't be read, and the
+ * sync must skip previews rather than rebuild from scratch and overwrite a good bundle.
+ */
+export async function loadPreviousPreviews(
+	url: string | URL,
+	fetchImpl: (url: string | URL) => Promise<Response> = (u) => fetch(u)
+): Promise<{ ok: boolean; bundle: PreviewBundle | null }> {
+	try {
+		const res = await fetchImpl(url);
+		if (res.status === 404) return { ok: true, bundle: null };
+		if (!res.ok) return { ok: false, bundle: null };
+		const bundle = (await res.json()) as PreviewBundle;
+		const isObject = (v: unknown) => typeof v === 'object' && v !== null;
+		return isObject(bundle?.themes) && isObject(bundle?.icons)
+			? { ok: true, bundle }
+			: { ok: false, bundle: null };
+	} catch {
+		return { ok: false, bundle: null };
+	}
+}
+
+export function previewsShrank(next: PreviewBundle, previous: PreviewBundle | null): boolean {
+	const before = previous ? Object.keys(previous.themes).length : 0;
+	return before > 0 && Object.keys(next.themes).length < before * MIN_RETAINED_RATIO;
+}
+
 export async function buildPreviews(
 	records: ExtensionRecord[],
 	previous: PreviewBundle | null,
-	{ limit, log, deps = defaultDeps }: { limit: number; log: (m: string) => void; deps?: NetDeps }
+	{
+		limit,
+		log,
+		deps = defaultDeps,
+		timeoutMs = DOWNLOAD_TIMEOUT_MS,
+		deadline
+	}: {
+		limit: number;
+		log: (m: string) => void;
+		deps?: NetDeps;
+		timeoutMs?: number;
+		/** Epoch ms after which no new downloads start (the rest wait for the next run) */
+		deadline?: number;
+	}
 ): Promise<{ bundle: PreviewBundle; downloaded: number; failed: number; pending: number }> {
-	const bundle: PreviewBundle = { generatedAt: new Date().toISOString(), themes: {}, icons: {} };
+	const bundle: PreviewBundle = {
+		format: PREVIEW_FORMAT,
+		generatedAt: new Date().toISOString(),
+		themes: {},
+		icons: {}
+	};
+	const sameFormat = previous?.format === PREVIEW_FORMAT;
 	const stale: ExtensionRecord[] = [];
 
 	for (const r of records.filter((r) => isTheme(r) || isIconTheme(r))) {
 		const prevTheme = previous?.themes[r.id];
 		const prevIcons = previous?.icons[r.id];
+		// Kept even when stale, until a fresh download replaces them
 		if (prevTheme) bundle.themes[r.id] = prevTheme;
 		if (prevIcons) bundle.icons[r.id] = prevIcons;
 		const current =
+			sameFormat &&
 			(!isTheme(r) || prevTheme?.version === r.version) &&
 			(!isIconTheme(r) || prevIcons?.version === r.version);
 		if (!current) stale.push(r);
 	}
 
-	const batch = stale.slice(0, limit);
+	const batch = stale.slice(0, Math.max(0, limit));
+	let downloaded = 0;
 	let failed = 0;
+	let skipped = 0;
 	await mapConcurrent(batch, DOWNLOAD_CONCURRENCY, async (r) => {
+		if (deadline !== undefined && Date.now() > deadline) {
+			skipped++;
+			return;
+		}
 		try {
-			const files = await download(r.id, deps);
+			const files = await download(r.id, deps, timeoutMs);
 			const text = (path: string) => new TextDecoder().decode(files.get(path));
 			const jsonIn = (dir: string) =>
 				[...files.keys()].filter((p) => p.startsWith(`${dir}/`) && p.endsWith('.json'));
@@ -74,15 +139,14 @@ export async function buildPreviews(
 				if (variants.length > 0) bundle.icons[r.id] = { version: r.version, variants };
 				else delete bundle.icons[r.id];
 			}
+			downloaded++;
 		} catch (err) {
 			failed++;
 			log(`Preview download failed for ${r.id}, keeping previous: ${(err as Error).message}`);
 		}
 	});
 
-	const pending = stale.length - batch.length;
-	log(
-		`Previews: ${batch.length - failed} downloaded, ${failed} failed, ${pending} left for later runs`
-	);
-	return { bundle, downloaded: batch.length - failed, failed, pending };
+	const pending = stale.length - batch.length + skipped;
+	log(`Previews: ${downloaded} downloaded, ${failed} failed, ${pending} left for later runs`);
+	return { bundle, downloaded, failed, pending };
 }

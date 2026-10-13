@@ -39,7 +39,19 @@
 </script>
 
 <section class="mb-6" aria-label="Theme preview">
-	{#if variants.length > 1}
+	<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
+	{#if variants.length > 8}
+		<label class="mb-3 flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+			{variants.length} variants
+			<select
+				bind:value={selected}
+				aria-label="Theme variant"
+				class="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2 py-1 text-[12px] text-[var(--color-text)]"
+			>
+				{#each variants as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
+			</select>
+		</label>
+	{:else if variants.length > 1}
 		<div class="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Theme variants">
 			{#each variants as v, i (i)}
 				<button

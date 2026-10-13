@@ -39,6 +39,8 @@ export interface IconVariant {
 }
 
 export interface PreviewBundle {
+	/** Bumped when parsing changes, so the sync re-parses entries from older bundles */
+	format?: number;
 	generatedAt: string;
 	themes: Record<string, { version: string; variants: ThemeVariant[] }>;
 	icons: Record<string, { version: string; variants: IconVariant[] }>;
@@ -60,6 +62,24 @@ export const FILE_SAMPLES: { label: string; suffix: string }[] = [
 
 const HEX = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 const MAX_SVG_BYTES = 20_000;
+
+/**
+ * Blur themes use see-through backgrounds (e.g. #00000000) that would show the site's own
+ * page behind the preview; flatten them over black (dark) or white (light).
+ */
+function opaque(color: string, appearance: 'light' | 'dark'): string {
+	const digits = color.slice(1);
+	const full = digits.length <= 4 ? [...digits].map((d) => d + d).join('') : digits;
+	if (full.length !== 8) return color;
+	const alpha = parseInt(full.slice(6, 8), 16) / 255;
+	if (alpha >= 0.9) return color;
+	const base = appearance === 'light' ? 255 : 0;
+	const channel = (i: number) =>
+		Math.round(parseInt(full.slice(i, i + 2), 16) * alpha + base * (1 - alpha))
+			.toString(16)
+			.padStart(2, '0');
+	return `#${channel(0)}${channel(2)}${channel(4)}`;
+}
 
 function hex(value: unknown): string | null {
 	return typeof value === 'string' && HEX.test(value.trim()) ? value.trim() : null;
@@ -127,14 +147,16 @@ export function parseThemeFile(text: string): ThemeVariant[] {
 		const fg = hex(style['editor.foreground']) ?? hex(style['text']);
 		if (!bg || !fg) continue; // nothing sensible to draw
 		const comment = s('comment') ?? fg;
+		const appearance = appearanceOf(v);
+		const status = hex(style['status_bar.background']) ?? hex(style['title_bar.background']) ?? bg;
 		out.push({
 			name: nameOf(v),
-			appearance: appearanceOf(v),
+			appearance,
 			colors: {
-				bg,
+				bg: opaque(bg, appearance),
 				fg,
 				gutter: hex(style['editor.line_number']) ?? comment,
-				status: hex(style['status_bar.background']) ?? hex(style['title_bar.background']) ?? bg,
+				status: opaque(status, appearance),
 				border: hex(style['border']) ?? comment,
 				keyword: s('keyword') ?? fg,
 				string: s('string') ?? fg,
@@ -164,21 +186,25 @@ export function parseIconThemeFile(
 		return svg.includes('<svg') ? svg : null;
 	};
 
-	return variantsOf(text)
-		.slice(0, maxVariants)
-		.map((v) => {
-			const icons = v.file_icons ?? {};
-			const suffixes = v.file_suffixes ?? {};
-			return {
-				name: nameOf(v),
-				appearance: appearanceOf(v),
-				folder: read(v.directory_icons?.collapsed),
-				files: FILE_SAMPLES.map((f) => {
-					const key = suffixes[f.suffix];
-					return { label: f.label, svg: typeof key === 'string' ? read(icons[key]?.path) : null };
-				})
-			};
-		});
+	return (
+		variantsOf(text)
+			.map((v) => {
+				const icons = v.file_icons ?? {};
+				const suffixes = v.file_suffixes ?? {};
+				return {
+					name: nameOf(v),
+					appearance: appearanceOf(v),
+					folder: read(v.directory_icons?.collapsed),
+					files: FILE_SAMPLES.map((f) => {
+						const key = suffixes[f.suffix];
+						return { label: f.label, svg: typeof key === 'string' ? read(icons[key]?.path) : null };
+					})
+				};
+			})
+			// A variant with nothing to show would render as an empty box
+			.filter((v) => v.folder || v.files.some((f) => f.svg))
+			.slice(0, maxVariants)
+	);
 }
 
 /** For <img src>: an SVG shown as an image can't run scripts or touch the page. */

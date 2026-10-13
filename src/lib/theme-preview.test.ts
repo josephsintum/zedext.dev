@@ -123,8 +123,51 @@ describe('parseIconThemeFile', () => {
 		expect(v.files.map((f) => f.label)).toEqual(FILE_SAMPLES.map((f) => f.label));
 	});
 
+	it('drops variants with no usable icons at all', () => {
+		const hollow = {
+			name: 'Hollow',
+			appearance: 'dark',
+			file_suffixes: { rs: 'missing' },
+			file_icons: { missing: { path: './icons/missing.svg' } }
+		};
+		expect(parseIconThemeFile(doc([hollow]), files)).toEqual([]);
+		expect(parseIconThemeFile(doc([hollow, variant('A')]), files).map((v) => v.name)).toEqual([
+			'A'
+		]);
+	});
+
 	it('keeps at most maxVariants variants', () => {
 		expect(parseIconThemeFile(doc(['A', 'B', 'C'].map(variant)), files, 2)).toHaveLength(2);
+	});
+});
+
+describe('translucent backgrounds', () => {
+	const bgOnly = (bg: string, appearance: string) =>
+		JSON.stringify({
+			themes: [
+				{
+					name: 'B',
+					appearance,
+					style: {
+						'editor.background': bg,
+						'editor.foreground': '#cad3f5',
+						'status_bar.background': bg
+					}
+				}
+			]
+		});
+
+	it('composites transparent backgrounds over black (dark) or white (light)', () => {
+		expect(parseThemeFile(bgOnly('#00000000', 'dark'))[0].colors.bg).toBe('#000000');
+		expect(parseThemeFile(bgOnly('#ffffff00', 'light'))[0].colors.bg).toBe('#ffffff');
+		const half = parseThemeFile(bgOnly('#24273a80', 'dark'))[0].colors;
+		expect(half.bg).toBe('#12141d');
+		expect(half.status).toBe('#12141d');
+	});
+
+	it('leaves opaque colors alone, including 8-digit ones', () => {
+		expect(parseThemeFile(bgOnly('#1e1e2eff', 'dark'))[0].colors.bg).toBe('#1e1e2eff');
+		expect(parseThemeFile(bgOnly('#1e1e2e', 'dark'))[0].colors.bg).toBe('#1e1e2e');
 	});
 });
 

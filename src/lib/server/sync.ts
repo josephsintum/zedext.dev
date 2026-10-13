@@ -9,8 +9,12 @@ import { parse as parseToml } from 'smol-toml';
 import { parseRepoUrl } from '../utils/parse-repo-url.js';
 import { parseAuthorNames } from '../utils/parse-author.js';
 import type { ExtensionRecord, Snapshot, ZedExtension, ZedExtensionResponse } from '../types.js';
-import type { PreviewBundle } from '../theme-preview.js';
-import { buildPreviews, PREVIEWS_PATH } from './previews-sync.js';
+import {
+	buildPreviews,
+	loadPreviousPreviews,
+	previewsShrank,
+	PREVIEWS_PATH
+} from './previews-sync.js';
 import {
 	defaultDeps,
 	FatalError,
@@ -338,16 +342,6 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 
 	const { records, carriedForward } = buildRecords(extensions, github, previous);
 
-	// Theme previews: reuse last run's bundle, download only what changed
-	const previousPreviews = config.snapshotUrl
-		? await fetch(new URL(PREVIEWS_PATH, config.snapshotUrl))
-				.then((res) => (res.ok ? (res.json() as Promise<PreviewBundle>) : null))
-				.catch(() => null)
-		: null;
-	const previews = await buildPreviews(records, previousPreviews, {
-		limit: config.previewLimit,
-		log
-	});
 	assertPublishable(records, previous);
 
 	const snapshot: Snapshot = { generatedAt: new Date().toISOString(), extensions: records };
@@ -383,24 +377,9 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		log(`History write failed for ${history.date}: ${(err as Error).message}`);
 	}
 
-	let previewsSaved = true;
-	try {
-		await withRetry(
-			() =>
-				put(PREVIEWS_PATH, JSON.stringify(previews.bundle), {
-					access: 'public',
-					addRandomSuffix: false,
-					allowOverwrite: true,
-					contentType: 'application/json',
-					cacheControlMaxAge: 300,
-					token: config.blobToken
-				}),
-			defaultDeps
-		);
-	} catch (err) {
-		previewsSaved = false;
-		log(`Theme previews write failed: ${(err as Error).message}`);
-	}
+	// Theme previews come last: the snapshot above is what the site depends on, so slow or
+	// failing downloads can only ever cost previews, never the snapshot or history.
+	const previews = await syncPreviews(records, config, start.getTime(), log);
 
 	const completedAt = new Date();
 	const elapsedSeconds = Number(((completedAt.getTime() - start.getTime()) / 1000).toFixed(1));
@@ -419,6 +398,55 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		previewsDownloaded: previews.downloaded,
 		previewsFailed: previews.failed,
 		previewsPending: previews.pending,
-		previewsSaved
+		previewsSaved: previews.saved
 	};
+}
+
+/** Leave time for the bundle write before the 300 s function limit (/api/sync maxDuration). */
+const PREVIEW_DEADLINE_MS = 220_000;
+
+async function syncPreviews(
+	records: ExtensionRecord[],
+	config: SyncConfig,
+	startedAt: number,
+	log: LogFn
+): Promise<{ downloaded: number; failed: number; pending: number; saved: boolean }> {
+	const skipped = { downloaded: 0, failed: 0, pending: 0, saved: false };
+	const previous = config.snapshotUrl
+		? await loadPreviousPreviews(new URL(PREVIEWS_PATH, config.snapshotUrl))
+		: { ok: true, bundle: null };
+	// Rebuilding from nothing would overwrite a good bundle with a partial one
+	if (!previous.ok) {
+		log('Theme previews skipped: the previous bundle exists but could not be read');
+		return skipped;
+	}
+
+	const result = await buildPreviews(records, previous.bundle, {
+		limit: config.previewLimit,
+		log,
+		deadline: startedAt + PREVIEW_DEADLINE_MS
+	});
+	if (previewsShrank(result.bundle, previous.bundle)) {
+		log('Theme previews not written: the bundle lost more than 10% of its themes');
+		return { ...result, saved: false };
+	}
+
+	try {
+		await withRetry(
+			() =>
+				put(PREVIEWS_PATH, JSON.stringify(result.bundle), {
+					access: 'public',
+					addRandomSuffix: false,
+					allowOverwrite: true,
+					contentType: 'application/json',
+					cacheControlMaxAge: 300,
+					token: config.blobToken
+				}),
+			defaultDeps
+		);
+		return { ...result, saved: true };
+	} catch (err) {
+		log(`Theme previews write failed: ${(err as Error).message}`);
+		return { ...result, saved: false };
+	}
 }

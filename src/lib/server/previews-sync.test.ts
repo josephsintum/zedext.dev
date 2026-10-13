@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildPreviews } from './previews-sync.js';
+import {
+	buildPreviews,
+	loadPreviousPreviews,
+	PREVIEW_FORMAT,
+	previewsShrank
+} from './previews-sync.js';
 import { tarGz } from './testing/tar.js';
 import type { ExtensionRecord } from '$lib/types.js';
 import type { PreviewBundle } from '$lib/theme-preview.js';
@@ -52,6 +57,107 @@ function deps(archives: Record<string, Uint8Array<ArrayBuffer> | number>) {
 const silent = () => {};
 const empty: PreviewBundle = { generatedAt: '', themes: {}, icons: {} };
 
+describe('buildPreviews time limits', () => {
+	it('gives up on a download that hangs, keeping the previous entry', async () => {
+		const previous: PreviewBundle = {
+			...empty,
+			format: PREVIEW_FORMAT,
+			themes: { a: { version: '0.9.0', variants: [] } }
+		};
+		const hang = {
+			fetch: vi.fn(
+				(_input: string | URL | Request, init?: RequestInit) =>
+					new Promise<Response>((_resolve, reject) =>
+						init?.signal?.addEventListener('abort', () => reject(init.signal!.reason))
+					)
+			),
+			sleep: async () => {}
+		};
+		const { bundle, failed } = await buildPreviews([rec('a', ['themes'])], previous, {
+			limit: 10,
+			log: silent,
+			deps: hang,
+			timeoutMs: 20
+		});
+		expect(failed).toBe(1);
+		expect(bundle.themes.a.version).toBe('0.9.0');
+	});
+
+	it('starts no downloads after the deadline and leaves them for later runs', async () => {
+		const d = deps({ a: tarGz({ 'themes/a.json': themeJson('#aaaaaa') }) });
+		const { downloaded, pending } = await buildPreviews([rec('a', ['themes'])], null, {
+			limit: 10,
+			log: silent,
+			deps: d,
+			deadline: Date.now() - 1
+		});
+		expect(downloaded).toBe(0);
+		expect(pending).toBe(1);
+		expect(d.fetch).not.toHaveBeenCalled();
+	});
+
+	it('re-downloads entries from an older bundle format, but keeps them until then', async () => {
+		const previous: PreviewBundle = {
+			...empty,
+			format: PREVIEW_FORMAT - 1,
+			themes: { a: { version: '1.0.0', variants: [] } }
+		};
+		const d = deps({});
+		const { bundle, pending } = await buildPreviews([rec('a', ['themes'])], previous, {
+			limit: 0,
+			log: silent,
+			deps: d
+		});
+		expect(pending).toBe(1); // stale because of the format, even though the version matches
+		expect(bundle.themes.a.version).toBe('1.0.0');
+	});
+});
+
+describe('loadPreviousPreviews', () => {
+	const at = (res: Response | Error) => async () => {
+		if (res instanceof Error) throw res;
+		return res;
+	};
+
+	it('treats a missing bundle (404) as a fresh start', async () => {
+		expect(
+			await loadPreviousPreviews('https://x/b.json', at(new Response('', { status: 404 })))
+		).toEqual({ ok: true, bundle: null });
+	});
+
+	it('returns a well-formed bundle', async () => {
+		const bundle = { ...empty, themes: {}, icons: {} };
+		expect(await loadPreviousPreviews('https://x/b.json', at(Response.json(bundle)))).toEqual({
+			ok: true,
+			bundle
+		});
+	});
+
+	it('reports failure for errors, other statuses and malformed bundles, so the sync skips previews', async () => {
+		for (const res of [
+			new Response('', { status: 503 }),
+			Response.json({ nope: 1 }),
+			new Error('network')
+		]) {
+			expect((await loadPreviousPreviews('https://x/b.json', at(res))).ok).toBe(false);
+		}
+	});
+});
+
+describe('previewsShrank', () => {
+	const withThemes = (n: number): PreviewBundle => ({
+		...empty,
+		themes: Object.fromEntries(
+			Array.from({ length: n }, (_, i) => [`t${i}`, { version: '1', variants: [] }])
+		)
+	});
+	it('flags a bundle that lost more than 10% of the previous themes', () => {
+		expect(previewsShrank(withThemes(80), withThemes(100))).toBe(true);
+		expect(previewsShrank(withThemes(95), withThemes(100))).toBe(false);
+		expect(previewsShrank(withThemes(10), null)).toBe(false);
+	});
+});
+
 describe('buildPreviews', () => {
 	it('downloads themes and icon themes and extracts their previews', async () => {
 		const d = deps({
@@ -75,6 +181,7 @@ describe('buildPreviews', () => {
 	it('reuses previews whose version is unchanged, without downloading', async () => {
 		const previous: PreviewBundle = {
 			...empty,
+			format: PREVIEW_FORMAT,
 			themes: { dark: { version: '1.0.0', variants: [] } }
 		};
 		const d = deps({});
