@@ -1,6 +1,13 @@
 import { env } from '$env/dynamic/private';
 import { getCached } from './cache.js';
-import type { GitHubRepo, GitHubReadme, GitHubUser } from '$lib/types.js';
+import { findChangelogFile, releasesToMarkdown, trimChangelog } from '$lib/changelog.js';
+import type {
+	GitHubContentEntry,
+	GitHubRelease,
+	GitHubRepo,
+	GitHubReadme,
+	GitHubUser
+} from '$lib/types.js';
 
 const GITHUB_API = 'https://api.github.com';
 const ONE_HOUR = 60 * 60 * 1000;
@@ -55,5 +62,31 @@ export async function getReadmeMarkdown(owner: string, repo: string): Promise<st
 		if (!res) return null;
 		const data: GitHubReadme = await res.json();
 		return Buffer.from(data.content, 'base64').toString('utf-8');
+	});
+}
+
+export interface Changelog {
+	markdown: string;
+	/** Where "Full changelog on GitHub →" points */
+	url: string;
+}
+
+/** The repo's CHANGELOG.md (or CHANGES.md), else its GitHub Releases; null if neither. */
+export async function getChangelog(owner: string, repo: string): Promise<Changelog | null> {
+	return getCached(`gh:changelog:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
+		const base = `${GITHUB_API}/repos/${owner}/${repo}`;
+		const listing = await fetchOrNull(`${base}/contents/`);
+		const entries: unknown = listing ? await listing.json() : [];
+		const file = Array.isArray(entries) ? findChangelogFile(entries as GitHubContentEntry[]) : null;
+		if (file?.download_url) {
+			const res = await fetchOrNull(file.download_url);
+			if (res) return { markdown: trimChangelog(await res.text()), url: file.html_url };
+		}
+
+		const releases = await fetchOrNull(`${base}/releases?per_page=30`);
+		const markdown = releases
+			? releasesToMarkdown((await releases.json()) as GitHubRelease[])
+			: null;
+		return markdown ? { markdown, url: `https://github.com/${owner}/${repo}/releases` } : null;
 	});
 }

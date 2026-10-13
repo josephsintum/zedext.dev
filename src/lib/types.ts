@@ -66,6 +66,8 @@ export interface GitHubRepo {
 	default_branch: string;
 	description: string | null;
 	topics: string[];
+	archived: boolean;
+	html_url: string;
 }
 
 export interface GitHubReadme {
