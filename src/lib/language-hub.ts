@@ -1,6 +1,7 @@
 import type { ExtensionRecord } from './types.js';
 import type { LanguageHub } from './languages.js';
 import { formatNumber } from './utils/format.js';
+import { hasKeyword, nameWords } from './words.js';
 
 export type HubGroupKey = 'language-servers' | 'tooling' | 'syntax' | 'snippets' | 'other';
 
@@ -51,20 +52,6 @@ const TOOLING_WORDS = new Set([
 	'clippy'
 ]);
 const NOT_IN_HUBS = ['themes', 'icon-themes'];
-
-function nameWords(r: ExtensionRecord): Set<string> {
-	return new Set(
-		`${r.id} ${r.name}`
-			.toLowerCase()
-			.split(/[^a-z0-9+]+/)
-			.filter(Boolean)
-	);
-}
-
-/** Exact words only: prefix matching would put "javascript" in the Java hub */
-function hasKeyword(words: Set<string>, keywords: string[]): boolean {
-	return keywords.some((k) => words.has(k));
-}
 
 export function matchesHub(hub: LanguageHub, r: ExtensionRecord): boolean {
 	if (hub.exclude?.includes(r.id)) return false;
