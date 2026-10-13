@@ -8,6 +8,7 @@ import {
 	fetchZedExtensions,
 	idsNeedingFirstPublished,
 	repoKey,
+	runSync,
 	type GitHubStats
 } from './sync.js';
 import type { ExtensionRecord, Snapshot, ZedExtension } from '../types.js';
@@ -99,17 +100,13 @@ describe('buildRecords', () => {
 });
 
 describe('buildHistory', () => {
-	it('records each extension download count under the snapshot UTC date', () => {
-		const { records } = buildRecords(
-			[
-				{ ...zed('a', ''), download_count: 5 },
-				{ ...zed('b', ''), download_count: 7 }
-			],
-			new Map(),
-			null
-		);
+	it('records each extension download count under the UTC date', () => {
+		const exts = [
+			{ ...zed('a', ''), download_count: 5 },
+			{ ...zed('b', ''), download_count: 7 }
+		];
 		// 23:30 in UTC-8 is already the next day in UTC
-		const history = buildHistory({ generatedAt: '2026-10-14T07:30:00.000Z', extensions: records });
+		const history = buildHistory('2026-10-14T07:30:00.000Z', exts);
 		expect(history).toEqual({ date: '2026-10-14', downloads: { a: 5, b: 7 } });
 	});
 });
@@ -279,5 +276,64 @@ describe('fetchFirstPublished', () => {
 		);
 		const first = await fetchFirstPublished(['ok', 'bad', 'gone'], silent, d);
 		expect([...first.keys()]).toEqual(['ok']);
+	});
+});
+
+describe('runSync', () => {
+	const env = { GITHUB_TOKEN: 't', BLOB_READ_WRITE_TOKEN: 'b' };
+	const zedOnly = (github: () => Response) =>
+		deps((url) => {
+			if (url.endsWith('extensions.toml')) return new Response('[a]\nversion = "1.0.0"\n');
+			if (url.includes('max_schema_version'))
+				return json({ data: [zed('a', 'https://github.com/o/a')] });
+			if (url.includes('graphql')) return github();
+			return json({ data: [zed('a', '')] }); // first release lookup
+		});
+	const put = () => vi.fn(async (path: string) => ({ url: `https://blob.test/${path}` }));
+
+	it("saves the day's download history even when GitHub rejects the token", async () => {
+		const write = put();
+		const d = zedOnly(() => new Response('', { status: 401 }));
+		await expect(runSync({ env, log: silent, deps: d, put: write })).rejects.toThrow(/401/);
+		const paths = write.mock.calls.map(([path]) => path);
+		expect(paths).toHaveLength(1);
+		expect(paths[0]).toMatch(/^history\/\d{4}-\d{2}-\d{2}\.json$/);
+	});
+
+	describe('as the backup run', () => {
+		const backupEnv = { ...env, SNAPSHOT_URL: 'https://blob.test/extensions.json' };
+
+		it("skips when today's history file already exists", async () => {
+			const write = put();
+			const d = deps((url, init) =>
+				init?.method === 'HEAD' && url.includes('/history/')
+					? new Response(null, { status: 200 })
+					: new Response('', { status: 500 })
+			);
+			const result = await runSync({
+				env: backupEnv,
+				log: silent,
+				deps: d,
+				put: write,
+				onlyIfHistoryMissing: true
+			});
+			expect(result).toMatchObject({ skipped: expect.stringMatching(/already/) });
+			expect(write).not.toHaveBeenCalled();
+		});
+
+		it("runs when today's history file is missing", async () => {
+			const write = put();
+			const d = deps(
+				(url, init) =>
+					init?.method === 'HEAD' && url.includes('/history/')
+						? new Response(null, { status: 404 })
+						: new Response('', { status: 503 }) // the run itself then fails on the previous snapshot
+			);
+			await expect(
+				runSync({ env: backupEnv, log: silent, deps: d, put: write, onlyIfHistoryMissing: true })
+			).rejects.toThrow(/Snapshot fetch failed/);
+			const urls = d.fetch.mock.calls.map(([url]) => String(url));
+			expect(urls.some((u) => u.startsWith('https://blob.test/extensions.json'))).toBe(true);
+		});
 	});
 });

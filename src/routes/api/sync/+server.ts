@@ -7,7 +7,7 @@ export const config = {
 	maxDuration: 300
 };
 
-export const GET: RequestHandler = async ({ request }) => {
+export const GET: RequestHandler = async ({ request, url }) => {
 	const cronSecret = env.CRON_SECRET;
 
 	if (!cronSecret) {
@@ -19,7 +19,10 @@ export const GET: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const result = await runSync();
+		// The noon cron is a backup: it only syncs if the midnight run didn't save today's history
+		const result = await runSync({
+			onlyIfHistoryMissing: url.searchParams.has('if-history-missing')
+		});
 		return json({ ok: true, result });
 	} catch (error) {
 		console.error('Vercel cron sync failed:', error);

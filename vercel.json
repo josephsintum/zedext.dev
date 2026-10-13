@@ -4,6 +4,10 @@
 		{
 			"path": "/api/sync",
 			"schedule": "0 0 * * *"
+		},
+		{
+			"path": "/api/sync?if-history-missing",
+			"schedule": "0 12 * * *"
 		}
 	]
 }

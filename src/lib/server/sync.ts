@@ -71,7 +71,7 @@ interface SyncConfig {
 	previewLimit: number;
 }
 
-let activeSync: Promise<SyncResult> | null = null;
+let activeSync: Promise<SyncResult | SyncSkipped> | null = null;
 
 function getSyncConfig(env: NodeJS.ProcessEnv): SyncConfig {
 	const githubToken = env.GITHUB_TOKEN;
@@ -110,8 +110,11 @@ export function toRecord(
 	};
 }
 
-export async function fetchSnapshot(url: string): Promise<Snapshot> {
-	const res = await fetch(url);
+export async function fetchSnapshot(
+	url: string,
+	fetchImpl: (url: string) => Promise<Response> = (u) => fetch(u)
+): Promise<Snapshot> {
+	const res = await fetchImpl(url);
 	if (!res.ok) throw new Error(`Snapshot fetch failed: ${res.status}`);
 	const snapshot = (await res.json()) as Snapshot;
 	if (!Array.isArray(snapshot?.extensions) || snapshot.extensions.length === 0) {
@@ -170,10 +173,14 @@ export interface DownloadHistory {
 	downloads: Record<string, number>;
 }
 
-export function buildHistory(snapshot: Snapshot): DownloadHistory {
+/** Only needs Zed's counts, so it can be saved before (and without) GitHub and the snapshot */
+export function buildHistory(
+	at: string,
+	extensions: Pick<ZedExtension, 'id' | 'download_count'>[]
+): DownloadHistory {
 	return {
-		date: snapshot.generatedAt.slice(0, 10),
-		downloads: Object.fromEntries(snapshot.extensions.map((r) => [r.id, r.download_count]))
+		date: at.slice(0, 10),
+		downloads: Object.fromEntries(extensions.map((e) => [e.id, e.download_count]))
 	};
 }
 
@@ -206,8 +213,8 @@ export function assertPublishable(records: ExtensionRecord[], previous: Snapshot
 
 // --- Network steps ---
 
-async function fetchRegistryIds(log: LogFn): Promise<string[]> {
-	const res = await fetch(EXTENSIONS_TOML_URL);
+async function fetchRegistryIds(log: LogFn, deps: NetDeps): Promise<string[]> {
+	const res = await deps.fetch(EXTENSIONS_TOML_URL);
 	if (!res.ok) throw new Error(`Failed to fetch extensions.toml: ${res.status}`);
 	const ids = Object.keys(parseToml(await res.text()));
 	log(`Registry: ${ids.length} extensions in extensions.toml`);
@@ -369,9 +376,23 @@ export async function fetchGitHubStats(
 
 // --- Entry point ---
 
-export async function runSync(
-	options: { env?: NodeJS.ProcessEnv; log?: LogFn } = {}
-): Promise<SyncResult> {
+type PutFn = (
+	path: string,
+	body: string,
+	options: Parameters<typeof put>[2]
+) => Promise<{ url: string }>;
+
+interface SyncOptions {
+	env?: NodeJS.ProcessEnv;
+	log?: LogFn;
+	/** Injectable network and Blob writes, for tests */
+	deps?: NetDeps;
+	put?: PutFn;
+	/** The backup cron: do nothing if today's history file was already saved */
+	onlyIfHistoryMissing?: boolean;
+}
+
+export async function runSync(options: SyncOptions = {}): Promise<SyncResult | SyncSkipped> {
 	if (activeSync) return activeSync;
 	activeSync = sync(options).finally(() => {
 		activeSync = null;
@@ -379,40 +400,95 @@ export async function runSync(
 	return activeSync;
 }
 
-async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<SyncResult> {
+export interface SyncSkipped {
+	skipped: string;
+}
+
+/** True only when the file is definitely there; any doubt means run the sync. */
+async function historyExists(snapshotUrl: string, date: string, deps: NetDeps): Promise<boolean> {
+	try {
+		const url = new URL(`${HISTORY_PREFIX}${date}.json`, snapshotUrl);
+		url.searchParams.set('nc', String(Date.now()));
+		const res = await deps.fetch(url.toString(), { method: 'HEAD' });
+		return res.ok;
+	} catch {
+		return false;
+	}
+}
+
+async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	const config = getSyncConfig(options.env ?? process.env);
 	const log = options.log ?? console.log;
+	const deps = options.deps ?? defaultDeps;
+	const write: PutFn = options.put ?? put;
 	const start = new Date();
+
+	if (options.onlyIfHistoryMissing && config.snapshotUrl) {
+		const today = start.toISOString().slice(0, 10);
+		if (await historyExists(config.snapshotUrl, today, deps)) {
+			log(`History for ${today} already saved; backup sync not needed`);
+			return { skipped: `History for ${today} already saved` };
+		}
+		log(`History for ${today} is missing; running the backup sync`);
+	}
 
 	log('=== ZedExt Sync ===');
 
 	// If a snapshot should exist but can't be read, stop: the guard and carry-forward depend on it
-	const previous = config.snapshotUrl ? await fetchSnapshot(config.snapshotUrl) : null;
+	const previous = config.snapshotUrl
+		? await fetchSnapshot(config.snapshotUrl, (u) => deps.fetch(u))
+		: null;
 	log(
 		previous
 			? `Previous snapshot: ${previous.extensions.length} extensions`
 			: 'No previous snapshot'
 	);
 
-	const ids = await fetchRegistryIds(log);
-	const { extensions, lookedUp, firstPublished } = await fetchZedExtensions(ids, log);
+	const ids = await fetchRegistryIds(log, deps);
+	const { extensions, lookedUp, firstPublished } = await fetchZedExtensions(ids, log, deps);
+
+	// Saved first: lost days can't be backfilled, and the counts only need Zed, so an expired
+	// GitHub token or a refused snapshot below still keeps the day. Retried, but a failure here
+	// mustn't stop the snapshot. A second sync on the same day overwrites that day's file.
+	const history = buildHistory(new Date().toISOString(), extensions);
+	let historySaved = true;
+	try {
+		await withRetry(
+			() =>
+				write(`${HISTORY_PREFIX}${history.date}.json`, JSON.stringify(history), {
+					access: 'public',
+					addRandomSuffix: false,
+					allowOverwrite: true,
+					contentType: 'application/json',
+					token: config.blobToken
+				}),
+			deps
+		);
+		log(`History saved for ${history.date}`);
+	} catch (err) {
+		historySaved = false;
+		log(`History write failed for ${history.date}: ${(err as Error).message}`);
+	}
+
 	const needFirst = idsNeedingFirstPublished(
 		extensions,
 		firstPublished,
 		previous,
 		FIRST_PUBLISHED_LIMIT
 	);
-	for (const [id, date] of await fetchFirstPublished(needFirst, log)) firstPublished.set(id, date);
+	for (const [id, date] of await fetchFirstPublished(needFirst, log, deps)) {
+		firstPublished.set(id, date);
+	}
 
 	const keys = [...new Set(extensions.map((e) => repoKey(e.repository)).filter((k) => k !== null))];
-	const github = await fetchGitHubStats(keys, config.githubToken, log);
+	const github = await fetchGitHubStats(keys, config.githubToken, log, deps);
 
 	const { records, carriedForward } = buildRecords(extensions, github, previous, firstPublished);
 
 	assertPublishable(records, previous);
 
 	const snapshot: Snapshot = { generatedAt: new Date().toISOString(), extensions: records };
-	const blob = await put(SNAPSHOT_PATH, JSON.stringify(snapshot), {
+	const blob = await write(SNAPSHOT_PATH, JSON.stringify(snapshot), {
 		access: 'public',
 		addRandomSuffix: false,
 		allowOverwrite: true,
@@ -422,31 +498,9 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 		token: config.blobToken
 	});
 
-	// Lost days can't be backfilled, so retry; but a failure here mustn't undo the publish above.
-	// A second sync on the same day overwrites that day's file.
-	const history = buildHistory(snapshot);
-	let historySaved = true;
-	try {
-		await withRetry(
-			() =>
-				put(`${HISTORY_PREFIX}${history.date}.json`, JSON.stringify(history), {
-					access: 'public',
-					addRandomSuffix: false,
-					allowOverwrite: true,
-					contentType: 'application/json',
-					token: config.blobToken
-				}),
-			defaultDeps
-		);
-		log(`History saved for ${history.date}`);
-	} catch (err) {
-		historySaved = false;
-		log(`History write failed for ${history.date}: ${(err as Error).message}`);
-	}
-
 	// Theme previews come last: the snapshot above is what the site depends on, so slow or
 	// failing downloads can only ever cost previews, never the snapshot or history.
-	const previews = await syncPreviews(records, config, start.getTime(), log);
+	const previews = await syncPreviews(records, config, start.getTime(), log, deps, write);
 
 	const completedAt = new Date();
 	const elapsedSeconds = Number(((completedAt.getTime() - start.getTime()) / 1000).toFixed(1));
@@ -476,11 +530,13 @@ async function syncPreviews(
 	records: ExtensionRecord[],
 	config: SyncConfig,
 	startedAt: number,
-	log: LogFn
+	log: LogFn,
+	deps: NetDeps,
+	write: PutFn
 ): Promise<{ downloaded: number; failed: number; pending: number; saved: boolean }> {
 	const skipped = { downloaded: 0, failed: 0, pending: 0, saved: false };
 	const previous = config.snapshotUrl
-		? await loadPreviousPreviews(new URL(PREVIEWS_PATH, config.snapshotUrl))
+		? await loadPreviousPreviews(new URL(PREVIEWS_PATH, config.snapshotUrl), (u) => deps.fetch(u))
 		: { ok: true, bundle: null };
 	// Rebuilding from nothing would overwrite a good bundle with a partial one
 	if (!previous.ok) {
@@ -491,7 +547,8 @@ async function syncPreviews(
 	const result = await buildPreviews(records, previous.bundle, {
 		limit: config.previewLimit,
 		log,
-		deadline: startedAt + PREVIEW_DEADLINE_MS
+		deadline: startedAt + PREVIEW_DEADLINE_MS,
+		deps
 	});
 	if (previewsShrank(result.bundle, previous.bundle)) {
 		log('Theme previews not written: the bundle lost more than 10% of its themes');
@@ -501,7 +558,7 @@ async function syncPreviews(
 	try {
 		await withRetry(
 			() =>
-				put(PREVIEWS_PATH, JSON.stringify(result.bundle), {
+				write(PREVIEWS_PATH, JSON.stringify(result.bundle), {
 					access: 'public',
 					addRandomSuffix: false,
 					allowOverwrite: true,
@@ -509,7 +566,7 @@ async function syncPreviews(
 					cacheControlMaxAge: 300,
 					token: config.blobToken
 				}),
-			defaultDeps
+			deps
 		);
 		return { ...result, saved: true };
 	} catch (err) {
