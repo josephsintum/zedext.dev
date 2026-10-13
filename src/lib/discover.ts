@@ -33,10 +33,11 @@ export interface DiscoverList {
 const KEYWORD_EXCLUDES = ['themes', 'icon-themes', 'context-servers', 'agent-servers'];
 const DEFAULT_LIMIT = 48;
 
+/** In page order; the language hubs follow them, last */
 export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
-	{ key: 'stacks', title: 'Stacks' },
+	{ key: 'ai', title: 'AI' },
 	{ key: 'themes', title: 'Themes' },
-	{ key: 'ai', title: 'AI' }
+	{ key: 'stacks', title: 'Stacks' }
 ];
 
 export const DISCOVER_LISTS: DiscoverList[] = [
