@@ -1,23 +1,21 @@
 /**
- * An extension's changelog: its repo's CHANGELOG.md (or CHANGES.md), else its GitHub
+ * An extension's changelog: its repo's CHANGELOG.md, else its GitHub
  * Releases. Zed's packages don't include one, unlike VS Code's.
  */
 
-import type { GitHubContentEntry, GitHubRelease } from './types.js';
+import type { GitHubRelease } from './types.js';
 import { formatDate } from './utils/format.js';
 
 export const MAX_CHANGELOG_ENTRIES = 20;
 /** Some changelogs run to hundreds of KB; the page shows the start and links to the rest */
 const MAX_CHANGELOG_CHARS = 100_000;
 
-const FILE_PREFERENCE = ['changelog.md', 'changes.md'];
+/** Checked in this order; together they cover every changelog file found in Zed extension repos */
+export const CHANGELOG_FILES = ['CHANGELOG.md', 'changelog.md'];
 
-export function findChangelogFile(entries: GitHubContentEntry[]): GitHubContentEntry | null {
-	for (const wanted of FILE_PREFERENCE) {
-		const found = entries.find((e) => e.type === 'file' && e.name.toLowerCase() === wanted);
-		if (found) return found;
-	}
-	return null;
+/** HEAD resolves to the default branch, so no extra lookup is needed */
+export function rawFileUrl(owner: string, repo: string, file: string): string {
+	return `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${file}`;
 }
 
 /**

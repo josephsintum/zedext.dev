@@ -322,6 +322,24 @@ describe('runSync', () => {
 		expect(write).not.toHaveBeenCalled();
 	});
 
+	it('records which extensions have a changelog in the snapshot', async () => {
+		const write = put();
+		const d = deps((url) => {
+			if (url.endsWith('extensions.toml')) return new Response('[a]\nversion = "1.0.0"\n');
+			if (url.includes('max_schema_version'))
+				return json({ data: [zed('a', 'https://github.com/o/a')] });
+			if (url.includes('graphql'))
+				return json({ data: { r0: { stargazerCount: 1, pushedAt: null, licenseInfo: null } } });
+			if (url === 'https://raw.githubusercontent.com/o/a/HEAD/CHANGELOG.md')
+				return new Response(null, { status: 200 });
+			if (url.includes('/download')) return new Response(null, { status: 404 });
+			return json({ data: [zed('a', '')] });
+		});
+		await runSync({ env, log: silent, deps: d, put: write });
+		const [, body] = write.mock.calls.find(([path]) => path === 'extensions.json')!;
+		expect(JSON.parse(body).extensions[0]).toMatchObject({ id: 'a', changelog: 'file' });
+	});
+
 	describe('as the backup run', () => {
 		const backupEnv = { ...env, SNAPSHOT_URL: 'https://blob.test/extensions.json' };
 

@@ -1,30 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findChangelogFile, releasesToMarkdown, trimChangelog } from './changelog.js';
-import type { GitHubContentEntry, GitHubRelease } from './types.js';
-
-const entry = (name: string, type: GitHubContentEntry['type'] = 'file'): GitHubContentEntry => ({
-	name,
-	type,
-	download_url: `https://raw.test/${name}`,
-	html_url: `https://github.test/${name}`
-});
-
-describe('findChangelogFile', () => {
-	it('prefers CHANGELOG.md, matching any case, over CHANGES.md', () => {
-		const found = findChangelogFile([
-			entry('README.md'),
-			entry('CHANGES.md'),
-			entry('ChangeLog.md')
-		]);
-		expect(found?.name).toBe('ChangeLog.md');
-		expect(findChangelogFile([entry('CHANGES.md')])?.name).toBe('CHANGES.md');
-	});
-
-	it('ignores directories and repos without one', () => {
-		expect(findChangelogFile([entry('CHANGELOG.md', 'dir')])).toBeNull();
-		expect(findChangelogFile([entry('README.md')])).toBeNull();
-	});
-});
+import { releasesToMarkdown, trimChangelog } from './changelog.js';
+import type { GitHubRelease } from './types.js';
 
 describe('trimChangelog', () => {
 	const changelog = (n: number) =>

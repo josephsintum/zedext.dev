@@ -1,13 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { getCached } from './cache.js';
-import { findChangelogFile, releasesToMarkdown, trimChangelog } from '$lib/changelog.js';
-import type {
-	GitHubContentEntry,
-	GitHubRelease,
-	GitHubRepo,
-	GitHubReadme,
-	GitHubUser
-} from '$lib/types.js';
+import { CHANGELOG_FILES, rawFileUrl, releasesToMarkdown, trimChangelog } from '$lib/changelog.js';
+import type { GitHubRelease, GitHubRepo, GitHubReadme, GitHubUser } from '$lib/types.js';
 
 const GITHUB_API = 'https://api.github.com';
 const ONE_HOUR = 60 * 60 * 1000;
@@ -71,19 +65,20 @@ export interface Changelog {
 	url: string;
 }
 
-/** The repo's CHANGELOG.md (or CHANGES.md), else its GitHub Releases; null if neither. */
+/** The repo's CHANGELOG.md, else its GitHub Releases; null if neither. */
 export async function getChangelog(owner: string, repo: string): Promise<Changelog | null> {
 	return getCached(`gh:changelog:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
-		const base = `${GITHUB_API}/repos/${owner}/${repo}`;
-		const listing = await fetchOrNull(`${base}/contents/`);
-		const entries: unknown = listing ? await listing.json() : [];
-		const file = Array.isArray(entries) ? findChangelogFile(entries as GitHubContentEntry[]) : null;
-		if (file?.download_url) {
-			const res = await fetchOrNull(file.download_url);
-			if (res) return { markdown: trimChangelog(await res.text()), url: file.html_url };
+		// The raw host doesn't count against the API limit
+		for (const file of CHANGELOG_FILES) {
+			const res = await fetchOrNull(rawFileUrl(owner, repo, file));
+			if (res) {
+				return {
+					markdown: trimChangelog(await res.text()),
+					url: `https://github.com/${owner}/${repo}/blob/HEAD/${file}`
+				};
+			}
 		}
-
-		const releases = await fetchOrNull(`${base}/releases?per_page=30`);
+		const releases = await fetchOrNull(`${GITHUB_API}/repos/${owner}/${repo}/releases?per_page=30`);
 		const markdown = releases
 			? releasesToMarkdown((await releases.json()) as GitHubRelease[])
 			: null;

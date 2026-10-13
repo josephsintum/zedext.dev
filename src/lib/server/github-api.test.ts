@@ -12,12 +12,6 @@ function stubFetch(route: Route) {
 }
 afterEach(() => vi.unstubAllGlobals());
 
-const file = (owner: string, name: string) => ({
-	name,
-	type: 'file',
-	download_url: `https://raw.test/${owner}/${name}`,
-	html_url: `https://github.com/${owner}/r/blob/main/${name}`
-});
 const release = (body: string) => ({
 	tag_name: 'v1',
 	name: null,
@@ -28,27 +22,21 @@ const release = (body: string) => ({
 
 // Each test uses its own owner: results are cached in memory per repo
 describe('getChangelog', () => {
-	it("uses the repo's changelog file, linking to it on GitHub", async () => {
+	it("reads the repo's CHANGELOG.md from the raw host, linking to it on GitHub", async () => {
 		stubFetch((url) =>
-			url.endsWith('/repos/a/r/contents/')
-				? json([file('a', 'README.md'), file('a', 'CHANGELOG.md')])
-				: url === 'https://raw.test/a/CHANGELOG.md'
-					? new Response('# Changelog\n\n## 1.0.0\n\n- First')
-					: json({}, 404)
+			url === 'https://raw.githubusercontent.com/a/r/HEAD/CHANGELOG.md'
+				? new Response('# Changelog\n\n## 1.0.0\n\n- First')
+				: json({}, 404)
 		);
 		expect(await getChangelog('a', 'r')).toEqual({
 			markdown: '# Changelog\n\n## 1.0.0\n\n- First',
-			url: 'https://github.com/a/r/blob/main/CHANGELOG.md'
+			url: 'https://github.com/a/r/blob/HEAD/CHANGELOG.md'
 		});
 	});
 
 	it('falls back to GitHub Releases, linking to the releases page', async () => {
 		stubFetch((url) =>
-			url.endsWith('/repos/b/r/contents/')
-				? json([file('b', 'README.md')])
-				: url.includes('/repos/b/r/releases')
-					? json([release('- Notes')])
-					: json({}, 404)
+			url.includes('api.github.com/repos/b/r/releases') ? json([release('- Notes')]) : json({}, 404)
 		);
 		expect(await getChangelog('b', 'r')).toEqual({
 			markdown: '## v1 · Oct 9, 2026\n\n- Notes',
@@ -57,13 +45,7 @@ describe('getChangelog', () => {
 	});
 
 	it('returns null when there is neither a file nor releases with notes', async () => {
-		stubFetch((url) =>
-			url.endsWith('/repos/c/r/contents/')
-				? json([file('c', 'README.md')])
-				: url.includes('/releases')
-					? json([release('')])
-					: json({}, 404)
-		);
+		stubFetch((url) => (url.includes('/releases') ? json([release('')]) : json({}, 404)));
 		expect(await getChangelog('c', 'r')).toBeNull();
 	});
 
@@ -72,7 +54,7 @@ describe('getChangelog', () => {
 		await expect(getChangelog('d', 'r')).rejects.toThrow(/GitHub 403/);
 		expect(failing).toHaveBeenCalledTimes(1);
 		// Not cached: the next call asks GitHub again
-		const working = stubFetch((url) => (url.endsWith('/contents/') ? json([]) : json([])));
+		const working = stubFetch((url) => (url.includes('/releases') ? json([]) : json({}, 404)));
 		await expect(getChangelog('d', 'r')).resolves.toBeNull();
 		expect(working).toHaveBeenCalled();
 	});

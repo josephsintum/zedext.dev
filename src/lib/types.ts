@@ -48,7 +48,11 @@ export interface ExtensionRecord {
 	first_published_at: string | null;
 	version: string;
 	repository: string | null;
+	/** Where the extension's changelog comes from; null = checked, none; absent = not checked yet */
+	changelog?: ChangelogSource | null;
 }
+
+export type ChangelogSource = 'file' | 'releases';
 
 export interface Snapshot {
 	generatedAt: string;
@@ -82,14 +86,6 @@ export interface GitHubRelease {
 	body: string | null;
 	published_at: string | null;
 	draft: boolean;
-}
-
-/** One entry of a repo directory listing (GET /repos/{owner}/{repo}/contents/) */
-export interface GitHubContentEntry {
-	name: string;
-	type: 'file' | 'dir' | 'symlink' | 'submodule';
-	download_url: string | null;
-	html_url: string;
 }
 
 // --- GitHub User types ---

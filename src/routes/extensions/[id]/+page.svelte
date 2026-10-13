@@ -18,7 +18,30 @@
 	type PageTab = 'overview' | 'versions' | 'changelog';
 	let chosen = $state<{ id: string; tab: PageTab }>({ id: '', tab: 'overview' });
 	const pageTab = $derived(chosen.id === extension.id ? chosen.tab : 'overview');
-	const choose = (tab: PageTab) => (chosen = { id: extension.id, tab });
+	const choose = (tab: PageTab) => {
+		chosen = { id: extension.id, tab };
+		if (tab === 'changelog') loadChangelog(extension.id);
+	};
+
+	// Fetched on first open, once per extension; a failure can be retried by reopening
+	let changelog = $state<{
+		id: string;
+		status: 'loading' | 'ready' | 'error';
+		html?: string;
+		url?: string;
+	} | null>(null);
+	async function loadChangelog(id: string) {
+		if (changelog?.id === id && changelog.status !== 'error') return;
+		changelog = { id, status: 'loading' };
+		try {
+			const res = await fetch(`/extensions/${encodeURIComponent(id)}/changelog`);
+			if (!res.ok) throw new Error(String(res.status));
+			const body: { html: string; url: string } = await res.json();
+			if (changelog?.id === id) changelog = { id, status: 'ready', ...body };
+		} catch {
+			if (changelog?.id === id) changelog = { id, status: 'error' };
+		}
+	}
 
 	// The sidebar stays mounted (keeping its own state) and fills in when streamed content
 	// arrives. Full page loads deliver content inline, so it's there during SSR too.
@@ -39,7 +62,7 @@
 	const tabs = $derived([
 		{ id: 'overview' as const, label: 'Overview' },
 		{ id: 'versions' as const, label: 'Version History' },
-		...(content?.changelogHtml ? [{ id: 'changelog' as const, label: 'Changelog' }] : [])
+		...(data.hasChangelog ? [{ id: 'changelog' as const, label: 'Changelog' }] : [])
 	]);
 </script>
 
@@ -250,22 +273,43 @@
 				<div id="page-tab-versions" role="tabpanel">
 					<VersionTable {versions} />
 				</div>
-			{:else if pageTab === 'changelog' && content?.changelogHtml}
+			{:else if pageTab === 'changelog'}
 				<div id="page-tab-changelog" role="tabpanel">
-					<div
-						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-					>
-						<ReadmeRenderer html={content.changelogHtml} />
-					</div>
-					{#if content.changelogUrl}
+					{#if changelog?.id === extension.id && changelog.status === 'ready' && changelog.html}
+						<div
+							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+						>
+							<ReadmeRenderer html={changelog.html} />
+						</div>
 						<a
-							href={content.changelogUrl}
+							href={changelog.url}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="mt-3 inline-block text-[13px] text-[var(--color-accent)] hover:underline"
 						>
 							Full changelog on GitHub →
 						</a>
+					{:else if changelog?.id === extension.id && changelog.status === 'error'}
+						<p class="text-[13px] text-[var(--color-text-tertiary)]">
+							Couldn't load the changelog right now.
+							{#if extension.repository}
+								<a
+									href={extension.repository}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-[var(--color-accent)] hover:underline">View it on GitHub →</a
+								>
+							{/if}
+						</p>
+					{:else}
+						<div
+							class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+							aria-busy="true"
+						>
+							<div class="h-5 w-1/4 rounded bg-[var(--color-surface-hover)]"></div>
+							<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
+							<div class="h-3 w-5/6 rounded bg-[var(--color-surface-hover)]"></div>
+						</div>
 					{/if}
 				</div>
 			{/if}

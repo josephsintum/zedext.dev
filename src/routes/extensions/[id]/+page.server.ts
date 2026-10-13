@@ -5,8 +5,7 @@ import {
 	getRepoMetadata,
 	getReadmeMarkdown,
 	getLanguageDocsMarkdown,
-	getGitHubUser,
-	getChangelog
+	getGitHubUser
 } from '$lib/server/github-api.js';
 import { renderMarkdown } from '$lib/server/markdown.js';
 import { getSnapshot } from '$lib/server/snapshot.js';
@@ -19,9 +18,6 @@ export interface DetailContent {
 	readmeHtml: string | null;
 	zedDocsHtml: string | null;
 	zedDocsUrl: string | null;
-	changelogHtml: string | null;
-	/** Where "Full changelog on GitHub →" points */
-	changelogUrl: string | null;
 	repoOwnerAvatar: string | null;
 	/** False when a GitHub request failed (as opposed to "no README"), so the page isn't cached long. */
 	complete: boolean;
@@ -41,6 +37,10 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 	extensionRequest.catch(() => {});
 	// Cached bundle (or null); fetched alongside Zed's data, never fails the page
 	const previewsRequest = getPreviews();
+	// The sync records which extensions have a changelog; the tab loads it when opened
+	const changelogRequest = getSnapshot()
+		.then((s) => Boolean(s.index.byId.get(params.id)?.changelog))
+		.catch(() => false);
 
 	// The snapshot usually knows the repo already, so GitHub work can start alongside Zed's.
 	// It's only a hint: never wait on it or fail because of it.
@@ -80,7 +80,8 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 		isMonorepo,
 		repoOwner: parsed?.owner ?? null,
 		themePreview: (await previewsRequest)?.themes[extension.id]?.variants ?? null,
-		iconPreview: (await previewsRequest)?.icons[extension.id]?.variants ?? null
+		iconPreview: (await previewsRequest)?.icons[extension.id]?.variants ?? null,
+		hasChangelog: await changelogRequest
 	};
 
 	// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
@@ -100,23 +101,19 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 	const isMonorepo = parsed?.owner === 'zed-industries' && parsed?.repo === 'zed';
 	const ownRepo = parsed && !isMonorepo ? parsed : null;
 
-	const [langDocs, repoMeta, readme, owner, changelog] = await Promise.allSettled([
+	const [langDocs, repoMeta, readme, owner] = await Promise.allSettled([
 		getLanguageDocsMarkdown(id),
 		ownRepo ? getRepoMetadata(ownRepo.owner, ownRepo.repo) : null,
 		ownRepo ? getReadmeMarkdown(ownRepo.owner, ownRepo.repo) : null,
-		parsed ? getGitHubUser(parsed.owner) : null,
-		ownRepo ? getChangelog(ownRepo.owner, ownRepo.repo) : null
+		parsed ? getGitHubUser(parsed.owner) : null
 	]);
 	const value = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null);
-	let complete = [langDocs, repoMeta, readme, owner, changelog].every(
-		(r) => r.status === 'fulfilled'
-	);
+	let complete = [langDocs, repoMeta, readme, owner].every((r) => r.status === 'fulfilled');
 	if (!complete) console.error(`GitHub request failed for ${id}`);
 
 	const github = value(repoMeta);
 	let zedDocsHtml: string | null = null;
 	let readmeHtml: string | null = null;
-	let changelogHtml: string | null = null;
 	try {
 		const docsMarkdown = value(langDocs);
 		if (docsMarkdown) {
@@ -126,16 +123,6 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		if (ownRepo && readmeMarkdown) {
 			const branch = github?.default_branch ?? 'main';
 			readmeHtml = await renderMarkdown(readmeMarkdown, ownRepo.owner, ownRepo.repo, branch);
-		}
-		const changelogData = value(changelog);
-		if (ownRepo && changelogData) {
-			const branch = github?.default_branch ?? 'main';
-			changelogHtml = await renderMarkdown(
-				changelogData.markdown,
-				ownRepo.owner,
-				ownRepo.repo,
-				branch
-			);
 		}
 	} catch (err) {
 		console.error(`Markdown render failed for ${id}:`, err);
@@ -147,8 +134,6 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		readmeHtml,
 		zedDocsHtml,
 		zedDocsUrl: zedDocsHtml ? `https://zed.dev/docs/languages/${id}` : null,
-		changelogHtml,
-		changelogUrl: changelogHtml ? (value(changelog)?.url ?? null) : null,
 		repoOwnerAvatar: value(owner)?.avatar_url ?? null,
 		complete
 	};

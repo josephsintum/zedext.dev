@@ -8,7 +8,20 @@ import { put } from '@vercel/blob';
 import { parse as parseToml } from 'smol-toml';
 import { parseRepoUrl } from '../utils/parse-repo-url.js';
 import { parseAuthorNames } from '../utils/parse-author.js';
-import type { ExtensionRecord, Snapshot, ZedExtension, ZedExtensionResponse } from '../types.js';
+import {
+	CHANGELOG_CHECK_LIMIT,
+	changelogRepo,
+	changelogTargets,
+	detectChangelog,
+	withChangelogs
+} from './changelog-sync.js';
+import type {
+	ChangelogSource,
+	ExtensionRecord,
+	Snapshot,
+	ZedExtension,
+	ZedExtensionResponse
+} from '../types.js';
 import {
 	buildPreviews,
 	loadPreviousPreviews,
@@ -494,7 +507,13 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	const keys = [...new Set(extensions.map((e) => repoKey(e.repository)).filter((k) => k !== null))];
 	const github = await fetchGitHubStats(keys, config.githubToken, log, deps);
 
-	const { records, carriedForward } = buildRecords(extensions, github, previous, firstPublished);
+	const built = buildRecords(extensions, github, previous, firstPublished);
+	const records = withChangelogs(
+		built.records,
+		previous,
+		await checkChangelogs(built.records, previous, config.githubToken, log, deps)
+	);
+	const carriedForward = built.carriedForward;
 
 	assertPublishable(records, previous);
 
@@ -532,6 +551,32 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 		previewsPending: previews.pending,
 		previewsSaved: previews.saved
 	};
+}
+
+/** A failed check leaves the previous answer in place and is retried next sync. */
+async function checkChangelogs(
+	records: ExtensionRecord[],
+	previous: Snapshot | null,
+	token: string,
+	log: LogFn,
+	deps: NetDeps
+): Promise<Map<string, ChangelogSource | null>> {
+	const targets = changelogTargets(records, previous, CHANGELOG_CHECK_LIMIT);
+	const found = new Map<string, ChangelogSource | null>();
+	let failed = 0;
+	await mapConcurrent(targets, ZED_CONCURRENCY, async (r) => {
+		const repo = changelogRepo(r)!;
+		try {
+			found.set(r.id, await detectChangelog(repo.owner, repo.repo, token, deps));
+		} catch {
+			failed++;
+		}
+	});
+	if (targets.length > 0) {
+		const withOne = [...found.values()].filter(Boolean).length;
+		log(`Changelogs: checked ${found.size}/${targets.length} (${withOne} found, ${failed} failed)`);
+	}
+	return found;
 }
 
 /** Leave time for the bundle write before the 300 s function limit (/api/sync maxDuration). */
