@@ -46,6 +46,10 @@ export interface ExtensionRecord {
 	published_at: string;
 	version: string;
 	repository: string | null;
+	/** Color themes: [bg, keyword, string, function, type] from the first variant */
+	swatch?: string[];
+	/** Icon themes: a strip image exists at /icons/<id> */
+	iconPreview?: boolean;
 }
 
 export interface Snapshot {
