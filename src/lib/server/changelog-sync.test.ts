@@ -37,6 +37,19 @@ describe('withChangelogs', () => {
 		const out = withChangelogs([rec('a'), rec('b'), rec('c')], previous, found);
 		expect(out.map((r) => r.changelog)).toEqual(['file', null, undefined]);
 	});
+
+	it('forgets a "none" whose re-check failed, so the next sync checks it again', () => {
+		const previous = snap([rec('none', { changelog: null }), rec('has', { changelog: 'file' })]);
+		const out = withChangelogs(
+			[rec('none', { version: '1.1.0' }), rec('has', { version: '1.1.0' })],
+			previous,
+			new Map(),
+			new Set(['none', 'has'])
+		);
+		expect('changelog' in out[0]).toBe(false);
+		expect(out[1].changelog).toBe('file'); // a known changelog stays shown
+		expect(changelogTargets(out, snap(out), 10).map((r) => r.id)).toEqual(['none']);
+	});
 });
 
 describe('detectChangelog', () => {
@@ -79,6 +92,15 @@ describe('detectChangelog', () => {
 				: new Response(null, { status: 404 })
 		);
 		expect(await detectChangelog('o', 'r', 'token', autoOnly)).toBeNull();
+	});
+
+	it('gives every request a timeout, so a stalled connection cannot stall the sync', async () => {
+		const d = deps((url) =>
+			url.includes('api.github.com') ? json([]) : new Response(null, { status: 404 })
+		);
+		await detectChangelog('o', 'r', 'token', d);
+		expect(d.fetch.mock.calls.length).toBe(3);
+		for (const [, init] of d.fetch.mock.calls) expect(init?.signal).toBeInstanceOf(AbortSignal);
 	});
 
 	it('throws on a failure, so the repo is checked again next sync', async () => {

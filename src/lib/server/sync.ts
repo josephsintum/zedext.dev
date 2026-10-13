@@ -508,11 +508,8 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	const github = await fetchGitHubStats(keys, config.githubToken, log, deps);
 
 	const built = buildRecords(extensions, github, previous, firstPublished);
-	const records = withChangelogs(
-		built.records,
-		previous,
-		await checkChangelogs(built.records, previous, config.githubToken, log, deps)
-	);
+	const checked = await checkChangelogs(built.records, previous, config.githubToken, log, deps);
+	const records = withChangelogs(built.records, previous, checked.found, checked.failed);
 	const carriedForward = built.carriedForward;
 
 	assertPublishable(records, previous);
@@ -553,30 +550,32 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	};
 }
 
-/** A failed check leaves the previous answer in place and is retried next sync. */
+/** Failed checks are reported so a stale "none" is re-checked next sync (see withChangelogs). */
 async function checkChangelogs(
 	records: ExtensionRecord[],
 	previous: Snapshot | null,
 	token: string,
 	log: LogFn,
 	deps: NetDeps
-): Promise<Map<string, ChangelogSource | null>> {
+): Promise<{ found: Map<string, ChangelogSource | null>; failed: Set<string> }> {
 	const targets = changelogTargets(records, previous, CHANGELOG_CHECK_LIMIT);
 	const found = new Map<string, ChangelogSource | null>();
-	let failed = 0;
+	const failed = new Set<string>();
 	await mapConcurrent(targets, ZED_CONCURRENCY, async (r) => {
 		const repo = changelogRepo(r)!;
 		try {
 			found.set(r.id, await detectChangelog(repo.owner, repo.repo, token, deps));
 		} catch {
-			failed++;
+			failed.add(r.id);
 		}
 	});
 	if (targets.length > 0) {
 		const withOne = [...found.values()].filter(Boolean).length;
-		log(`Changelogs: checked ${found.size}/${targets.length} (${withOne} found, ${failed} failed)`);
+		log(
+			`Changelogs: checked ${found.size}/${targets.length} (${withOne} found, ${failed.size} failed)`
+		);
 	}
-	return found;
+	return { found, failed };
 }
 
 /** Leave time for the bundle write before the 300 s function limit (/api/sync maxDuration). */

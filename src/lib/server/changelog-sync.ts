@@ -34,18 +34,27 @@ export function changelogTargets(
 		.slice(0, limit);
 }
 
-/** This run's result where there is one; otherwise the previous snapshot's. */
+/**
+ * This run's result where there is one; otherwise the previous snapshot's. A failed
+ * re-check of a "none" is forgotten instead, so the next sync tries again (a version bump
+ * may have added a changelog); a known changelog stays shown.
+ */
 export function withChangelogs(
 	records: ExtensionRecord[],
 	previous: Snapshot | null,
-	found: Map<string, ChangelogSource | null>
+	found: Map<string, ChangelogSource | null>,
+	failed: Set<string> = new Set()
 ): ExtensionRecord[] {
 	const prevById = new Map(previous?.extensions.map((r) => [r.id, r]));
 	return records.map((r) => {
-		const changelog = found.has(r.id) ? found.get(r.id) : prevById.get(r.id)?.changelog;
+		let changelog = found.has(r.id) ? found.get(r.id) : prevById.get(r.id)?.changelog;
+		if (!found.has(r.id) && failed.has(r.id) && changelog === null) changelog = undefined;
 		return changelog === undefined ? r : { ...r, changelog };
 	});
 }
+
+/** Like the preview downloads: a stalled connection must not hold the sync past its limit */
+const REQUEST_TIMEOUT_MS = 10_000;
 
 /**
  * 'file' when the repo has a CHANGELOG.md (checked on raw.githubusercontent.com, which
@@ -59,13 +68,19 @@ export async function detectChangelog(
 	deps: NetDeps
 ): Promise<ChangelogSource | null> {
 	for (const file of CHANGELOG_FILES) {
-		const res = await deps.fetch(rawFileUrl(owner, repo, file), { method: 'HEAD' });
+		const res = await deps.fetch(rawFileUrl(owner, repo, file), {
+			method: 'HEAD',
+			signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+		});
 		if (res.ok) return 'file';
 		if (res.status !== 404) throw new Error(`raw.githubusercontent.com ${res.status}`);
 	}
 	const res = await deps.fetch(
 		`https://api.github.com/repos/${owner}/${repo}/releases?per_page=10`,
-		{ headers: { Authorization: `bearer ${token}`, Accept: 'application/vnd.github+json' } }
+		{
+			headers: { Authorization: `bearer ${token}`, Accept: 'application/vnd.github+json' },
+			signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+		}
 	);
 	if (res.status === 404) return null;
 	if (!res.ok) throw new Error(`GitHub releases ${res.status}`);
