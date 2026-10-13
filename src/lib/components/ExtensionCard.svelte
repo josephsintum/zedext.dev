@@ -3,7 +3,7 @@
 	import { formatNumber } from '$lib/utils/format.js';
 	import ProvideTag from './ProvideTag.svelte';
 
-	let { hit }: { hit: ExtensionHit } = $props();
+	let { hit, note }: { hit: ExtensionHit; note?: string } = $props();
 
 	const primaryProvides = $derived(
 		hit.provides.filter(
@@ -105,8 +105,12 @@
 			</span>
 		{/if}
 
-		<span class="ml-auto truncate text-[11px]">
-			{hit.authors[0] ?? 'Unknown'}
-		</span>
+		{#if note}
+			<span class="ml-auto truncate text-[11px] text-[var(--color-accent)]">{note}</span>
+		{:else}
+			<span class="ml-auto truncate text-[11px]">
+				{hit.authors[0] ?? 'Unknown'}
+			</span>
+		{/if}
 	</div>
 </a>
