@@ -42,6 +42,34 @@ export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
 
 export const DISCOVER_LISTS: DiscoverList[] = [
 	{
+		slug: 'everyday-files',
+		title: 'Everyday file types',
+		emoji: '🗂️',
+		description: 'Syntax support for the config and data files every project has.',
+		section: 'stacks',
+		match: {
+			keywords: [
+				'toml',
+				'dockerfile',
+				'docker',
+				'compose',
+				'make',
+				'makefile',
+				'sql',
+				'env',
+				'log',
+				'git',
+				'yaml',
+				'ini',
+				'csv',
+				'nginx',
+				'justfile',
+				'terraform'
+			]
+		},
+		hide: ['call-trans-opt-received', 'turbo-log-snippets']
+	},
+	{
 		slug: 'web-dev',
 		title: 'Web development',
 		emoji: '🌐',
@@ -77,34 +105,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 				'stylelint'
 			]
 		}
-	},
-	{
-		slug: 'everyday-files',
-		title: 'Everyday file types',
-		emoji: '🗂️',
-		description: 'Syntax support for the config and data files every project has.',
-		section: 'stacks',
-		match: {
-			keywords: [
-				'toml',
-				'dockerfile',
-				'docker',
-				'compose',
-				'make',
-				'makefile',
-				'sql',
-				'env',
-				'log',
-				'git',
-				'yaml',
-				'ini',
-				'csv',
-				'nginx',
-				'justfile',
-				'terraform'
-			]
-		},
-		hide: ['call-trans-opt-received', 'turbo-log-snippets']
 	},
 	{
 		slug: 'dark-themes',
