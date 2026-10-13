@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newThisWeek } from './new-extensions.js';
+import { newestExtensions } from './new-extensions.js';
 import type { ExtensionRecord, Snapshot } from './types.js';
 
 const rec = (id: string, first: string | null, downloads = 0) =>
@@ -9,21 +9,21 @@ const snapshot = (extensions: ExtensionRecord[]): Snapshot => ({
 	extensions
 });
 
-describe('newThisWeek', () => {
-	it('lists extensions first released in the 7 days before the sync, newest first', () => {
+describe('newestExtensions', () => {
+	it('lists the most recently first-released extensions, however old, newest first', () => {
 		const s = snapshot([
-			rec('old', '2026-10-06T06:59:00Z'),
-			rec('edge', '2026-10-06T07:00:00Z'),
+			rec('older', '2025-01-01T00:00:00Z'),
+			rec('unknown', null),
 			rec('newest', '2026-10-12T10:00:00Z'),
-			rec('unknown', null)
+			rec('last-month', '2026-09-01T00:00:00Z')
 		]);
-		expect(newThisWeek(s).map((r) => r.id)).toEqual(['newest', 'edge']);
+		expect(newestExtensions(s).map((r) => r.id)).toEqual(['newest', 'last-month', 'older']);
 	});
 
-	it('breaks same-day ties by downloads and caps the row', () => {
+	it('breaks ties by downloads and caps the row', () => {
 		const s = snapshot(
 			['a', 'b', 'c', 'd', 'e'].map((id, i) => rec(id, '2026-10-09T20:00:00Z', i))
 		);
-		expect(newThisWeek(s, 4).map((r) => r.id)).toEqual(['e', 'd', 'c', 'b']);
+		expect(newestExtensions(s, 4).map((r) => r.id)).toEqual(['e', 'd', 'c', 'b']);
 	});
 });
