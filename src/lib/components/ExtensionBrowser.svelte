@@ -27,8 +27,15 @@
 	let {
 		initialResults,
 		category = 'all',
-		intro
-	}: { initialResults: SearchResults; category?: string; intro: Snippet } = $props();
+		intro,
+		discover
+	}: {
+		initialResults: SearchResults;
+		category?: string;
+		intro: Snippet;
+		/** Rows shown above the list until the visitor searches */
+		discover?: Snippet;
+	} = $props();
 
 	const params = $derived(currentSearchParams());
 	let query = $derived(params.get('q') ?? '');
@@ -89,6 +96,10 @@
 		</div>
 	</div>
 </section>
+
+{#if discover && !query}
+	{@render discover()}
+{/if}
 
 <!-- Sticky filter bar -->
 <div

@@ -44,6 +44,8 @@ export interface ExtensionRecord {
 	github_license: string | null;
 	github_pushed_at: string | null;
 	published_at: string;
+	/** Release date of the extension's first version; null until the sync has looked it up */
+	first_published_at: string | null;
 	version: string;
 	repository: string | null;
 }

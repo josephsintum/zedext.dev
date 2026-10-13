@@ -86,7 +86,11 @@ function getSyncConfig(env: NodeJS.ProcessEnv): SyncConfig {
 
 // --- Shared with the runtime loader ---
 
-export function toRecord(ext: ZedExtension, github: GitHubStats | null): ExtensionRecord {
+export function toRecord(
+	ext: ZedExtension,
+	github: GitHubStats | null,
+	firstPublishedAt: string | null = null
+): ExtensionRecord {
 	return {
 		id: ext.id,
 		name: ext.name,
@@ -98,6 +102,7 @@ export function toRecord(ext: ZedExtension, github: GitHubStats | null): Extensi
 		github_license: github?.github_license ?? null,
 		github_pushed_at: github?.github_pushed_at ?? null,
 		published_at: ext.published_at,
+		first_published_at: firstPublishedAt,
 		version: ext.version,
 		repository: ext.repository ?? null
 	};
@@ -126,12 +131,14 @@ export function repoKey(repository: string | null | undefined): string | null {
 
 /**
  * Builds records, keeping the previous snapshot's GitHub fields for any repo
- * whose lookup failed this run (renamed, deleted, transient error).
+ * whose lookup failed this run (renamed, deleted, transient error), and its
+ * first release dates for extensions not looked up this run.
  */
 export function buildRecords(
 	extensions: ZedExtension[],
 	github: Map<string, GitHubStats | null>,
-	previous: Snapshot | null
+	previous: Snapshot | null,
+	firstPublished: Map<string, string> = new Map()
 ): { records: ExtensionRecord[]; carriedForward: number } {
 	const prevById = new Map(previous?.extensions.map((r) => [r.id, r]));
 	let carriedForward = 0;
@@ -148,7 +155,8 @@ export function buildRecords(
 			};
 			carriedForward++;
 		}
-		return toRecord(ext, stats);
+		const first = firstPublished.get(ext.id) ?? prev?.first_published_at ?? null;
+		return toRecord(ext, stats, first);
 	});
 
 	return { records, carriedForward };
@@ -190,11 +198,25 @@ async function fetchRegistryIds(log: LogFn): Promise<string[]> {
 /** Fail the sync rather than publish a snapshot missing more than this share of lookups. */
 const MAX_FAILED_LOOKUP_RATIO = 0.02;
 
+/**
+ * Every published version of one extension, oldest first, or [] if it was removed.
+ * Sorted here rather than trusting the API's order.
+ */
+async function fetchVersions(id: string, deps: NetDeps): Promise<ZedExtension[]> {
+	return withRetry(async () => {
+		const res = await deps.fetch(`${ZED_API}/extensions/${id}`);
+		if (isTransient(res.status)) throw new Error(`Zed API ${res.status} for ${id}`);
+		if (!res.ok) throw new FatalError(`Zed API ${res.status} for ${id}`);
+		const data: ZedExtensionResponse = await res.json();
+		return data.data.toSorted((a, b) => a.published_at.localeCompare(b.published_at));
+	}, deps);
+}
+
 export async function fetchZedExtensions(
 	ids: string[],
 	log: LogFn,
 	deps: NetDeps = defaultDeps
-): Promise<{ extensions: ZedExtension[]; lookedUp: number }> {
+): Promise<{ extensions: ZedExtension[]; lookedUp: number; firstPublished: Map<string, string> }> {
 	// The bulk endpoint caps at 1,000 results; look up the rest one by one
 	const bulk = await withRetry(async () => {
 		const res = await deps.fetch(`${ZED_API}/extensions?max_schema_version=1`);
@@ -202,25 +224,22 @@ export async function fetchZedExtensions(
 		return (await res.json()) as ZedExtensionResponse;
 	}, deps);
 	const byId = new Map(bulk.data.map((ext) => [ext.id, ext]));
+	// A lookup returns every version, so it gives the first release date for free
+	const firstPublished = new Map<string, string>();
 
 	const missing = ids.filter((id) => !byId.has(id));
 	let failed = 0;
-	const fetched = await mapConcurrent(missing, ZED_CONCURRENCY, async (id) => {
+	await mapConcurrent(missing, ZED_CONCURRENCY, async (id) => {
 		try {
-			return await withRetry(async () => {
-				const res = await deps.fetch(`${ZED_API}/extensions/${id}`);
-				if (isTransient(res.status)) throw new Error(`Zed API ${res.status} for ${id}`);
-				if (!res.ok) throw new FatalError(`Zed API ${res.status} for ${id}`);
-				const data: ZedExtensionResponse = await res.json();
-				// An empty result means the extension was removed: not a failure
-				return data.data[0] ?? null;
-			}, deps);
+			const versions = await fetchVersions(id, deps);
+			// An empty result means the extension was removed: not a failure
+			if (versions.length === 0) return;
+			byId.set(id, versions[versions.length - 1]);
+			firstPublished.set(id, versions[0].published_at);
 		} catch {
 			failed++;
-			return null;
 		}
 	});
-	for (const ext of fetched) if (ext) byId.set(ext.id, ext);
 
 	const lookedUp = byId.size - bulk.data.length;
 	log(
@@ -229,7 +248,29 @@ export async function fetchZedExtensions(
 	if (failed > Math.max(3, missing.length * MAX_FAILED_LOOKUP_RATIO)) {
 		throw new Error(`Too many Zed lookups failed (${failed}/${missing.length})`);
 	}
-	return { extensions: [...byId.values()], lookedUp };
+	return { extensions: [...byId.values()], lookedUp, firstPublished };
+}
+
+/**
+ * First release dates for extensions that don't have one yet (bulk entries only carry
+ * their latest version). A failed lookup is just retried on the next sync.
+ */
+export async function fetchFirstPublished(
+	ids: string[],
+	log: LogFn,
+	deps: NetDeps = defaultDeps
+): Promise<Map<string, string>> {
+	const first = new Map<string, string>();
+	await mapConcurrent(ids, ZED_CONCURRENCY, async (id) => {
+		try {
+			const versions = await fetchVersions(id, deps);
+			if (versions.length > 0) first.set(id, versions[0].published_at);
+		} catch {
+			// left null; the next sync tries again
+		}
+	});
+	if (ids.length > 0) log(`First release dates: ${first.size}/${ids.length} looked up`);
+	return first;
 }
 
 type GraphQLRepo = {
@@ -335,12 +376,18 @@ async function sync(options: { env?: NodeJS.ProcessEnv; log?: LogFn }): Promise<
 	);
 
 	const ids = await fetchRegistryIds(log);
-	const { extensions, lookedUp } = await fetchZedExtensions(ids, log);
+	const { extensions, lookedUp, firstPublished } = await fetchZedExtensions(ids, log);
+	// Release dates never change, so each extension is only looked up once
+	const prevFirst = new Map(previous?.extensions.map((r) => [r.id, r.first_published_at]));
+	const needFirst = extensions
+		.map((e) => e.id)
+		.filter((id) => !firstPublished.has(id) && !prevFirst.get(id));
+	for (const [id, date] of await fetchFirstPublished(needFirst, log)) firstPublished.set(id, date);
 
 	const keys = [...new Set(extensions.map((e) => repoKey(e.repository)).filter((k) => k !== null))];
 	const github = await fetchGitHubStats(keys, config.githubToken, log);
 
-	const { records, carriedForward } = buildRecords(extensions, github, previous);
+	const { records, carriedForward } = buildRecords(extensions, github, previous, firstPublished);
 
 	assertPublishable(records, previous);
 

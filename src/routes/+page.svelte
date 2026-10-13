@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ExtensionBrowser from '$lib/components/ExtensionBrowser.svelte';
+	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 
 	let { data } = $props();
 </script>
@@ -39,5 +40,22 @@
 				search.
 			</p>
 		</div>
+	{/snippet}
+	{#snippet discover()}
+		{#if data.newThisWeek.length > 0}
+			<section class="mx-auto max-w-6xl px-6 pt-8 pb-2" aria-labelledby="new-this-week">
+				<h2
+					id="new-this-week"
+					class="mb-3 text-[13px] font-semibold tracking-wider text-[var(--color-text-secondary)] uppercase"
+				>
+					New this week
+				</h2>
+				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+					{#each data.newThisWeek as hit (hit.id)}
+						<ExtensionCard {hit} />
+					{/each}
+				</div>
+			</section>
+		{/if}
 	{/snippet}
 </ExtensionBrowser>

@@ -3,6 +3,7 @@ import {
 	assertPublishable,
 	buildHistory,
 	buildRecords,
+	fetchFirstPublished,
 	fetchGitHubStats,
 	fetchZedExtensions,
 	repoKey,
@@ -77,6 +78,17 @@ describe('buildRecords', () => {
 		const { records, carriedForward } = buildRecords(exts, github, previous);
 		expect(records[1]).toMatchObject({ github_stars: 99, github_license: 'Apache-2.0' });
 		expect(carriedForward).toBe(1);
+	});
+
+	it('takes first release dates from this run, else from the previous snapshot', () => {
+		const previous = snapshotOf([{ id: 'b', first_published_at: '2025-03-01T00:00:00Z' }]);
+		const first = new Map([['a', '2024-02-14T00:00:00Z']]);
+		const { records } = buildRecords([...exts, zed('c', '')], new Map(), previous, first);
+		expect(records.map((r) => r.first_published_at)).toEqual([
+			'2024-02-14T00:00:00Z',
+			'2025-03-01T00:00:00Z',
+			null
+		]);
 	});
 
 	it('leaves stats empty for a failed lookup with no history', () => {
@@ -196,11 +208,60 @@ describe('fetchZedExtensions', () => {
 		expect(extensions.map((e) => e.id)).toEqual(['a']);
 	});
 
+	// Zed lists an extension's versions oldest first
+	const versions = (id: string, dates: string[]) =>
+		json({
+			data: dates.map((d, i) => ({ ...zed(id, ''), version: `0.0.${i + 1}`, published_at: d }))
+		});
+
+	it('uses the latest version of a looked-up extension and records its first release', async () => {
+		const d = deps((url) =>
+			url.includes('max_schema_version')
+				? bulk()
+				: versions('b', ['2024-01-01T00:00:00Z', '2024-06-01T00:00:00Z', '2025-01-01T00:00:00Z'])
+		);
+		const { extensions, firstPublished } = await fetchZedExtensions(['a', 'b'], silent, d);
+		const b = extensions.find((e) => e.id === 'b');
+		expect(b).toMatchObject({ version: '0.0.3', published_at: '2025-01-01T00:00:00Z' });
+		expect(firstPublished.get('b')).toBe('2024-01-01T00:00:00Z');
+		expect(firstPublished.has('a')).toBe(false); // bulk entries only carry the latest version
+	});
+
 	it('fails the sync when many lookups still fail after retries', async () => {
 		const ids = ['a', ...Array.from({ length: 50 }, (_, i) => `x${i}`)];
 		const d = deps((url) =>
 			url.includes('max_schema_version') ? bulk() : new Response('', { status: 503 })
 		);
 		await expect(fetchZedExtensions(ids, silent, d)).rejects.toThrow(/lookups failed/);
+	});
+});
+
+describe('fetchFirstPublished', () => {
+	it('returns the earliest version date for each extension', async () => {
+		const d = deps((url) =>
+			json({
+				data: [
+					{ ...zed('a', ''), published_at: '2024-05-01T00:00:00Z' },
+					{ ...zed('a', ''), published_at: '2024-02-01T00:00:00Z' }
+				].map((v) => ({ ...v, id: url.split('/').pop() }))
+			})
+		);
+		const first = await fetchFirstPublished(['a', 'b'], silent, d);
+		expect(Object.fromEntries(first)).toEqual({
+			a: '2024-02-01T00:00:00Z',
+			b: '2024-02-01T00:00:00Z'
+		});
+	});
+
+	it('skips extensions whose lookup fails or that were removed, without failing the sync', async () => {
+		const d = deps((url) =>
+			url.endsWith('/bad')
+				? new Response('', { status: 503 })
+				: url.endsWith('/gone')
+					? json({ data: [] })
+					: json({ data: [{ ...zed('ok', ''), published_at: '2024-02-01T00:00:00Z' }] })
+		);
+		const first = await fetchFirstPublished(['ok', 'bad', 'gone'], silent, d);
+		expect([...first.keys()]).toEqual(['ok']);
 	});
 });

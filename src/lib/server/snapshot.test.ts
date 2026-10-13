@@ -40,6 +40,7 @@ const blobSnapshot = (generatedAt: string, ids = ['a', 'b']): Snapshot => ({
 		github_license: null,
 		github_pushed_at: null,
 		published_at: '2026-01-01T00:00:00Z',
+		first_published_at: null,
 		version: '1.0.0',
 		repository: null
 	}))
