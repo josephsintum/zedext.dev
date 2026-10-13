@@ -201,8 +201,11 @@ export function idsNeedingFirstPublished(
 		.slice(0, limit);
 }
 
-/** Throws instead of letting a broken run replace a good snapshot. */
-export function assertPublishable(records: ExtensionRecord[], previous: Snapshot | null): void {
+/**
+ * Throws instead of letting a broken run replace a good snapshot or record a short
+ * history day (a partial day-7 file would skew Trending; a missing one is just skipped).
+ */
+export function assertPublishable(records: { id: string }[], previous: Snapshot | null): void {
 	if (records.length === 0) throw new Error('Refusing to publish an empty snapshot');
 	if (previous && records.length < previous.extensions.length * MIN_RETAINED_RATIO) {
 		throw new Error(
@@ -405,11 +408,17 @@ export interface SyncSkipped {
 }
 
 /** True only when the file is definitely there; any doubt means run the sync. */
-async function historyExists(snapshotUrl: string, date: string, deps: NetDeps): Promise<boolean> {
+async function historyExists(
+	snapshotUrl: string,
+	date: string,
+	deps: NetDeps,
+	log: LogFn
+): Promise<boolean> {
 	try {
 		const url = new URL(`${HISTORY_PREFIX}${date}.json`, snapshotUrl);
 		url.searchParams.set('nc', String(Date.now()));
 		const res = await deps.fetch(url.toString(), { method: 'HEAD' });
+		if (!res.ok && res.status !== 404) log(`History check got ${res.status} for ${date}`);
 		return res.ok;
 	} catch {
 		return false;
@@ -425,7 +434,7 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 
 	if (options.onlyIfHistoryMissing && config.snapshotUrl) {
 		const today = start.toISOString().slice(0, 10);
-		if (await historyExists(config.snapshotUrl, today, deps)) {
+		if (await historyExists(config.snapshotUrl, today, deps, log)) {
 			log(`History for ${today} already saved; backup sync not needed`);
 			return { skipped: `History for ${today} already saved` };
 		}
@@ -450,6 +459,7 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	// Saved first: lost days can't be backfilled, and the counts only need Zed, so an expired
 	// GitHub token or a refused snapshot below still keeps the day. Retried, but a failure here
 	// mustn't stop the snapshot. A second sync on the same day overwrites that day's file.
+	assertPublishable(extensions, previous);
 	const history = buildHistory(new Date().toISOString(), extensions);
 	let historySaved = true;
 	try {
@@ -458,7 +468,8 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 				write(`${HISTORY_PREFIX}${history.date}.json`, JSON.stringify(history), {
 					access: 'public',
 					addRandomSuffix: false,
-					allowOverwrite: true,
+					// The backup run never replaces the midnight counts, even if its check was wrong
+					allowOverwrite: !options.onlyIfHistoryMissing,
 					contentType: 'application/json',
 					token: config.blobToken
 				}),

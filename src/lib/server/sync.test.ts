@@ -289,7 +289,10 @@ describe('runSync', () => {
 			if (url.includes('graphql')) return github();
 			return json({ data: [zed('a', '')] }); // first release lookup
 		});
-	const put = () => vi.fn(async (path: string) => ({ url: `https://blob.test/${path}` }));
+	const put = () =>
+		vi.fn(async (path: string, _body: string, _options: object) => ({
+			url: `https://blob.test/${path}`
+		}));
 
 	it("saves the day's download history even when GitHub rejects the token", async () => {
 		const write = put();
@@ -298,6 +301,25 @@ describe('runSync', () => {
 		const paths = write.mock.calls.map(([path]) => path);
 		expect(paths).toHaveLength(1);
 		expect(paths[0]).toMatch(/^history\/\d{4}-\d{2}-\d{2}\.json$/);
+	});
+
+	it('does not save history from a Zed result much smaller than the previous snapshot', async () => {
+		const write = put();
+		const previous = snapshotOf(Array.from({ length: 20 }, (_, i) => ({ id: `e${i}` })));
+		const d = deps((url) => {
+			if (url.startsWith('https://blob.test/extensions.json')) return json(previous);
+			if (url.endsWith('extensions.toml')) return new Response('[a]\nversion = "1.0.0"\n');
+			return json({ data: [zed('a', '')] });
+		});
+		await expect(
+			runSync({
+				env: { ...env, SNAPSHOT_URL: 'https://blob.test/extensions.json' },
+				log: silent,
+				deps: d,
+				put: write
+			})
+		).rejects.toThrow(/Refusing/);
+		expect(write).not.toHaveBeenCalled();
 	});
 
 	describe('as the backup run', () => {
@@ -332,6 +354,27 @@ describe('runSync', () => {
 			await expect(
 				runSync({ env: backupEnv, log: silent, deps: d, put: write, onlyIfHistoryMissing: true })
 			).rejects.toThrow(/Snapshot fetch failed/);
+		});
+
+		it('never overwrites a history file, in case the check wrongly said it was missing', async () => {
+			const write = put();
+			const previous = snapshotOf([{ id: 'a' }]);
+			const d = deps((url, init) => {
+				if (init?.method === 'HEAD') return new Response(null, { status: 403 });
+				if (url.startsWith('https://blob.test/extensions.json')) return json(previous);
+				if (url.endsWith('extensions.toml')) return new Response('[a]\nversion = "1.0.0"\n');
+				if (url.includes('graphql')) return new Response('', { status: 401 });
+				return json({ data: [zed('a', '')] });
+			});
+			await runSync({
+				env: backupEnv,
+				log: silent,
+				deps: d,
+				put: write,
+				onlyIfHistoryMissing: true
+			}).catch(() => {});
+			const [, , options] = write.mock.calls.find(([path]) => path.startsWith('history/'))!;
+			expect(options).toMatchObject({ allowOverwrite: false });
 			const urls = d.fetch.mock.calls.map(([url]) => String(url));
 			expect(urls.some((u) => u.startsWith('https://blob.test/extensions.json'))).toBe(true);
 		});
