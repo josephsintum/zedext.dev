@@ -1,5 +1,5 @@
 import type { ExtensionRecord } from './types.js';
-import type { LanguageHub } from './languages.js';
+import { LANGUAGE_HUBS, type LanguageHub } from './languages.js';
 import { formatNumber } from './utils/format.js';
 import { hasKeyword, nameWords } from './words.js';
 
@@ -58,6 +58,25 @@ export function matchesHub(hub: LanguageHub, r: ExtensionRecord): boolean {
 	if (r.provides.some((p) => NOT_IN_HUBS.includes(p))) return false;
 	if (hub.include?.includes(r.id)) return true;
 	return hasKeyword(nameWords(r), hub.keywords);
+}
+
+export interface HubSummary {
+	slug: string;
+	name: string;
+	emoji: string;
+	builtIn: boolean;
+	count: number;
+}
+
+/** One card per language hub, for /languages and Discover */
+export function hubSummaries(records: ExtensionRecord[]): HubSummary[] {
+	return LANGUAGE_HUBS.map((hub) => ({
+		slug: hub.slug,
+		name: hub.name,
+		emoji: hub.emoji,
+		builtIn: hub.builtIn.length > 0,
+		count: records.filter((r) => matchesHub(hub, r)).length
+	}));
 }
 
 function groupFor(r: ExtensionRecord): HubGroupKey {

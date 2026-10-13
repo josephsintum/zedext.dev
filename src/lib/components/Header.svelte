@@ -18,13 +18,7 @@
 				href="/collections"
 				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
-				Collections
-			</a>
-			<a
-				href="/languages"
-				class="text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
-			>
-				Languages
+				Discover
 			</a>
 			<a
 				href="https://zed.dev/docs/extensions/developing-extensions"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildHub, faqJsonLd, matchesHub } from './language-hub.js';
+import { buildHub, faqJsonLd, hubSummaries, matchesHub } from './language-hub.js';
 import { getLanguageHub, type LanguageHub } from './languages.js';
 import type { ExtensionRecord } from './types.js';
 
@@ -163,5 +163,15 @@ describe('faqJsonLd', () => {
 				{ '@type': 'Question', name: 'Q?', acceptedAnswer: { '@type': 'Answer', text: 'A.' } }
 			]
 		});
+	});
+});
+
+describe('hubSummaries', () => {
+	it('lists every hub with its match count and whether Zed has it built in', () => {
+		const summaries = hubSummaries(records);
+		const py = summaries.find((s) => s.slug === 'python')!;
+		expect(py).toMatchObject({ name: 'Python', builtIn: true });
+		expect(py.count).toBe(records.filter((r) => matchesHub(python, r)).length);
+		expect(summaries.find((s) => s.slug === 'java')).toMatchObject({ builtIn: false });
 	});
 });
