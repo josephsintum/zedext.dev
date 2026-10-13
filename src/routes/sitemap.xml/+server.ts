@@ -1,5 +1,9 @@
 import type { RequestHandler } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
+import { CATEGORY_PAGES } from '$lib/categories.js';
+import { LANGUAGE_HUBS } from '$lib/languages.js';
+import { COLLECTIONS } from '$lib/collections.js';
+import { ALTERNATIVES_MIN_DOWNLOADS } from '$lib/search/similar.js';
 
 const SITE = 'https://zedext.dev';
 
@@ -19,6 +23,32 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 	const urls = [
 		{ loc: SITE, changefreq: 'daily', priority: '1.0', lastmod: today },
 		{ loc: `${SITE}/about`, changefreq: 'monthly', priority: '0.3' },
+		...CATEGORY_PAGES.map((c) => ({
+			loc: `${SITE}/${c.slug}`,
+			changefreq: 'daily',
+			priority: '0.9',
+			lastmod: today
+		})),
+		{ loc: `${SITE}/languages`, changefreq: 'weekly', priority: '0.9', lastmod: today },
+		...LANGUAGE_HUBS.map((h) => ({
+			loc: `${SITE}/languages/${h.slug}`,
+			changefreq: 'weekly',
+			priority: '0.9',
+			lastmod: today
+		})),
+		{ loc: `${SITE}/collections`, changefreq: 'weekly', priority: '0.7' },
+		...COLLECTIONS.map((c) => ({
+			loc: `${SITE}/collections/${c.slug}`,
+			changefreq: 'weekly',
+			priority: '0.7'
+		})),
+		...snapshot.extensions
+			.filter((ext) => ext.download_count >= ALTERNATIVES_MIN_DOWNLOADS)
+			.map((ext) => ({
+				loc: `${SITE}/extensions/${ext.id}/alternatives`,
+				changefreq: 'weekly',
+				priority: '0.5'
+			})),
 		...snapshot.extensions.map((ext) => ({
 			loc: `${SITE}/extensions/${ext.id}`,
 			changefreq: 'weekly' as const,
