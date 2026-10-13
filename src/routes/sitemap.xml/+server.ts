@@ -10,7 +10,7 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 	});
 
 	// Fetch all extensions from Algolia (paginate to get them all)
-	const allHits: { name: string; published_at?: string }[] = [];
+	const allHits: { objectID: string; published_at?: string }[] = [];
 	let page = 0;
 	const hitsPerPage = 1000;
 
@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 		{ loc: SITE, changefreq: 'daily', priority: '1.0', lastmod: today },
 		{ loc: `${SITE}/about`, changefreq: 'monthly', priority: '0.3' },
 		...allHits.map((ext) => ({
-			loc: `${SITE}/extensions/${ext.name}`,
+			loc: `${SITE}/extensions/${ext.objectID}`,
 			changefreq: 'weekly' as const,
 			priority: '0.8',
 			lastmod: ext.published_at ? ext.published_at.split('T')[0] : undefined

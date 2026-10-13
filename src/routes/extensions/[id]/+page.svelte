@@ -23,10 +23,10 @@
 		name="description"
 		content={extension.description ?? `${extension.name} extension for the Zed editor`}
 	/>
-	<link rel="canonical" href={`https://zedext.dev/extensions/${extension.name}`} />
+	<link rel="canonical" href={`https://zedext.dev/extensions/${extension.id}`} />
 	<meta property="og:type" content="website" />
 	<meta property="og:site_name" content="ZedExt" />
-	<meta property="og:url" content={`https://zedext.dev/extensions/${extension.name}`} />
+	<meta property="og:url" content={`https://zedext.dev/extensions/${extension.id}`} />
 	<meta property="og:title" content={`${extension.name} — ZedExt`} />
 	<meta
 		property="og:description"
