@@ -10,9 +10,9 @@
 
 	const jumps = $derived([
 		...(data.newest.length > 0 ? [{ id: 'new', label: 'New' }] : []),
-		...(data.updated.length > 0 ? [{ id: 'updated', label: 'Updated' }] : []),
-		...data.sections.map((s) => ({ id: s.key, label: s.title })),
 		...(data.themes.length > 0 ? [{ id: 'themes', label: 'Themes' }] : []),
+		...data.sections.map((s) => ({ id: s.key, label: s.title })),
+		...(data.updated.length > 0 ? [{ id: 'updated', label: 'Updated' }] : []),
 		{ id: 'languages', label: 'Languages' }
 	]);
 </script>
@@ -55,11 +55,7 @@
 
 	{#if data.newest.length > 0}
 		<section class="mt-10">
-			{@render heading(
-				'new',
-				'New',
-				'Just added to the registry · themes have their own section below'
-			)}
+			{@render heading('new', 'New', 'Just added to the registry · themes have their own section')}
 			<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 				{#each data.newest as hit (hit.id)}
 					<ExtensionCard {hit} note="Added {timeAgo(hit.first_published_at!)}" />
@@ -68,12 +64,18 @@
 		</section>
 	{/if}
 
-	{#if data.updated.length > 0}
+	{#if data.themes.length > 0}
 		<section class="mt-10">
-			{@render heading('updated', 'Recently updated', 'Fresh releases of popular extensions')}
-			<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-				{#each data.updated as hit (hit.id)}
-					<ExtensionCard {hit} note="Updated {timeAgo(hit.published_at)}" />
+			{@render heading(
+				'themes',
+				'Themes',
+				'Pick one to preview it, then switch between dark and light',
+				'/discover/themes',
+				'Browse all themes'
+			)}
+			<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+				{#each data.themes as entry (entry.id)}
+					<ThemePaletteCard {entry} href={themeHref(entry.id, 'dark')} />
 				{/each}
 			</div>
 		</section>
@@ -96,18 +98,12 @@
 		{/if}
 	{/each}
 
-	{#if data.themes.length > 0}
-		<section class="mt-14 border-t border-[var(--color-border)] pt-8">
-			{@render heading(
-				'themes',
-				'Themes',
-				'Pick one to preview it, then switch between dark and light',
-				'/discover/themes',
-				'Browse all themes'
-			)}
-			<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-				{#each data.themes as entry (entry.id)}
-					<ThemePaletteCard {entry} href={themeHref(entry.id, 'dark')} />
+	{#if data.updated.length > 0}
+		<section class="mt-10">
+			{@render heading('updated', 'Recently updated', 'Fresh releases of popular extensions')}
+			<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+				{#each data.updated as hit (hit.id)}
+					<ExtensionCard {hit} note="Updated {timeAgo(hit.published_at)}" />
 				{/each}
 			</div>
 		</section>
