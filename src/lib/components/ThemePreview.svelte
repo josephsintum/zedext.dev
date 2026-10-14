@@ -29,6 +29,8 @@
 	const c = $derived(themeColors(current));
 	/** The line with the cursor, drawn as Zed's active line */
 	const ACTIVE_LINE = 3;
+	/** Every tab pads to the longest sample, so switching languages never resizes the window */
+	const MAX_LINES = Math.max(...SAMPLES.map((s) => s.lines.length));
 
 	function chooseMode(next: 'light' | 'dark') {
 		mode = next;
@@ -218,7 +220,8 @@
 									class="ml-px inline-block h-[1.1em] w-0.5 align-[-0.2em]"
 									style:background-color="var(--cursor)"
 									aria-hidden="true"></span>{/if}</span
-						></div>{/each}</pre>
+						></div>{/each}{#each { length: MAX_LINES - sample.lines.length } as _, k (k)}<div
+						aria-hidden="true">&nbsp;</div>{/each}</pre>
 		</div>
 
 		<div
