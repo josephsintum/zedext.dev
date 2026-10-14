@@ -112,6 +112,38 @@ describe('buildPreviews time limits', () => {
 		expect(pending).toBe(1); // stale because of the format, even though the version matches
 		expect(bundle.themes.a.version).toBe('1.0.0');
 	});
+
+	it('keeps migrating old-format themes on later runs, without re-downloading icon themes', async () => {
+		const legacy: PreviewBundle = {
+			...empty,
+			format: PREVIEW_FORMAT - 1,
+			themes: {
+				a: { version: '1.0.0', variants: [] },
+				b: { version: '1.0.0', variants: [] }
+			},
+			icons: { c: { version: '1.0.0', variants: [] } }
+		};
+		const records = [rec('a', ['themes']), rec('b', ['themes']), rec('c', ['icon-themes'])];
+		const d = deps({
+			a: tarGz({ 'themes/a.json': themeJson('#aaaaaa') }),
+			b: tarGz({ 'themes/b.json': themeJson('#bbbbbb') })
+		});
+		const opts = { limit: 1, log: silent, deps: d };
+
+		const night1 = await buildPreviews(records, legacy, opts);
+		expect(night1.downloaded).toBe(1);
+		const night2 = await buildPreviews(records, night1.bundle, opts);
+		expect(night2.downloaded).toBe(1);
+		const night3 = await buildPreviews(records, night2.bundle, opts);
+
+		expect(night3.downloaded).toBe(0);
+		expect(night3.pending).toBe(0);
+		expect(themeColors(night3.bundle.themes.a.variants[0]).bg).toBe('#aaaaaa');
+		expect(themeColors(night3.bundle.themes.b.variants[0]).bg).toBe('#bbbbbb');
+		const urls = d.fetch.mock.calls.map(([u]) => String(u));
+		expect(urls.some((u) => u.includes('/c/'))).toBe(false); // icon parsing didn't change
+		expect(night3.bundle.icons.c.version).toBe('1.0.0');
+	});
 });
 
 describe('loadPreviousPreviews', () => {

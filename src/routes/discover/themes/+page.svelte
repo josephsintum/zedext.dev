@@ -11,12 +11,16 @@
 
 	let { data } = $props();
 
+	/** Pinning the ~500px preview only works with room left for the cards (matches the class) */
+	const PIN_QUERY = '(min-width: 768px) and (min-height: 760px)';
+
 	let appearance = $derived<Appearance>(data.appearance);
 	let selectedId = $derived<string | null>(data.themeId);
 	/** Full lists fetched by "Show all", per appearance */
 	let loaded = $state<Record<Appearance, ThemeEntry[] | null>>({ dark: null, light: null });
-	let loading = $state(false);
-	let failed = $state(false);
+	/** "Show all" state, per appearance so a slow dark list doesn't block the light button */
+	let loading = $state<Record<Appearance, boolean>>({ dark: false, light: false });
+	let failed = $state<Record<Appearance, boolean>>({ dark: false, light: false });
 	let previewEl = $state<HTMLElement>();
 
 	const list = $derived(loaded[appearance] ?? data.entries[appearance]);
@@ -59,6 +63,11 @@
 		);
 	}
 
+	/** A failed load only matters until a retry (hover, focus, click) succeeds */
+	const selectedFailed = $derived(
+		!!selected && failedId === selected.id && !variantsOf(selected.id)
+	);
+
 	const preview = $derived.by(() => {
 		const loadedSelected = variantsOf(selected?.id);
 		if (selected && loadedSelected) return { id: selected.id, variants: loadedSelected };
@@ -86,7 +95,6 @@
 		const nextList = loaded[next] ?? data.entries[next];
 		selectedId = nextList.some((e) => e.id === keep) ? (keep ?? null) : (nextList[0]?.id ?? null);
 		if (selectedId) show(selectedId);
-		failed = false;
 		syncUrl();
 	}
 
@@ -94,24 +102,24 @@
 		selectedId = id;
 		show(id);
 		syncUrl();
-		// On phones the preview isn't pinned, so bring it into view
-		if (window.matchMedia('(max-width: 767px)').matches) {
+		// The preview is only pinned on large windows (PIN_QUERY); elsewhere bring it into view
+		if (!window.matchMedia(PIN_QUERY).matches) {
 			previewEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
 	}
 
 	async function showAll() {
 		const which = appearance;
-		loading = true;
-		failed = false;
+		loading[which] = true;
+		failed[which] = false;
 		try {
 			const res = await fetch(`/discover/themes.json?appearance=${which}`);
 			if (!res.ok) throw new Error(String(res.status));
 			loaded[which] = (await res.json()) as ThemeEntry[];
 		} catch {
-			failed = true;
+			failed[which] = true;
 		} finally {
-			loading = false;
+			loading[which] = false;
 		}
 	}
 </script>
@@ -155,10 +163,10 @@
 	</div>
 
 	{#if selected}
-		<!-- Pinned under the header on wider screens so a click anywhere in the grid shows up here -->
+		<!-- Pinned under the header on large windows so a click anywhere in the grid shows up here -->
 		<section
 			bind:this={previewEl}
-			class="z-10 mt-4 scroll-mt-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 md:sticky md:top-14"
+			class="z-10 mt-4 scroll-mt-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
 			aria-label="Theme preview"
 		>
 			<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
@@ -174,14 +182,14 @@
 			{#if preview && previewVariants.length > 0}
 				<div
 					class="transition-opacity {preview.id !== selected.id ? 'opacity-60' : ''}"
-					aria-busy={preview.id !== selected.id && failedId !== selected.id}
+					aria-busy={preview.id !== selected.id && !selectedFailed}
 				>
 					{#key `${appearance}:${preview.id}`}
 						<ThemePreview variants={previewVariants} size="lg" />
 					{/key}
 				</div>
 			{/if}
-			{#if failedId === selected.id}
+			{#if selectedFailed}
 				<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]">
 					Couldn’t load this theme’s colors. Try again.
 				</p>
@@ -207,12 +215,12 @@
 				<button
 					type="button"
 					onclick={showAll}
-					disabled={loading}
+					disabled={loading[appearance]}
 					class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-border-hover)] disabled:opacity-60"
 				>
-					{loading ? 'Loading…' : `Show all ${total} ${appearance} themes`}
+					{loading[appearance] ? 'Loading…' : `Show all ${total} ${appearance} themes`}
 				</button>
-				{#if failed}
+				{#if failed[appearance]}
 					<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]">
 						Couldn’t load the rest. Try again.
 					</p>

@@ -22,8 +22,14 @@ const USER_AGENT = 'zedext-sync (+https://zedext.dev)';
 const DOWNLOAD_CONCURRENCY = 8;
 /** A 1 MB archive takes ~1.4 s; a stalled connection must not eat the whole cron. */
 const DOWNLOAD_TIMEOUT_MS = 15_000;
-/** Bump when parsing changes: entries from older bundles are then re-downloaded. */
+/**
+ * Bump when theme parsing changes, or when themeColors() fallbacks change (stored colors are
+ * compacted against them). Each entry records its format, so old ones keep migrating, at
+ * the download limit per run, until all are current.
+ */
 export const PREVIEW_FORMAT = 4;
+/** Icon-theme parsing has its own format, so theme changes don't re-download icon themes */
+export const ICON_FORMAT = 3;
 /** Refuse to publish a bundle that lost more than this share of the previous themes. */
 const MIN_RETAINED_RATIO = 0.9;
 
@@ -98,19 +104,21 @@ export async function buildPreviews(
 		themes: {},
 		icons: {}
 	};
-	const sameFormat = previous?.format === PREVIEW_FORMAT;
 	const stale: ExtensionRecord[] = [];
+	// Entries written before formats were stored per entry carry the bundle's format
+	const formatOf = (entry: { format?: number }) => entry.format ?? previous?.format ?? 0;
 
 	for (const r of records.filter((r) => isTheme(r) || isIconTheme(r))) {
 		const prevTheme = previous?.themes[r.id];
 		const prevIcons = previous?.icons[r.id];
 		// Kept even when stale, until a fresh download replaces them
-		if (prevTheme) bundle.themes[r.id] = prevTheme;
-		if (prevIcons) bundle.icons[r.id] = prevIcons;
+		if (prevTheme) bundle.themes[r.id] = { ...prevTheme, format: formatOf(prevTheme) };
+		if (prevIcons) bundle.icons[r.id] = { ...prevIcons, format: formatOf(prevIcons) };
 		const current =
-			sameFormat &&
-			(!isTheme(r) || prevTheme?.version === r.version) &&
-			(!isIconTheme(r) || prevIcons?.version === r.version);
+			(!isTheme(r) ||
+				(prevTheme?.version === r.version && formatOf(prevTheme) === PREVIEW_FORMAT)) &&
+			(!isIconTheme(r) ||
+				(prevIcons?.version === r.version && formatOf(prevIcons) === ICON_FORMAT));
 		if (!current) stale.push(r);
 	}
 
@@ -131,12 +139,14 @@ export async function buildPreviews(
 
 			if (isTheme(r)) {
 				const variants = jsonIn('themes').flatMap((p) => parseThemeFile(text(p)));
-				if (variants.length > 0) bundle.themes[r.id] = { version: r.version, variants };
+				if (variants.length > 0)
+					bundle.themes[r.id] = { version: r.version, format: PREVIEW_FORMAT, variants };
 				else delete bundle.themes[r.id];
 			}
 			if (isIconTheme(r)) {
 				const variants = jsonIn('icon_themes').flatMap((p) => parseIconThemeFile(text(p), files));
-				if (variants.length > 0) bundle.icons[r.id] = { version: r.version, variants };
+				if (variants.length > 0)
+					bundle.icons[r.id] = { version: r.version, format: ICON_FORMAT, variants };
 				else delete bundle.icons[r.id];
 			}
 			downloaded++;

@@ -71,8 +71,9 @@ export type StyledRole =
 	| ExtraRole;
 
 /**
- * Only the colors a theme actually defines, under short names (see RAW_KEYS). Fallbacks are
- * applied when drawing, so changing them never needs a re-download.
+ * Only the colors a theme actually defines, under short names (see RAW_KEYS), minus any that
+ * resolve the same without them. Fallbacks are applied when drawing; since compact() drops keys
+ * against today's fallbacks, changing a fallback means bumping PREVIEW_FORMAT.
  */
 export type RawColors = Partial<Record<RawKey, string>>;
 
@@ -103,8 +104,9 @@ export interface PreviewBundle {
 	/** Bumped when parsing changes, so the sync re-parses entries from older bundles */
 	format?: number;
 	generatedAt: string;
-	themes: Record<string, { version: string; variants: ThemeVariant[] }>;
-	icons: Record<string, { version: string; variants: IconVariant[] }>;
+	/** `format` per entry: the parser format it was written with (absent in older bundles) */
+	themes: Record<string, { version: string; format?: number; variants: ThemeVariant[] }>;
+	icons: Record<string, { version: string; format?: number; variants: IconVariant[] }>;
 }
 
 /** The files shown in an icon-theme preview, in order. */

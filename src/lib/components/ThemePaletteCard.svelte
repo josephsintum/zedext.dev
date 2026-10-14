@@ -17,6 +17,17 @@
 		onintent?: () => void;
 	} = $props();
 
+	// A pointer sweeping across the grid isn't interest; resting on a card for a moment is
+	const HOVER_DELAY_MS = 120;
+	let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+	function hoverStart() {
+		clearTimeout(hoverTimer);
+		hoverTimer = setTimeout(() => onintent?.(), HOVER_DELAY_MS);
+	}
+	function hoverEnd() {
+		clearTimeout(hoverTimer);
+	}
+
 	const classes = $derived(
 		`block w-full overflow-hidden rounded-lg border bg-[var(--color-surface-raised)] text-left transition-colors ${
 			selected
@@ -53,7 +64,8 @@
 		class={classes}
 		aria-pressed={selected}
 		onclick={onselect}
-		onpointerenter={onintent}
+		onpointerenter={hoverStart}
+		onpointerleave={hoverEnd}
 		onfocus={onintent}>{@render body()}</button
 	>
 {/if}
