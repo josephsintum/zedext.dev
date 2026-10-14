@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { DiscoverList } from '$lib/discover.js';
+	import type { GuideList } from '$lib/guides.js';
 	import type { ExtensionRecord } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
-	let { list, items, total }: { list: DiscoverList; items: ExtensionRecord[]; total: number } =
+	let { list, items, total }: { list: GuideList; items: ExtensionRecord[]; total: number } =
 		$props();
 </script>
 
@@ -17,8 +17,7 @@
 				id="c-{list.slug}"
 				class="scroll-mt-20 text-[15px] font-semibold text-[var(--color-text)]"
 			>
-				<a href="/discover/{list.slug}" class="hover:text-[var(--color-accent-hover)]"
-					>{list.title}</a
+				<a href="/guides/{list.slug}" class="hover:text-[var(--color-accent-hover)]">{list.title}</a
 				>
 			</h3>
 			<p class="text-[13px] text-[var(--color-text-secondary)]">{list.description}</p>
@@ -51,7 +50,7 @@
 		{/each}
 	</ul>
 
-	<a href="/discover/{list.slug}" class="mt-auto text-[13px] text-[var(--color-accent)]"
+	<a href="/guides/{list.slug}" class="mt-auto text-[13px] text-[var(--color-accent)]"
 		>See all {total} →</a
 	>
 </div>

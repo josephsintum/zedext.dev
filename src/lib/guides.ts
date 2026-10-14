@@ -2,14 +2,11 @@ import { categoryPageForProvides } from './categories.js';
 import type { ExtensionRecord } from './types.js';
 import { hasKeyword, nameWords } from './words.js';
 
-export type DiscoverSection = 'workflows';
-
-export interface DiscoverList {
+export interface GuideList {
 	slug: string;
 	title: string;
 	emoji: string;
 	description: string;
-	section: DiscoverSection;
 	/** What Zed already does for this workflow, shown before the extensions */
 	builtIn?: string[];
 	match: {
@@ -34,23 +31,17 @@ export interface DiscoverList {
 const KEYWORD_EXCLUDES = ['themes', 'icon-themes', 'context-servers', 'agent-servers'];
 const DEFAULT_LIMIT = 48;
 
-/** In page order; the language hubs follow them, last */
-export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
-	{ key: 'workflows', title: 'Workflows' }
-];
-
 /**
- * Workflows come from 2025–26 research (Hacker News, Zed docs, GitHub issues) and download
+ * Guides come from 2025–26 research (Hacker News, Zed docs, GitHub issues) and download
  * counts. Agents such as Claude Code install from Zed's ACP Registry, not as extensions.
  */
-export const DISCOVER_LISTS: DiscoverList[] = [
+export const GUIDE_LISTS: GuideList[] = [
 	{
 		slug: 'ai-agents',
 		title: 'AI agent coding',
 		emoji: '🤖',
 		description:
 			'Run Claude Code, Codex or Zed’s own agent, and give it more context with MCP servers.',
-		section: 'workflows',
 		builtIn: [
 			'Agent panel and parallel threads',
 			'Edit predictions',
@@ -63,7 +54,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		title: 'Coming from VS Code',
 		emoji: '🧭',
 		description: 'Keep the look you’re used to: themes and file icons.',
-		section: 'workflows',
 		builtIn: ['VS Code keymap (base_keymap)', 'Settings importer'],
 		match: {
 			ids: [
@@ -83,7 +73,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		title: 'Vim, Neovim and Helix',
 		emoji: '⌨️',
 		description: 'Modal editing is built in. Bring your colorscheme.',
-		section: 'workflows',
 		builtIn: ['Vim and Helix modes', 'Relative line numbers', 'Which-key'],
 		match: {
 			ids: [
@@ -102,7 +91,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		title: 'Web frontend',
 		emoji: '🌐',
 		description: 'Frameworks, markup and styling beyond what ships with Zed.',
-		section: 'workflows',
 		builtIn: ['TypeScript, JSX and TSX', 'Tailwind', 'Prettier and ESLint'],
 		match: {
 			keywords: [
@@ -138,7 +126,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		title: 'DevOps and config files',
 		emoji: '☁️',
 		description: 'Containers, infrastructure as code, build and CI files.',
-		section: 'workflows',
 		builtIn: ['YAML, JSON and Bash', 'Remote development over SSH', 'Dev containers'],
 		match: {
 			keywords: [
@@ -170,7 +157,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		title: 'Notes and writing',
 		emoji: '✍️',
 		description: 'Markdown notes, papers and spell checking.',
-		section: 'workflows',
 		builtIn: ['Markdown preview', 'Mermaid diagrams'],
 		match: {
 			keywords: [
@@ -192,11 +178,11 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 	}
 ];
 
-export function getDiscoverList(slug: string): DiscoverList | undefined {
-	return DISCOVER_LISTS.find((c) => c.slug === slug);
+export function getGuideList(slug: string): GuideList | undefined {
+	return GUIDE_LISTS.find((c) => c.slug === slug);
 }
 
-export function matchesList(c: DiscoverList, r: ExtensionRecord): boolean {
+export function matchesList(c: GuideList, r: ExtensionRecord): boolean {
 	const m = c.match;
 	if (m.ids) return m.ids.includes(r.id);
 	if (m.provides && !m.provides.some((p) => r.provides.includes(p))) return false;
@@ -210,7 +196,7 @@ export function matchesList(c: DiscoverList, r: ExtensionRecord): boolean {
 
 /** Pins first (in order), then matches by downloads; hidden ids never appear. */
 export function resolveList(
-	c: DiscoverList,
+	c: GuideList,
 	records: ExtensionRecord[],
 	limit = c.limit ?? DEFAULT_LIMIT
 ): { items: ExtensionRecord[]; total: number } {
@@ -229,11 +215,24 @@ export function resolveList(
 }
 
 /** The full category page behind a list, linked when the list page is capped */
-export function browseAll(c: DiscoverList): { href: string; label: string } | null {
+export function browseAll(c: GuideList): { href: string; label: string } | null {
 	const provides =
 		c.match.provides?.length === 1 && !c.match.keywords && !c.match.ids
 			? c.match.provides[0]
 			: null;
 	const page = provides ? categoryPageForProvides(provides) : undefined;
 	return page ? { href: `/${page.slug}`, label: page.title } : null;
+}
+
+/**
+ * Where an old /discover URL moved: the page itself is now the homepage, the theme picker
+ * (and its JSON) lives at /themes, and the guides at /guides/<slug>. Null for
+ * anything that never existed.
+ */
+export function discoverRedirect(path: string, search: string): string | null {
+	if (path === '') return '/';
+	if (path === 'themes') return `/themes${search}`;
+	if (path === 'themes.json') return `/themes.json${search}`;
+	if (/^themes\/[^/]+\.json$/.test(path)) return `/${path}`;
+	return getGuideList(path) ? `/guides/${path}` : null;
 }

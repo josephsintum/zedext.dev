@@ -1,7 +1,7 @@
 import type { ExtensionRecord } from './types.js';
 
 /**
- * Written guides for workflow pages (/discover/<slug>): an intro, then hand-picked groups with
+ * Written guides for guide pages (/guides/<slug>): an intro, then hand-picked groups with
  * a reason for each pick. Every other extension the list's rule matches is listed after the
  * groups, so new extensions still show up without editing this file.
  */

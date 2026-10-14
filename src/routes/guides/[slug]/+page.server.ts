@@ -2,12 +2,12 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { pageCacheControl } from '$lib/server/browse.js';
-import { browseAll, getDiscoverList, resolveList } from '$lib/discover.js';
-import { buildGuide, GUIDES } from '$lib/discover-guides.js';
+import { browseAll, getGuideList, resolveList } from '$lib/guides.js';
+import { buildGuide, GUIDES } from '$lib/guide-content.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
-	const list = getDiscoverList(params.slug);
-	if (!list) throw error(404, `No Discover list "${params.slug}"`);
+	const list = getGuideList(params.slug);
+	if (!list) throw error(404, `No guide "${params.slug}"`);
 
 	const { snapshot, degraded } = await requireSnapshot();
 	setHeaders({ 'cache-control': pageCacheControl(degraded) });

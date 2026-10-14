@@ -17,6 +17,23 @@ let loading: Promise<void> | null = null;
 /** The newest search requested, so a slower server navigation can't overwrite it. */
 let latest: string | null = null;
 
+/**
+ * Text typed into a search box that sends you to another page (the homepage's), still
+ * growing while that page loads. The search box there picks it up, so no keystroke is lost.
+ */
+let carried: { path: string; q: string } | null = null;
+
+export function carryQuery(path: string, q: string): void {
+	carried = { path, q };
+}
+
+/** The carried text, once, if it was meant for this page. */
+export function takeCarriedQuery(path: string): string | null {
+	const found = carried?.path === path ? carried.q : null;
+	carried = null;
+	return found;
+}
+
 export function getIndex(): SearchIndex | null {
 	return index;
 }

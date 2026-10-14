@@ -2,7 +2,7 @@
 	import { countOf } from '$lib/utils/format.js';
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import WorkflowGuide from '$lib/components/WorkflowGuide.svelte';
+	import GuideSections from '$lib/components/GuideSections.svelte';
 
 	let { data } = $props();
 </script>
@@ -10,13 +10,13 @@
 <Seo
 	title="{data.list.title} for Zed — ZedExt"
 	description={data.list.description}
-	path="/discover/{data.list.slug}"
+	path="/guides/{data.list.slug}"
 	ogTitle="{data.list.emoji} {data.list.title}"
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
 	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a>
+		<a href="/#guides" class="hover:text-[var(--color-text)]">Guides</a>
 		<span aria-hidden="true">›</span>
 		<span aria-current="page">{data.list.title}</span>
 	</nav>
@@ -53,7 +53,7 @@
 	{/if}
 	{#if data.guide && data.guide.groups.length > 0}
 		<div class="max-w-3xl">
-			<WorkflowGuide guide={data.guide} />
+			<GuideSections guide={data.guide} />
 		</div>
 	{:else if data.items.length > 0}
 		<div class="mt-8 grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">

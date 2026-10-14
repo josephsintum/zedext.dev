@@ -7,7 +7,7 @@ import {
 import type { ExtensionRecord } from './types.js';
 import { parseAuthor } from './utils/parse-author.js';
 
-/** The theme picker at /discover/themes: one preview, a dark/light toggle and palette cards. */
+/** The theme picker at /themes: one preview, a dark/light toggle and palette cards. */
 
 export type Appearance = 'dark' | 'light';
 
@@ -91,7 +91,17 @@ export function pickerState(
 }
 
 export function themeHref(id: string, appearance: Appearance): string {
-	return `/discover/themes?appearance=${appearance}&theme=${encodeURIComponent(id)}`;
+	return `/themes?appearance=${appearance}&theme=${encodeURIComponent(id)}`;
+}
+
+/** Themes whose name, author or id contain every word of the filter (case-insensitive). */
+export function filterThemes(entries: ThemeEntry[], q: string): ThemeEntry[] {
+	const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+	if (words.length === 0) return entries;
+	return entries.filter((e) => {
+		const text = `${e.name} ${e.author} ${e.id}`.toLowerCase();
+		return words.every((w) => text.includes(w));
+	});
 }
 
 /** Every variant of one theme (both appearances), for the preview; null if unknown. */

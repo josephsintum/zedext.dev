@@ -2,7 +2,8 @@ import { CATEGORIES } from '$lib/utils/constants.js';
 
 /**
  * Clean, indexable URLs for each category, e.g. /mcp-servers for `context-servers`.
- * The `languages` category lives at /languages (also the language hub index).
+ * The `languages` category lives at /languages (also the language hub index), `themes` at
+ * /themes (the theme picker), and the full list at /extensions.
  */
 
 export interface CategoryPage {
@@ -13,12 +14,6 @@ export interface CategoryPage {
 }
 
 export const CATEGORY_PAGES: CategoryPage[] = [
-	{
-		slug: 'themes',
-		provides: 'themes',
-		title: 'Zed themes',
-		description: 'Color themes for the Zed editor, ranked by downloads, with GitHub stats.'
-	},
 	{
 		slug: 'icon-themes',
 		provides: 'icon-themes',
@@ -69,8 +64,9 @@ export function categoryPageForProvides(provides: string): CategoryPage | undefi
 
 export function categoryHref(provides: string): string {
 	if (provides === 'languages') return '/languages';
+	if (provides === 'themes') return '/themes';
 	const page = categoryPageForProvides(provides);
-	return page ? `/${page.slug}` : '/';
+	return page ? `/${page.slug}` : '/extensions';
 }
 
 /** The browse tab (CATEGORIES slug) a pathname shows, or undefined if it isn't a browse page. */
@@ -78,18 +74,22 @@ export function categoryForPath(pathname: string): string | undefined {
 	return CATEGORIES.find((cat) => categoryHref(cat.provides ?? 'all') === pathname)?.slug;
 }
 
-/** Where an old `/?category=<provides>` link should 301 to, or null to leave it alone. */
-export function legacyCategoryRedirect(url: URL): string | null {
+/** Search params that mean "show me the list", from when the homepage was the list */
+const LIST_PARAMS = ['q', 'sort', 'page'];
+
+/**
+ * Where an old homepage link should 301 to, or null to leave it alone: `/?category=<provides>`
+ * goes to that category's page, and a search, sort or page goes to /extensions.
+ */
+export function legacyHomeRedirect(url: URL): string | null {
 	if (url.pathname !== '/') return null;
 	const category = url.searchParams.get('category');
-	if (!category) return null;
-	if (category !== 'all' && category !== 'languages' && !categoryPageForProvides(category)) {
-		return null;
-	}
+	if (category && !CATEGORIES.some((c) => (c.provides ?? 'all') === category)) return null;
+	if (!category && !LIST_PARAMS.some((p) => url.searchParams.has(p))) return null;
 
 	const rest = new URLSearchParams(url.searchParams);
 	rest.delete('category');
-	rest.delete('page');
+	if (category) rest.delete('page');
 	const search = rest.toString();
-	return categoryHref(category) + (search ? `?${search}` : '');
+	return categoryHref(category ?? 'all') + (search ? `?${search}` : '');
 }

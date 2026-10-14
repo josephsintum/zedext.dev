@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	filterThemes,
 	pickerState,
 	themeEntries,
 	themeHref,
@@ -66,7 +67,7 @@ describe('themeEntries', () => {
 describe('pickerState', () => {
 	const entry = (id: string) => ({ id }) as ThemeEntry;
 	const entries = { dark: [entry('night'), entry('cat')], light: [entry('cat'), entry('paper')] };
-	const at = (q: string) => pickerState(new URL(`https://x.dev/discover/themes${q}`), entries);
+	const at = (q: string) => pickerState(new URL(`https://x.dev/themes${q}`), entries);
 
 	it('defaults to the top dark theme', () => {
 		expect(at('')).toEqual({ appearance: 'dark', themeId: 'night' });
@@ -88,7 +89,7 @@ describe('pickerState', () => {
 
 describe('themeHref', () => {
 	it('links to the picker with the theme selected', () => {
-		expect(themeHref('cat', 'light')).toBe('/discover/themes?appearance=light&theme=cat');
+		expect(themeHref('cat', 'light')).toBe('/themes?appearance=light&theme=cat');
 	});
 });
 
@@ -103,5 +104,30 @@ describe('themeVariants', () => {
 		expect(themeVariants(previews, 'nope')).toBeNull();
 		expect(themeVariants(previews, 'constructor')).toBeNull();
 		expect(themeVariants(null, 'cat')).toBeNull();
+	});
+});
+
+describe('filterThemes', () => {
+	const entry = (id: string, name: string, author: string) => ({ id, name, author }) as ThemeEntry;
+	const entries = [
+		entry('catppuccin', 'Catppuccin', 'Catppuccin Org'),
+		entry('nord', 'Nord', 'Arctic Ice Studio'),
+		entry('one-dark-pro', 'One Dark Pro', 'binaryify')
+	];
+	const ids = (q: string) => filterThemes(entries, q).map((e) => e.id);
+
+	it('matches name, author or id, ignoring case', () => {
+		expect(ids('NORD')).toEqual(['nord']);
+		expect(ids('arctic')).toEqual(['nord']);
+		expect(ids('dark-pro')).toEqual(['one-dark-pro']);
+	});
+
+	it('needs every word to match', () => {
+		expect(ids('one pro')).toEqual(['one-dark-pro']);
+		expect(ids('one nord')).toEqual([]);
+	});
+
+	it('returns everything for an empty filter', () => {
+		expect(ids('  ')).toEqual(['catppuccin', 'nord', 'one-dark-pro']);
 	});
 });

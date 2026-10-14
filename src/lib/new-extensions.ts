@@ -1,7 +1,7 @@
 import type { ExtensionRecord, Snapshot } from './types.js';
 import { isThemeLike } from './utils/extension-ui.js';
 
-/** Themes dominate new releases and have their own Discover rows */
+/** Themes dominate new releases and have their own homepage row */
 const isTheme = (r: ExtensionRecord) => isThemeLike(r.provides);
 
 /** The most recently first-released extensions (themes excluded), newest first. */

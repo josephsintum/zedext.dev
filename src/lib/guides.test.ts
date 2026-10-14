@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
 	browseAll,
-	DISCOVER_SECTIONS,
-	DISCOVER_LISTS,
-	getDiscoverList,
+	discoverRedirect,
+	GUIDE_LISTS,
+	getGuideList,
 	resolveList,
-	type DiscoverList
-} from './discover.js';
+	type GuideList
+} from './guides.js';
 import type { ExtensionRecord } from './types.js';
 
 function record(o: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
@@ -27,25 +27,24 @@ function record(o: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
 	};
 }
 
-const web: DiscoverList = {
+const web: GuideList = {
 	slug: 'web',
 	title: 'Web',
 	emoji: '🌐',
 	description: '',
-	section: 'workflows',
 	match: { keywords: ['vue', 'svelte', 'html'] }
 };
 
-describe('DISCOVER_LISTS', () => {
+describe('GUIDE_LISTS', () => {
 	it('have unique slugs', () => {
-		const slugs = DISCOVER_LISTS.map((c) => c.slug);
+		const slugs = GUIDE_LISTS.map((c) => c.slug);
 		expect(new Set(slugs).size).toBe(slugs.length);
 	});
 
 	it('look up by slug without matching prototype keys', () => {
-		expect(getDiscoverList('dark-themes')).toBeUndefined();
-		expect(getDiscoverList('web-frontend')?.title).toBe('Web frontend');
-		expect(getDiscoverList('constructor')).toBeUndefined();
+		expect(getGuideList('dark-themes')).toBeUndefined();
+		expect(getGuideList('web-frontend')?.title).toBe('Web frontend');
+		expect(getGuideList('constructor')).toBeUndefined();
 	});
 });
 
@@ -80,7 +79,7 @@ describe('resolveList', () => {
 	});
 
 	it('matches provides rules', () => {
-		const c: DiscoverList = { ...web, match: { provides: ['context-servers'] } };
+		const c: GuideList = { ...web, match: { provides: ['context-servers'] } };
 		const records = [record({ id: 'a', provides: ['context-servers'] }), record({ id: 'b' })];
 		expect(resolveList(c, records).items.map((r) => r.id)).toEqual(['a']);
 	});
@@ -112,31 +111,27 @@ describe('resolveList', () => {
 
 describe('browseAll', () => {
 	it('points lists that can outgrow their limit at the full category page', () => {
-		expect(browseAll(getDiscoverList('ai-agents')!)).toEqual({
+		expect(browseAll(getGuideList('ai-agents')!)).toEqual({
 			href: '/mcp-servers',
 			label: 'MCP servers for Zed'
 		});
 	});
 
 	it('is null for keyword lists, which have no category page', () => {
-		expect(browseAll(getDiscoverList('web-frontend')!)).toBeNull();
-		expect(browseAll(getDiscoverList('vscode')!)).toBeNull();
+		expect(browseAll(getGuideList('web-frontend')!)).toBeNull();
+		expect(browseAll(getGuideList('vscode')!)).toBeNull();
 	});
 });
 
-describe('workflows', () => {
-	it('are the only list section; themes have their own picker', () => {
-		expect(DISCOVER_SECTIONS.map((s) => s.key)).toEqual(['workflows']);
-	});
-
+describe('guides', () => {
 	it('each say what Zed has built in', () => {
-		for (const list of DISCOVER_LISTS.filter((l) => l.section === 'workflows')) {
+		for (const list of GUIDE_LISTS) {
 			expect(list.builtIn?.length, list.slug).toBeGreaterThan(0);
 		}
 	});
 
 	it('match a fixed id list ranked by downloads, skipping ids missing from the snapshot', () => {
-		const c: DiscoverList = { ...web, match: { ids: ['a', 'b', 'gone'] } };
+		const c: GuideList = { ...web, match: { ids: ['a', 'b', 'gone'] } };
 		const records = [
 			record({ id: 'a', provides: ['themes'], download_count: 1 }),
 			record({ id: 'b', provides: ['icon-themes'], download_count: 5 }),
@@ -146,7 +141,27 @@ describe('workflows', () => {
 	});
 
 	it('ignore prototype keys in id lists', () => {
-		const c: DiscoverList = { ...web, match: { ids: ['a'] } };
+		const c: GuideList = { ...web, match: { ids: ['a'] } };
 		expect(resolveList(c, [record({ id: 'constructor' })]).total).toBe(0);
+	});
+});
+
+describe('discoverRedirect', () => {
+	it('sends old /discover URLs to where they moved', () => {
+		expect(discoverRedirect('', '')).toBe('/');
+		expect(discoverRedirect('themes', '?appearance=light&theme=x')).toBe(
+			'/themes?appearance=light&theme=x'
+		);
+		expect(discoverRedirect('themes.json', '?appearance=dark')).toBe(
+			'/themes.json?appearance=dark'
+		);
+		expect(discoverRedirect('themes/catppuccin.json', '')).toBe('/themes/catppuccin.json');
+		expect(discoverRedirect('vim', '')).toBe('/guides/vim');
+	});
+
+	it('is null for URLs that never existed', () => {
+		expect(discoverRedirect('nope', '')).toBeNull();
+		expect(discoverRedirect('themes/a/b.json', '')).toBeNull();
+		expect(discoverRedirect('vim/extra', '')).toBeNull();
 	});
 });

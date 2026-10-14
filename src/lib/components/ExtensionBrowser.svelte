@@ -30,14 +30,11 @@
 	let {
 		initialResults,
 		category = 'all',
-		intro,
-		discover
+		intro
 	}: {
 		initialResults: SearchResults;
 		category?: string;
 		intro: Snippet;
-		/** Rows shown above the list until the visitor searches */
-		discover?: Snippet;
 	} = $props();
 
 	const params = $derived(currentSearchParams());
@@ -118,10 +115,6 @@
 		</div>
 	</div>
 </section>
-
-{#if discover && !query}
-	{@render discover()}
-{/if}
 
 <!-- Sticky filter bar -->
 <div

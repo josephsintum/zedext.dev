@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { CATEGORY_PAGES } from '$lib/categories.js';
 import { LANGUAGE_HUBS } from '$lib/languages.js';
-import { DISCOVER_LISTS } from '$lib/discover.js';
+import { GUIDE_LISTS } from '$lib/guides.js';
 
 const SITE = 'https://zedext.dev';
 
@@ -22,6 +22,8 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 	const urls = [
 		{ loc: SITE, changefreq: 'daily', priority: '1.0', lastmod: today },
 		{ loc: `${SITE}/about`, changefreq: 'monthly', priority: '0.3' },
+		{ loc: `${SITE}/extensions`, changefreq: 'daily', priority: '0.9', lastmod: today },
+		{ loc: `${SITE}/themes`, changefreq: 'daily', priority: '0.9', lastmod: today },
 		...CATEGORY_PAGES.map((c) => ({
 			loc: `${SITE}/${c.slug}`,
 			changefreq: 'daily',
@@ -35,10 +37,8 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 			priority: '0.9',
 			lastmod: today
 		})),
-		{ loc: `${SITE}/discover`, changefreq: 'weekly', priority: '0.7' },
-		{ loc: `${SITE}/discover/themes`, changefreq: 'weekly', priority: '0.7' },
-		...DISCOVER_LISTS.map((c) => ({
-			loc: `${SITE}/discover/${c.slug}`,
+		...GUIDE_LISTS.map((c) => ({
+			loc: `${SITE}/guides/${c.slug}`,
 			changefreq: 'weekly',
 			priority: '0.7'
 		})),

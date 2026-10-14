@@ -68,7 +68,7 @@ export interface HubSummary {
 	count: number;
 }
 
-/** One card per language hub, for /languages and Discover */
+/** One card per language hub, for /languages and the homepage */
 export function hubSummaries(records: ExtensionRecord[]): HubSummary[] {
 	return LANGUAGE_HUBS.map((hub) => ({
 		slug: hub.slug,

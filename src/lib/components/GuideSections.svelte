@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { BuiltGuide } from '$lib/discover-guides.js';
+	import type { BuiltGuide } from '$lib/guide-content.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
 	let { guide }: { guide: BuiltGuide } = $props();

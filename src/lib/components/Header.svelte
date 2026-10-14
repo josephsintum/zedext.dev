@@ -29,10 +29,10 @@
 
 		<nav class="flex items-center gap-5">
 			<a
-				href="/discover"
+				href="/extensions"
 				class="hit-y text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
 			>
-				Discover
+				All extensions
 			</a>
 			{#each externalLinks as link (link.href)}
 				<a

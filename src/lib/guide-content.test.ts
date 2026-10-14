@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildGuide, GUIDES, type Guide } from './discover-guides.js';
-import { DISCOVER_LISTS } from './discover.js';
+import { buildGuide, GUIDES, type Guide } from './guide-content.js';
+import { GUIDE_LISTS } from './guides.js';
 import type { ExtensionRecord } from './types.js';
 
 const rec = (id: string, downloads = 0) => ({ id, download_count: downloads }) as ExtensionRecord;
@@ -43,8 +43,8 @@ describe('buildGuide', () => {
 });
 
 describe('GUIDES', () => {
-	it('belong to real Discover lists', () => {
-		const slugs = new Set(DISCOVER_LISTS.map((l) => l.slug));
+	it('belong to real guide lists', () => {
+		const slugs = new Set(GUIDE_LISTS.map((l) => l.slug));
 		for (const slug of Object.keys(GUIDES)) expect(slugs.has(slug), slug).toBe(true);
 	});
 
@@ -56,7 +56,7 @@ describe('GUIDES', () => {
 	});
 
 	it('cover every workflow', () => {
-		for (const l of DISCOVER_LISTS.filter((x) => x.section === 'workflows')) {
+		for (const l of GUIDE_LISTS) {
 			expect(Object.hasOwn(GUIDES, l.slug), l.slug).toBe(true);
 		}
 	});

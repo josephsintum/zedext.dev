@@ -1,14 +1,28 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { goto, preloadData } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { formatNumber } from '$lib/utils/format.js';
-	import { currentSearchParams, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
+	import {
+		carryQuery,
+		currentSearchParams,
+		loadIndex,
+		setSearchParams,
+		takeCarriedQuery
+	} from '$lib/search/client.svelte.js';
 
 	let {
 		value = '',
 		totalHits = 0,
+		to,
 		onSearch
-	}: { value?: string; totalHits?: number; onSearch?: (q: string) => void } = $props();
+	}: {
+		value?: string;
+		totalHits?: number;
+		/** Search on another page: the first keystroke goes there and typing carries on */
+		to?: string;
+		onSearch?: (q: string) => void;
+	} = $props();
 
 	const placeholder = $derived(
 		totalHits > 0 ? `Search ${formatNumber(totalHits)}+ extensions…` : 'Search extensions…'
@@ -21,7 +35,8 @@
 	// The server is rendering results for a search or sort on this page (before the index
 	// loads; after, results are instant). Show more navigations carry ?page= and aren't searches.
 	const busy = $derived(
-		navigating.to?.url.pathname === page.url.pathname && !navigating.to.url.searchParams.has('page')
+		navigating.to?.url.pathname === (to ?? page.url.pathname) &&
+			!navigating.to.url.searchParams.has('page')
 	);
 
 	// "/" jumps to search from anywhere on the page, unless you're already typing somewhere
@@ -45,6 +60,26 @@
 	// A pending search must not fire after the page is gone
 	$effect(() => () => clearTimeout(debounceTimer));
 
+	// Arrived from another page's search box: keep what was typed, including keystrokes
+	// made while this page loaded, and keep typing here
+	onMount(() => {
+		if (to) return;
+		const typed = takeCarriedQuery(page.url.pathname);
+		if (typed === null) return;
+		input = typed;
+		field.focus();
+		field.setSelectionRange(typed.length, typed.length);
+		if (typed !== value) performSearch(typed, page.url.pathname);
+	});
+
+	let leaving = false;
+	function searchElsewhere(target: string) {
+		carryQuery(target, input);
+		if (leaving || !input) return;
+		leaving = true;
+		goto(`${target}?q=${encodeURIComponent(input)}`).finally(() => (leaving = false));
+	}
+
 	function performSearch(q: string, path: string) {
 		const params = currentSearchParams();
 		if (q) params.set('q', q);
@@ -55,6 +90,7 @@
 
 	function handleInput(e: Event) {
 		input = (e.target as HTMLInputElement).value;
+		if (to) return searchElsewhere(to);
 		// Remember where the typing happened; the debounced search is dropped if we've left
 		const path = page.url.pathname;
 		clearTimeout(debounceTimer);
@@ -64,6 +100,7 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			input = '';
+			if (to) return carryQuery(to, '');
 			clearTimeout(debounceTimer);
 			performSearch('', page.url.pathname);
 		}
@@ -109,6 +146,7 @@
 				focused = true;
 				// Start loading the search index as soon as someone looks like they'll search
 				loadIndex();
+				if (to) preloadData(to).catch(() => {});
 			}}
 			onblur={() => (focused = false)}
 			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"

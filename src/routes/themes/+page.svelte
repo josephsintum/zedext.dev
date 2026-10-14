@@ -5,7 +5,7 @@
 	import ThemePaletteCard from '$lib/components/ThemePaletteCard.svelte';
 	import ThemePreview from '$lib/components/ThemePreview.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import type { Appearance, ThemeEntry } from '$lib/theme-picker.js';
+	import { filterThemes, type Appearance, type ThemeEntry } from '$lib/theme-picker.js';
 	import type { ThemeVariant } from '$lib/theme-preview.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
@@ -16,6 +16,7 @@
 
 	let appearance = $derived<Appearance>(data.appearance);
 	let selectedId = $derived<string | null>(data.themeId);
+	let q = $derived(data.q);
 	/** Full lists fetched by "Show all", per appearance */
 	let loaded = $state<Record<Appearance, ThemeEntry[] | null>>({ dark: null, light: null });
 	/** "Show all" state, per appearance so a slow dark list doesn't block the light button */
@@ -23,8 +24,11 @@
 	let failed = $state<Record<Appearance, boolean>>({ dark: false, light: false });
 	let previewEl = $state<HTMLElement>();
 
-	const list = $derived(loaded[appearance] ?? data.entries[appearance]);
-	const selected = $derived(list.find((e) => e.id === selectedId) ?? list[0]);
+	/** Everything known for this appearance; the filter only narrows the cards below it */
+	const source = $derived(loaded[appearance] ?? data.entries[appearance]);
+	const list = $derived(filterThemes(source, q));
+	// Filtering never changes the preview: it stays on the chosen theme until another click
+	const selected = $derived(source.find((e) => e.id === selectedId) ?? list[0]);
 	const total = $derived(data.totals[appearance]);
 
 	// Full variants load on intent (hover, focus or click) and are kept for the visit
@@ -37,7 +41,7 @@
 		if (variantsById.has(id) || id === data.themeId) return Promise.resolve();
 		const pending = inflight.get(id);
 		if (pending) return pending;
-		const request = fetch(`/discover/themes/${encodeURIComponent(id)}.json`)
+		const request = fetch(`/themes/${encodeURIComponent(id)}.json`)
 			.then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
 			.then((variants: ThemeVariant[]) => void variantsById.set(id, variants))
 			.finally(() => inflight.delete(id));
@@ -85,13 +89,23 @@
 		const url = new URL(page.url);
 		url.searchParams.set('appearance', appearance);
 		if (selected) url.searchParams.set('theme', selected.id);
+		if (q) url.searchParams.set('q', q);
+		else url.searchParams.delete('q');
 		replaceState(url, page.state);
+	}
+
+	/** The filter searches every theme, so the first keystroke loads the full list */
+	function filter(next: string) {
+		q = next;
+		if (!loaded[appearance] && !loading[appearance]) showAll();
+		syncUrl();
 	}
 
 	function chooseAppearance(next: Appearance) {
 		if (next === appearance) return;
 		const keep = selected?.id;
 		appearance = next;
+		if (q && !loaded[next] && !loading[next]) showAll();
 		const nextList = loaded[next] ?? data.entries[next];
 		selectedId = nextList.some((e) => e.id === keep) ? (keep ?? null) : (nextList[0]?.id ?? null);
 		if (selectedId) show(selectedId);
@@ -113,7 +127,7 @@
 		loading[which] = true;
 		failed[which] = false;
 		try {
-			const res = await fetch(`/discover/themes.json?appearance=${which}`);
+			const res = await fetch(`/themes.json?appearance=${which}`);
 			if (!res.ok) throw new Error(String(res.status));
 			loaded[which] = (await res.json()) as ThemeEntry[];
 		} catch {
@@ -127,16 +141,11 @@
 <Seo
 	title="Zed themes: preview dark and light themes — ZedExt"
 	description="Preview the most downloaded Zed themes side by side. Switch between dark and light, pick a variant and see real code before you install."
-	path="/discover/themes"
+	path="/themes"
 	ogTitle="Zed themes"
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a>
-		<span aria-hidden="true">›</span>
-		<span aria-current="page">Themes</span>
-	</nav>
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<div>
 			<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">Themes</h1>
@@ -164,66 +173,96 @@
 		</div>
 	</div>
 
-	{#if selected}
-		<!-- Pinned under the header on large windows so a click anywhere in the grid shows up here -->
-		<section
-			bind:this={previewEl}
-			class="z-10 mt-4 scroll-mt-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
-			aria-label="Theme preview"
-		>
-			<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-				<p class="text-[13px] text-[var(--color-text-tertiary)]">
-					<span class="text-[16px] font-semibold text-[var(--color-text)]">{selected.name}</span>
-					{#if selected.author}by {selected.author} ·{/if}
-					↓ {formatNumber(selected.downloads)}
-				</p>
-				<a href="/extensions/{selected.id}" class="text-[13px] text-[var(--color-accent)]"
-					>View extension →</a
+	{#if total > 0}
+		{#if selected}
+			<!-- Pinned under the header on large windows so a click anywhere in the grid shows up here -->
+			<section
+				bind:this={previewEl}
+				class="z-10 mt-4 scroll-mt-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
+				aria-label="Theme preview"
+			>
+				<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+					<p class="text-[13px] text-[var(--color-text-tertiary)]">
+						<span class="text-[16px] font-semibold text-[var(--color-text)]">{selected.name}</span>
+						{#if selected.author}by {selected.author} ·{/if}
+						↓ {formatNumber(selected.downloads)}
+					</p>
+					<a href="/extensions/{selected.id}" class="text-[13px] text-[var(--color-accent)]"
+						>View extension →</a
+					>
+				</div>
+				{#if preview && previewVariants.length > 0}
+					<div
+						class="transition-opacity {preview.id !== selected.id ? 'opacity-60' : ''}"
+						aria-busy={preview.id !== selected.id && !selectedFailed}
+					>
+						{#key `${appearance}:${preview.id}`}
+							<ThemePreview variants={previewVariants} size="lg" />
+						{/key}
+					</div>
+				{/if}
+				{#if selectedFailed}
+					<div class="mt-2 flex flex-wrap items-center gap-3 text-[13px]" role="alert">
+						<span class="text-[var(--color-text-secondary)]"
+							>Couldn’t load this theme’s colors.</span
+						>
+						<button
+							type="button"
+							onclick={() => show(selected.id)}
+							class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+						>
+							Try Again
+						</button>
+					</div>
+				{:else if preview && preview.id !== selected.id}
+					<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]" role="status">
+						Loading {selected.name}…
+					</p>
+				{/if}
+			</section>
+		{/if}
+
+		<div class="mt-5 mb-3 flex flex-wrap items-center justify-between gap-3">
+			<p class="text-[13px] text-[var(--color-text-tertiary)]" aria-live="polite">
+				{#if q}
+					{list.length} matching {appearance} themes
+				{:else}
+					{list.length} of {total}
+					{appearance} themes, most downloaded first
+				{/if}
+			</p>
+			<input
+				type="search"
+				value={q}
+				oninput={(e) => filter(e.currentTarget.value)}
+				placeholder="Filter by name or author"
+				aria-label="Filter themes"
+				class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1.5 text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none sm:w-64"
+			/>
+		</div>
+		{#if list.length > 0}
+			<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+				{#each list as entry (entry.id)}
+					<ThemePaletteCard
+						{entry}
+						selected={entry.id === selected?.id}
+						onselect={() => choose(entry.id)}
+						onintent={() => prefetch(entry.id).catch(() => {})}
+					/>
+				{/each}
+			</div>
+		{:else if !loading[appearance]}
+			<div class="py-10 text-center text-[14px] text-[var(--color-text-secondary)]">
+				No {appearance} themes match “{q}”.
+				<button
+					type="button"
+					onclick={() => filter('')}
+					class="ml-1 text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+					>Clear filter</button
 				>
 			</div>
-			{#if preview && previewVariants.length > 0}
-				<div
-					class="transition-opacity {preview.id !== selected.id ? 'opacity-60' : ''}"
-					aria-busy={preview.id !== selected.id && !selectedFailed}
-				>
-					{#key `${appearance}:${preview.id}`}
-						<ThemePreview variants={previewVariants} size="lg" />
-					{/key}
-				</div>
-			{/if}
-			{#if selectedFailed}
-				<div class="mt-2 flex flex-wrap items-center gap-3 text-[13px]" role="alert">
-					<span class="text-[var(--color-text-secondary)]">Couldn’t load this theme’s colors.</span>
-					<button
-						type="button"
-						onclick={() => show(selected.id)}
-						class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
-					>
-						Try Again
-					</button>
-				</div>
-			{:else if preview && preview.id !== selected.id}
-				<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]" role="status">
-					Loading {selected.name}…
-				</p>
-			{/if}
-		</section>
-
-		<p class="mt-5 mb-3 text-[13px] text-[var(--color-text-tertiary)]">
-			{list.length} of {total}
-			{appearance} themes, most downloaded first
-		</p>
-		<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-			{#each list as entry (entry.id)}
-				<ThemePaletteCard
-					{entry}
-					selected={entry.id === selected.id}
-					onselect={() => choose(entry.id)}
-					onintent={() => prefetch(entry.id).catch(() => {})}
-				/>
-			{/each}
-		</div>
-		{#if list.length < total}
+		{/if}
+		{#if !q && list.length < total}
 			<div class="mt-6 text-center">
 				<button
 					type="button"
@@ -233,11 +272,20 @@
 				>
 					{loading[appearance] ? 'Loading…' : `Show all ${total} ${appearance} themes`}
 				</button>
-				{#if failed[appearance]}
-					<p class="mt-2 text-[13px] text-[var(--color-text-secondary)]" role="alert">
-						Couldn’t load the rest. Press the button to try again.
-					</p>
-				{/if}
+			</div>
+		{/if}
+		{#if failed[appearance]}
+			<div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-[13px]" role="alert">
+				<span class="text-[var(--color-text-secondary)]">
+					Couldn’t load {q ? 'every theme, so some matches may be missing' : 'the rest'}.
+				</span>
+				<button
+					type="button"
+					onclick={showAll}
+					class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+				>
+					Try Again
+				</button>
 			</div>
 		{/if}
 	{:else}
