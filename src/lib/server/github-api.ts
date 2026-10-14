@@ -6,6 +6,8 @@ import type { GitHubRelease, GitHubRepo, GitHubReadme, GitHubUser } from '$lib/t
 const GITHUB_API = 'https://api.github.com';
 const ONE_HOUR = 60 * 60 * 1000;
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+/** A hung GitHub request fails (and the page renders without it) instead of holding the page */
+const TIMEOUT_MS = 5000;
 
 function headers(): Record<string, string> {
 	const h: Record<string, string> = { Accept: 'application/vnd.github.v3+json' };
@@ -19,7 +21,7 @@ function headers(): Record<string, string> {
  * and callers can tell "no README" apart from "GitHub had a hiccup".
  */
 async function fetchOrNull(url: string): Promise<Response | null> {
-	const res = await fetch(url, { headers: headers() });
+	const res = await fetch(url, { headers: headers(), signal: AbortSignal.timeout(TIMEOUT_MS) });
 	if (res.status === 404) return null;
 	if (!res.ok) throw new Error(`GitHub ${res.status} for ${url}`);
 	return res;

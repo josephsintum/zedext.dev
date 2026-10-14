@@ -50,17 +50,25 @@
 
 	// The sidebar stays mounted (keeping its own state) and fills in when streamed content
 	// arrives. Full page loads deliver content inline, so it's there during SSR too.
-	let streamed = $state<DetailContent | null>(null);
+	// Tagged with the promise it came from, so the previous extension's content is never shown
+	let streamed = $state.raw<{ from: Promise<DetailContent>; content: DetailContent } | null>(null);
 	$effect(() => {
 		const pending = data.content;
-		streamed = null;
 		if (pending instanceof Promise) {
-			pending.then((c) => {
-				if (data.content === pending) streamed = c;
-			});
+			// A broken stream shows the {:catch} message below; the sidebar stays without GitHub data
+			pending.then(
+				(content) => (streamed = { from: pending, content }),
+				() => {}
+			);
 		}
 	});
-	const content = $derived(data.content instanceof Promise ? streamed : data.content);
+	const content = $derived(
+		data.content instanceof Promise
+			? streamed?.from === data.content
+				? streamed.content
+				: null
+			: data.content
+	);
 
 	const badge = $derived(badgeFor(extension.repository));
 	const pills = $derived(healthPills(extension.published_at, content?.github?.archived ?? false));
@@ -273,6 +281,22 @@
 							{/if}
 						</div>
 					{/if}
+				{:catch}
+					<div
+						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 text-center text-[14px] md:p-8"
+					>
+						<p class="text-[var(--color-text-secondary)]">Couldn’t load the README.</p>
+						{#if extension.repository}
+							<a
+								href={extension.repository}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="mt-2 inline-block text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+							>
+								View on GitHub
+							</a>
+						{/if}
+					</div>
 				{/await}
 			</div>
 			{#if pageTab === 'versions'}

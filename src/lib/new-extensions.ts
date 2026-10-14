@@ -1,8 +1,8 @@
 import type { ExtensionRecord, Snapshot } from './types.js';
+import { isThemeLike } from './utils/extension-ui.js';
 
 /** Themes dominate new releases and have their own Discover rows */
-const isTheme = (r: ExtensionRecord) =>
-	r.provides.includes('themes') || r.provides.includes('icon-themes');
+const isTheme = (r: ExtensionRecord) => isThemeLike(r.provides);
 
 /** The most recently first-released extensions (themes excluded), newest first. */
 export function newestExtensions(snapshot: Snapshot, limit = 4): ExtensionRecord[] {

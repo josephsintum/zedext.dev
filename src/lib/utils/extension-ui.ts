@@ -1,5 +1,9 @@
 import type { ExtensionHit } from '$lib/types.js';
 
+/** Themes and icon themes: the extensions with color previews */
+export const isThemeLike = (provides: readonly string[]) =>
+	provides.includes('themes') || provides.includes('icon-themes');
+
 export const filterProvides = (provides: string[]) =>
 	provides.filter((p) => !['grammars', 'slash-commands', 'indexed-docs-providers'].includes(p));
 

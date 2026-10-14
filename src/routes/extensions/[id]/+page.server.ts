@@ -11,6 +11,7 @@ import { renderMarkdown } from '$lib/server/markdown.js';
 import { getSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
+import { isThemeLike } from '$lib/utils/extension-ui.js';
 import type { GitHubRepo } from '$lib/types.js';
 
 export interface DetailContent {
@@ -35,8 +36,6 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 	const extensionRequest = getExtensionWithVersions(params.id);
 	// Handled when awaited below; this only stops an early rejection being reported as unhandled
 	extensionRequest.catch(() => {});
-	// Cached bundle (or null); fetched alongside Zed's data, never fails the page
-	const previewsRequest = getPreviews();
 	// The sync records which extensions have a changelog; the tab loads it when opened
 	const changelogRequest = getSnapshot()
 		.then((s) => Boolean(s.index.byId.get(params.id)?.changelog))
@@ -74,24 +73,32 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 	// Reuses the early request when the snapshot's repo URL matches; otherwise starts it now
 	const content = contentFor(extension.repository);
 
+	// Only themes and icon themes need the (cached) previews bundle; it never fails the page
+	const hasPreview = isThemeLike(extension.provides);
+	const previews = hasPreview ? await getPreviews() : null;
+	// A theme page without its preview shouldn't be cached for a day
+	const missingPreview = hasPreview && !previews;
+
 	const base = {
 		extension,
 		versions,
 		isMonorepo,
 		repoOwner: parsed?.owner ?? null,
-		themePreview: (await previewsRequest)?.themes[extension.id]?.variants ?? null,
-		iconPreview: (await previewsRequest)?.icons[extension.id]?.variants ?? null,
+		themePreview: previews?.themes[extension.id]?.variants ?? null,
+		iconPreview: previews?.icons[extension.id]?.variants ?? null,
 		hasChangelog: await changelogRequest
 	};
 
 	// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
 	if (isDataRequest) {
-		setHeaders({ 'cache-control': STREAMED_CACHE });
+		setHeaders({ 'cache-control': missingPreview ? DEGRADED_CACHE : STREAMED_CACHE });
 		return { ...base, content };
 	}
 
 	const resolved = await content;
-	setHeaders({ 'cache-control': resolved.complete ? COMPLETE_CACHE : DEGRADED_CACHE });
+	setHeaders({
+		'cache-control': resolved.complete && !missingPreview ? COMPLETE_CACHE : DEGRADED_CACHE
+	});
 	return { ...base, content: resolved };
 };
 

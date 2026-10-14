@@ -3,10 +3,14 @@ import type { ZedExtension, ZedExtensionResponse } from '$lib/types.js';
 
 const ZED_API = 'https://api.zed.dev';
 const ONE_HOUR = 60 * 60 * 1000;
+/** A hung request becomes a 503 the visitor can retry, rather than a page that never loads */
+const TIMEOUT_MS = 5000;
 
 export async function getAllExtensions(): Promise<ZedExtension[]> {
 	return getCached('zed:all-extensions', ONE_HOUR, async () => {
-		const res = await fetch(`${ZED_API}/extensions?max_schema_version=1`);
+		const res = await fetch(`${ZED_API}/extensions?max_schema_version=1`, {
+			signal: AbortSignal.timeout(TIMEOUT_MS)
+		});
 		// Throw rather than return [] so a failure isn't cached as "no extensions"
 		if (!res.ok) throw new Error(`Zed API ${res.status}`);
 		const data: ZedExtensionResponse = await res.json();
@@ -19,7 +23,9 @@ export async function getExtensionWithVersions(id: string): Promise<{
 	versions: ZedExtension[];
 } | null> {
 	return getCached(`zed:ext:${id}`, ONE_HOUR, async () => {
-		const res = await fetch(`${ZED_API}/extensions/${id}`);
+		const res = await fetch(`${ZED_API}/extensions/${id}`, {
+			signal: AbortSignal.timeout(TIMEOUT_MS)
+		});
 		// An unknown id is 200 with empty data (→ null below); anything non-OK is a real failure,
 		// so throw instead of caching it as "not found"
 		if (!res.ok) throw new Error(`Zed API ${res.status} for ${id}`);

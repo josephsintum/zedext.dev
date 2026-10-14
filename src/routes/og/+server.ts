@@ -13,7 +13,8 @@ async function loadFont(weight: 400 | 700): Promise<ArrayBuffer> {
 	if (weight === 700 && fontBoldCache) return fontBoldCache;
 
 	const res = await fetch(
-		`https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-${weight}-normal.woff`
+		`https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-${weight}-normal.woff`,
+		{ signal: AbortSignal.timeout(5000) }
 	);
 	if (!res.ok) throw new Error(`Failed to load font: ${res.status}`);
 	const buf = await res.arrayBuffer();

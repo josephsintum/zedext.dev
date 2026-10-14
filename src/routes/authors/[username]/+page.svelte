@@ -23,9 +23,11 @@
 		property="og:description"
 		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
 	/>
-	<meta property="og:image" content={user.avatar_url} />
-	<meta property="og:image:width" content="460" />
-	<meta property="og:image:height" content="460" />
+	{#if user.avatar_url}
+		<meta property="og:image" content={user.avatar_url} />
+		<meta property="og:image:width" content="460" />
+		<meta property="og:image:height" content="460" />
+	{/if}
 	<meta name="twitter:card" content="summary" />
 </svelte:head>
 
@@ -39,11 +41,13 @@
 
 	<!-- Profile header -->
 	<div class="mb-8 flex items-start gap-5">
-		<img
-			src={user.avatar_url}
-			alt={user.name ?? user.login}
-			class="h-20 w-20 shrink-0 rounded-full border border-[var(--color-border)]"
-		/>
+		{#if user.avatar_url}
+			<img
+				src={user.avatar_url}
+				alt={user.name ?? user.login}
+				class="h-20 w-20 shrink-0 rounded-full border border-[var(--color-border)]"
+			/>
+		{/if}
 		<div class="min-w-0">
 			<h1 class="text-xl font-bold text-[var(--color-text)]">
 				{user.name ?? user.login}

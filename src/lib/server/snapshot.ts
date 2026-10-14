@@ -7,6 +7,7 @@ import type { Snapshot } from '$lib/types.js';
 
 const FRESH_MS = 10 * 60 * 1000;
 const RETRY_MS = 60 * 1000;
+const SNAPSHOT_TIMEOUT_MS = 10_000;
 
 export interface LoadedSnapshot {
 	snapshot: Snapshot;
@@ -51,7 +52,10 @@ function refreshOnce(): Promise<LoadedSnapshot> {
 async function refresh(): Promise<LoadedSnapshot> {
 	try {
 		if (!env.SNAPSHOT_URL) throw new Error('SNAPSHOT_URL is not configured');
-		const snapshot = await fetchSnapshot(env.SNAPSHOT_URL);
+		// A hung Blob read falls through to the stale copy or the Zed fallback below
+		const snapshot = await fetchSnapshot(env.SNAPSHOT_URL, (url) =>
+			fetch(url, { signal: AbortSignal.timeout(SNAPSHOT_TIMEOUT_MS) })
+		);
 		// Same sync as the copy we hold: keep the built index
 		if (current && !current.degraded && current.snapshot.generatedAt === snapshot.generatedAt) {
 			current.expires = Date.now() + FRESH_MS;
