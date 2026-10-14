@@ -1,9 +1,9 @@
-import { categoryHref } from './categories.js';
+import { categoryPageForProvides } from './categories.js';
 import type { PreviewBundle } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 import { hasKeyword, nameWords } from './words.js';
 
-export type DiscoverSection = 'stacks' | 'themes' | 'ai';
+export type DiscoverSection = 'workflows' | 'themes';
 
 export interface DiscoverList {
 	slug: string;
@@ -11,7 +11,11 @@ export interface DiscoverList {
 	emoji: string;
 	description: string;
 	section: DiscoverSection;
+	/** What Zed already does for this workflow, shown before the extensions */
+	builtIn?: string[];
 	match: {
+		/** Exactly these extensions (curated picks such as themes), ranked by downloads */
+		ids?: string[];
 		/** Any of these */
 		provides?: string[];
 		/** Exact words in id + name, as on the language hubs */
@@ -35,47 +39,75 @@ const DEFAULT_LIMIT = 48;
 
 /** In page order; the language hubs follow them, last */
 export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
-	{ key: 'ai', title: 'AI' },
-	{ key: 'themes', title: 'Themes' },
-	{ key: 'stacks', title: 'Stacks' }
+	{ key: 'workflows', title: 'Workflows' },
+	{ key: 'themes', title: 'Themes' }
 ];
 
+/**
+ * Workflows come from 2025–26 research (Hacker News, Zed docs, GitHub issues) and download
+ * counts. Agents such as Claude Code install from Zed's ACP Registry, not as extensions.
+ */
 export const DISCOVER_LISTS: DiscoverList[] = [
 	{
-		slug: 'everyday-files',
-		title: 'Everyday file types',
-		emoji: '🗂️',
-		description: 'Syntax support for the config and data files every project has.',
-		section: 'stacks',
-		match: {
-			keywords: [
-				'toml',
-				'dockerfile',
-				'docker',
-				'compose',
-				'make',
-				'makefile',
-				'sql',
-				'env',
-				'log',
-				'git',
-				'yaml',
-				'ini',
-				'csv',
-				'nginx',
-				'justfile',
-				'terraform'
-			]
-		},
-		hide: ['call-trans-opt-received', 'turbo-log-snippets']
+		slug: 'ai-agents',
+		title: 'AI agent coding',
+		emoji: '🤖',
+		description:
+			'Run Claude Code, Codex or Zed’s own agent, and give it more context with MCP servers.',
+		section: 'workflows',
+		builtIn: [
+			'Agent panel and parallel threads',
+			'Edit predictions',
+			'Claude Code, Codex and Gemini CLI from the ACP Registry'
+		],
+		match: { provides: ['context-servers'] }
 	},
 	{
-		slug: 'web-dev',
-		title: 'Web development',
+		slug: 'vscode',
+		title: 'Coming from VS Code',
+		emoji: '🧭',
+		description: 'Keep the look you’re used to: themes and file icons.',
+		section: 'workflows',
+		builtIn: ['VS Code keymap (base_keymap)', 'Settings importer'],
+		match: {
+			ids: [
+				'catppuccin',
+				'catppuccin-icons',
+				'material-icon-theme',
+				'vscode-dark-modern',
+				'one-dark-pro',
+				'vscode-icons',
+				'github-theme',
+				'dracula'
+			]
+		}
+	},
+	{
+		slug: 'vim',
+		title: 'Vim, Neovim and Helix',
+		emoji: '⌨️',
+		description: 'Modal editing is built in. Bring your colorscheme.',
+		section: 'workflows',
+		builtIn: ['Vim and Helix modes', 'Relative line numbers', 'Which-key'],
+		match: {
+			ids: [
+				'tokyo-night',
+				'nvim-nightfox',
+				'kanagawa-themes',
+				'rose-pine-theme',
+				'everforest',
+				'gruvbox-material',
+				'neovim-default'
+			]
+		}
+	},
+	{
+		slug: 'web-frontend',
+		title: 'Web frontend',
 		emoji: '🌐',
-		description:
-			'Frameworks, styling and tooling for building for the web. React, TSX and Tailwind are built in.',
-		section: 'stacks',
+		description: 'Frameworks, markup and styling beyond what ships with Zed.',
+		section: 'workflows',
+		builtIn: ['TypeScript, JSX and TSX', 'Tailwind', 'Prettier and ESLint'],
 		match: {
 			keywords: [
 				'html',
@@ -90,7 +122,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 				'angular',
 				'react',
 				'nextjs',
-				'tailwind',
 				'prisma',
 				'graphql',
 				'deno',
@@ -103,6 +134,63 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 				'jsx',
 				'postcss',
 				'stylelint'
+			]
+		}
+	},
+	{
+		slug: 'devops',
+		title: 'DevOps and config files',
+		emoji: '☁️',
+		description: 'Containers, infrastructure as code, build and CI files.',
+		section: 'workflows',
+		builtIn: ['YAML, JSON and Bash', 'Remote development over SSH', 'Dev containers'],
+		match: {
+			keywords: [
+				'dockerfile',
+				'docker',
+				'compose',
+				'terraform',
+				'make',
+				'makefile',
+				'nix',
+				'helm',
+				'ansible',
+				'kubernetes',
+				'nginx',
+				'justfile',
+				'toml',
+				'env',
+				'ini',
+				'actions',
+				'gitlab',
+				'yaml',
+				'proto'
+			]
+		},
+		hide: ['github-monochrome-theme']
+	},
+	{
+		slug: 'writing',
+		title: 'Notes and writing',
+		emoji: '✍️',
+		description: 'Markdown notes, papers and spell checking.',
+		section: 'workflows',
+		builtIn: ['Markdown preview', 'Mermaid diagrams'],
+		match: {
+			keywords: [
+				'markdown',
+				'latex',
+				'typst',
+				'spell',
+				'cspell',
+				'codebook',
+				'harper',
+				'mermaid',
+				'typos',
+				'vale',
+				'asciidoc',
+				'rst',
+				'org'
 			]
 		}
 	},
@@ -121,14 +209,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 		description: 'The most downloaded Zed themes with a light variant.',
 		section: 'themes',
 		match: { appearance: 'light' }
-	},
-	{
-		slug: 'mcp-servers',
-		title: 'MCP servers',
-		emoji: '🤖',
-		description: 'Model Context Protocol servers for Zed’s AI agent, most used first.',
-		section: 'ai',
-		match: { provides: ['context-servers'] }
 	}
 ];
 
@@ -142,6 +222,7 @@ export function matchesList(
 	previews: PreviewBundle | null
 ): boolean {
 	const m = c.match;
+	if (m.ids) return m.ids.includes(r.id);
 	if (m.appearance) {
 		if (!previews || !Object.hasOwn(previews.themes, r.id)) return false;
 		return previews.themes[r.id].variants.some((v) => v.appearance === m.appearance);
@@ -177,8 +258,12 @@ export function resolveList(
 }
 
 /** The full category page behind a list, linked when the list page is capped */
-export function browseAllHref(c: DiscoverList): string | null {
-	if (c.match.appearance) return '/themes';
-	if (c.match.provides?.length === 1 && !c.match.keywords) return categoryHref(c.match.provides[0]);
-	return null;
+export function browseAll(c: DiscoverList): { href: string; label: string } | null {
+	const provides = c.match.appearance
+		? 'themes'
+		: c.match.provides?.length === 1 && !c.match.keywords && !c.match.ids
+			? c.match.provides[0]
+			: null;
+	const page = provides ? categoryPageForProvides(provides) : undefined;
+	return page ? { href: `/${page.slug}`, label: page.title } : null;
 }

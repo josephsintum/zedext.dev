@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-	browseAllHref,
+	browseAll,
+	DISCOVER_SECTIONS,
 	DISCOVER_LISTS,
 	getDiscoverList,
 	resolveList,
@@ -42,7 +43,7 @@ const web: DiscoverList = {
 	title: 'Web',
 	emoji: '🌐',
 	description: '',
-	section: 'stacks',
+	section: 'workflows',
 	match: { keywords: ['vue', 'svelte', 'html'] }
 };
 
@@ -53,7 +54,7 @@ describe('DISCOVER_LISTS', () => {
 	});
 
 	it('look up by slug without matching prototype keys', () => {
-		expect(getDiscoverList('web-dev')?.title).toBe('Web development');
+		expect(getDiscoverList('web-frontend')?.title).toBe('Web frontend');
 		expect(getDiscoverList('constructor')).toBeUndefined();
 	});
 });
@@ -141,14 +142,48 @@ describe('resolveList', () => {
 	});
 });
 
-describe('browseAllHref', () => {
+describe('browseAll', () => {
 	it('points lists that can outgrow their limit at the full category page', () => {
-		expect(browseAllHref(getDiscoverList('mcp-servers')!)).toBe('/mcp-servers');
-		expect(browseAllHref(getDiscoverList('dark-themes')!)).toBe('/themes');
-		expect(browseAllHref(getDiscoverList('light-themes')!)).toBe('/themes');
+		expect(browseAll(getDiscoverList('ai-agents')!)).toEqual({
+			href: '/mcp-servers',
+			label: 'MCP servers for Zed'
+		});
+		expect(browseAll(getDiscoverList('dark-themes')!)).toEqual({
+			href: '/themes',
+			label: 'Zed themes'
+		});
+		expect(browseAll(getDiscoverList('light-themes')!)?.href).toBe('/themes');
 	});
 
 	it('is null for keyword lists, which have no category page', () => {
-		expect(browseAllHref(getDiscoverList('web-dev')!)).toBeNull();
+		expect(browseAll(getDiscoverList('web-frontend')!)).toBeNull();
+		expect(browseAll(getDiscoverList('vscode')!)).toBeNull();
+	});
+});
+
+describe('workflows', () => {
+	it('come first, then themes, with no other sections', () => {
+		expect(DISCOVER_SECTIONS.map((s) => s.key)).toEqual(['workflows', 'themes']);
+	});
+
+	it('each say what Zed has built in', () => {
+		for (const list of DISCOVER_LISTS.filter((l) => l.section === 'workflows')) {
+			expect(list.builtIn?.length, list.slug).toBeGreaterThan(0);
+		}
+	});
+
+	it('match a fixed id list ranked by downloads, skipping ids missing from the snapshot', () => {
+		const c: DiscoverList = { ...web, match: { ids: ['a', 'b', 'gone'] } };
+		const records = [
+			record({ id: 'a', provides: ['themes'], download_count: 1 }),
+			record({ id: 'b', provides: ['icon-themes'], download_count: 5 }),
+			record({ id: 'c', download_count: 9 })
+		];
+		expect(resolveList(c, records, null)).toEqual({ items: [records[1], records[0]], total: 2 });
+	});
+
+	it('ignore prototype keys in id lists', () => {
+		const c: DiscoverList = { ...web, match: { ids: ['a'] } };
+		expect(resolveList(c, [record({ id: 'constructor' })], null).total).toBe(0);
 	});
 });

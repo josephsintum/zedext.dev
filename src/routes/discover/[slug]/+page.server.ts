@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
 import { pageCacheControl } from '$lib/server/browse.js';
-import { browseAllHref, getDiscoverList, resolveList } from '$lib/discover.js';
+import { browseAll, getDiscoverList, resolveList } from '$lib/discover.js';
 import { themeTile } from '$lib/theme-tile.js';
 
 export const load: PageServerLoad = async ({ params, setHeaders }) => {
@@ -19,5 +19,5 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 
 	const { items, total } = resolveList(list, snapshot.extensions, previews);
 	const tiles = appearance ? items.flatMap((r) => themeTile(previews, r, appearance) ?? []) : null;
-	return { list, items, total, tiles, browseAll: browseAllHref(list) };
+	return { list, items, total, tiles, browseAll: browseAll(list) };
 };

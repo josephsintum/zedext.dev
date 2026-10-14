@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import ThemeTile from '$lib/components/ThemeTile.svelte';
+	import WorkflowCard from '$lib/components/WorkflowCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { timeAgo } from '$lib/utils/format.js';
 
@@ -16,7 +17,7 @@
 
 <Seo
 	title="Discover Zed extensions — ZedExt"
-	description="New and recently updated Zed extensions, the best extensions for each language, web development, everyday file types, dark and light themes, and MCP servers."
+	description="New and recently updated Zed extensions, extensions for common workflows (AI agents, VS Code and Vim users, web frontend, DevOps, writing), dark and light themes, and the best extensions for each language."
 	path="/discover"
 	ogTitle="Discover Zed extensions"
 />
@@ -70,7 +71,7 @@
 	<div class="text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-[var(--color-text)]">Discover</h1>
 		<p class="mt-3 text-[15px] text-[var(--color-text-secondary)]">
-			What's new, and the best extensions by language, stack and theme.
+			What's new, and the best extensions by workflow, theme and language.
 		</p>
 		<nav class="mt-5 flex flex-wrap justify-center gap-1.5" aria-label="Sections">
 			{#each jumps as j (j.id)}
@@ -110,7 +111,22 @@
 	{/if}
 
 	{#each data.sections as section (section.key)}
-		{@render group(section)}
+		{#if section.key === 'workflows'}
+			<section class="mt-10">
+				{@render heading(
+					'workflows',
+					'Workflows',
+					'Set Zed up for how you work: what’s built in, then the extensions that add more'
+				)}
+				<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+					{#each section.rows as row (row.list.slug)}
+						<WorkflowCard list={row.list} items={row.items} total={row.total} />
+					{/each}
+				</div>
+			</section>
+		{:else}
+			{@render group(section)}
+		{/if}
 	{/each}
 
 	<section class="mt-14 border-t border-[var(--color-border)] pt-8">

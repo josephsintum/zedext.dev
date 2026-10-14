@@ -25,6 +25,19 @@
 		{data.list.description}
 	</p>
 
+	{#if data.list.builtIn}
+		<section class="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5">
+			<h2 class="text-[14px] font-semibold text-[var(--color-text)]">
+				✓ Built into Zed, no extension needed
+			</h2>
+			<ul class="mt-2 list-disc space-y-1 pl-5 text-[13px] text-[var(--color-text-secondary)]">
+				{#each data.list.builtIn as item (item)}
+					<li>{item}</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
 	{#if data.total > 0}
 		<p class="mt-1 text-[13px] text-[var(--color-text-tertiary)]">
 			{data.total} extensions{data.total > data.items.length
@@ -51,8 +64,8 @@
 	{/if}
 
 	{#if data.browseAll && data.total > data.items.length}
-		<a href={data.browseAll} class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
-			>Browse all {data.list.match.appearance ? 'themes' : data.list.title} →</a
+		<a href={data.browseAll.href} class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
+			>Browse all {data.browseAll.label} →</a
 		>
 	{/if}
 </div>
