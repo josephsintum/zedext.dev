@@ -4,7 +4,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import NavProgress from '$lib/components/NavProgress.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
 <NavProgress />
@@ -13,5 +13,5 @@
 	<main id="main" class="flex-1">
 		{@render children()}
 	</main>
-	<Footer />
+	<Footer updatedAt={data.dataUpdatedAt} />
 </div>

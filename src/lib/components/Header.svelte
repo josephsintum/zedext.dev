@@ -4,11 +4,11 @@
 	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
 
 	const isDark = $derived(getTheme() === 'dark');
-	const onList = $derived(page.url.pathname === '/extensions');
-
-	const externalLinks = [
-		{ href: 'https://zed.dev/docs/extensions/developing-extensions', label: 'Create Extension' },
-		{ href: 'https://zed.dev', label: 'Zed Editor' }
+	// Phones show what fits in the bar (`hide` drops the rest); the phone menu lists them all
+	const siteLinks = [
+		{ href: '/extensions', label: 'All extensions', hide: '' },
+		{ href: '/themes', label: 'Themes', hide: 'max-[359px]:hidden' },
+		{ href: '/languages', label: 'Languages', hide: 'max-sm:hidden' }
 	];
 
 	let menu: HTMLElement;
@@ -29,34 +29,17 @@
 			ZedExt
 		</a>
 
-		<nav class="flex items-center gap-5">
-			<a
-				href="/extensions"
-				aria-current={onList ? 'page' : undefined}
-				class="hit-y text-[13px] font-medium transition-colors hover:text-[var(--color-text)] {onList
-					? 'text-[var(--color-text)]'
-					: 'text-[var(--color-text-secondary)]'}"
-			>
-				All extensions
-			</a>
-			{#each externalLinks as link (link.href)}
+		<nav class="flex items-center gap-3 sm:gap-5">
+			{#each siteLinks as link (link.href)}
+				{@const current = page.url.pathname === link.href}
 				<a
 					href={link.href}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="hidden text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)] sm:inline"
+					aria-current={current ? 'page' : undefined}
+					class="hit-y text-[13px] font-medium whitespace-nowrap transition-colors hover:text-[var(--color-text)] {current
+						? 'text-[var(--color-text)]'
+						: 'text-[var(--color-text-secondary)]'} {link.hide}"
 				>
 					{link.label}
-					<svg
-						aria-hidden="true"
-						class="inline h-3 w-3 opacity-50"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg
-					>
 				</a>
 			{/each}
 			<button
@@ -100,7 +83,7 @@
 					</svg>
 				{/if}
 			</button>
-			<!-- Phones: the links that don't fit, in a native popover (closes on outside tap or Esc).
+			<!-- Phones: every link, in a native popover (closes on outside tap or Esc).
 				Only where popovers are supported; elsewhere neither the button nor the menu shows -->
 			<button
 				popovertarget="site-menu"
@@ -123,16 +106,13 @@
 				popover
 				class="inset-auto top-14 right-4 m-0 hidden w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-1 text-[14px] shadow-lg max-sm:open:block"
 			>
-				{#each externalLinks as link (link.href)}
+				{#each siteLinks as link (link.href)}
 					<a
 						href={link.href}
-						target="_blank"
-						rel="noopener noreferrer"
-						onclick={closeMenu}
-						class="flex min-h-11 items-center justify-between rounded-md px-3 text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+						aria-current={page.url.pathname === link.href ? 'page' : undefined}
+						class="flex min-h-11 items-center rounded-md px-3 text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
 					>
 						{link.label}
-						<span aria-hidden="true" class="text-[var(--color-text-tertiary)]">↗</span>
 					</a>
 				{/each}
 				<a
