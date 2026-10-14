@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
-	import ThemeTile from '$lib/components/ThemeTile.svelte';
+	import ThemePaletteCard from '$lib/components/ThemePaletteCard.svelte';
+	import { themeHref } from '$lib/theme-picker.js';
 	import WorkflowCard from '$lib/components/WorkflowCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { timeAgo } from '$lib/utils/format.js';
@@ -11,6 +12,7 @@
 		...(data.newest.length > 0 ? [{ id: 'new', label: 'New' }] : []),
 		...(data.updated.length > 0 ? [{ id: 'updated', label: 'Updated' }] : []),
 		...data.sections.map((s) => ({ id: s.key, label: s.title })),
+		...(data.themes.length > 0 ? [{ id: 'themes', label: 'Themes' }] : []),
 		{ id: 'languages', label: 'Languages' }
 	]);
 </script>
@@ -32,39 +34,6 @@
 			<a {href} class="shrink-0 text-[13px] text-[var(--color-accent)]">{more} →</a>
 		{/if}
 	</div>
-{/snippet}
-
-{#snippet group(section: (typeof data.sections)[number])}
-	<h2
-		id={section.key}
-		class="mt-14 scroll-mt-20 border-t border-[var(--color-border)] pt-5 text-[12px] font-semibold tracking-wider text-[var(--color-text-tertiary)] uppercase"
-	>
-		{section.title}
-	</h2>
-	{#each section.rows as row (row.list.slug)}
-		<section class="mt-6">
-			{@render heading(
-				`c-${row.list.slug}`,
-				`${row.list.emoji} ${row.list.title}`,
-				row.list.description,
-				`/discover/${row.list.slug}`,
-				`See all ${row.total}`
-			)}
-			{#if row.tiles}
-				<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-					{#each row.tiles as tile (tile.record.id)}
-						<ThemeTile {tile} />
-					{/each}
-				</div>
-			{:else}
-				<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-					{#each row.items as hit (hit.id)}
-						<ExtensionCard {hit} />
-					{/each}
-				</div>
-			{/if}
-		</section>
-	{/each}
 {/snippet}
 
 <div class="mx-auto max-w-6xl px-6 pt-12 pb-20">
@@ -124,10 +93,25 @@
 					{/each}
 				</div>
 			</section>
-		{:else}
-			{@render group(section)}
 		{/if}
 	{/each}
+
+	{#if data.themes.length > 0}
+		<section class="mt-14 border-t border-[var(--color-border)] pt-8">
+			{@render heading(
+				'themes',
+				'Themes',
+				'Pick one to preview it, then switch between dark and light',
+				'/discover/themes',
+				'Browse all themes'
+			)}
+			<div class="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+				{#each data.themes as entry (entry.id)}
+					<ThemePaletteCard {entry} href={themeHref(entry.id, 'dark')} />
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<section class="mt-14 border-t border-[var(--color-border)] pt-8">
 		{@render heading(

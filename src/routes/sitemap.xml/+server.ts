@@ -36,6 +36,7 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 			lastmod: today
 		})),
 		{ loc: `${SITE}/discover`, changefreq: 'weekly', priority: '0.7' },
+		{ loc: `${SITE}/discover/themes`, changefreq: 'weekly', priority: '0.7' },
 		...DISCOVER_LISTS.map((c) => ({
 			loc: `${SITE}/discover/${c.slug}`,
 			changefreq: 'weekly',

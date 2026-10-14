@@ -7,7 +7,6 @@ import {
 	resolveList,
 	type DiscoverList
 } from './discover.js';
-import type { PreviewBundle, ThemeVariant } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 
 function record(o: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
@@ -28,16 +27,6 @@ function record(o: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
 	};
 }
 
-const variant = (appearance: 'dark' | 'light') =>
-	({ name: appearance, appearance, colors: {} }) as ThemeVariant;
-const previews = (themes: Record<string, ('dark' | 'light')[]>): PreviewBundle => ({
-	generatedAt: '2026-10-13T00:00:00Z',
-	icons: {},
-	themes: Object.fromEntries(
-		Object.entries(themes).map(([id, as]) => [id, { version: '1', variants: as.map(variant) }])
-	)
-});
-
 const web: DiscoverList = {
 	slug: 'web',
 	title: 'Web',
@@ -54,6 +43,7 @@ describe('DISCOVER_LISTS', () => {
 	});
 
 	it('look up by slug without matching prototype keys', () => {
+		expect(getDiscoverList('dark-themes')).toBeUndefined();
 		expect(getDiscoverList('web-frontend')?.title).toBe('Web frontend');
 		expect(getDiscoverList('constructor')).toBeUndefined();
 	});
@@ -66,7 +56,7 @@ describe('resolveList', () => {
 			record({ id: 'vue', download_count: 30 }),
 			record({ id: 'go', download_count: 99 })
 		];
-		expect(resolveList(web, records, null)).toEqual({
+		expect(resolveList(web, records)).toEqual({
 			items: [records[1], records[0]],
 			total: 2
 		});
@@ -80,19 +70,19 @@ describe('resolveList', () => {
 			record({ id: 'html-agent', provides: ['agent-servers'] }),
 			record({ id: 'vue-icons', provides: ['icon-themes'] })
 		];
-		expect(resolveList(web, records, null).items.map((r) => r.id)).toEqual(['vue']);
+		expect(resolveList(web, records).items.map((r) => r.id)).toEqual(['vue']);
 	});
 
 	it('honors an explicit excludeProvides', () => {
 		const c = { ...web, match: { keywords: ['vue'], excludeProvides: [] } };
 		const records = [record({ id: 'vue-theme', provides: ['themes'] })];
-		expect(resolveList(c, records, null).total).toBe(1);
+		expect(resolveList(c, records).total).toBe(1);
 	});
 
 	it('matches provides rules', () => {
 		const c: DiscoverList = { ...web, match: { provides: ['context-servers'] } };
 		const records = [record({ id: 'a', provides: ['context-servers'] }), record({ id: 'b' })];
-		expect(resolveList(c, records, null).items.map((r) => r.id)).toEqual(['a']);
+		expect(resolveList(c, records).items.map((r) => r.id)).toEqual(['a']);
 	});
 
 	it('puts pins first in their order, once, and skips pins missing from the snapshot', () => {
@@ -102,7 +92,7 @@ describe('resolveList', () => {
 			record({ id: 'svelte', download_count: 10 }),
 			record({ id: 'pinned-other', download_count: 1 })
 		];
-		const { items, total } = resolveList(c, records, null);
+		const { items, total } = resolveList(c, records);
 		expect(items.map((r) => r.id)).toEqual(['svelte', 'pinned-other', 'vue']);
 		expect(total).toBe(3);
 	});
@@ -110,35 +100,13 @@ describe('resolveList', () => {
 	it('never shows hidden ids, even pinned ones', () => {
 		const c = { ...web, pin: ['vue'], hide: ['vue', 'html'] };
 		const records = [record({ id: 'vue' }), record({ id: 'html' }), record({ id: 'svelte' })];
-		expect(resolveList(c, records, null).items.map((r) => r.id)).toEqual(['svelte']);
+		expect(resolveList(c, records).items.map((r) => r.id)).toEqual(['svelte']);
 	});
 
 	it('caps items at the limit but reports the full total', () => {
 		const records = ['vue', 'svelte', 'html'].map((id) => record({ id }));
-		expect(resolveList(web, records, null, 2)).toMatchObject({ total: 3 });
-		expect(resolveList(web, records, null, 2).items).toHaveLength(2);
-	});
-
-	it('matches theme lists by preview appearance', () => {
-		const dark = getDiscoverList('dark-themes')!;
-		const light = getDiscoverList('light-themes')!;
-		const records = [
-			record({ id: 'both', provides: ['themes'], download_count: 2 }),
-			record({ id: 'dark', provides: ['themes'], download_count: 1 }),
-			record({ id: 'no-preview', provides: ['themes'], download_count: 9 }),
-			record({ id: 'constructor', provides: ['themes'] })
-		];
-		const p = previews({ both: ['light', 'dark'], dark: ['dark'] });
-		expect(resolveList(dark, records, p).items.map((r) => r.id)).toEqual(['both', 'dark']);
-		expect(resolveList(light, records, p).items.map((r) => r.id)).toEqual(['both']);
-	});
-
-	it('returns nothing for theme lists when previews are unavailable', () => {
-		const records = [record({ id: 'dark', provides: ['themes'] })];
-		expect(resolveList(getDiscoverList('dark-themes')!, records, null)).toEqual({
-			items: [],
-			total: 0
-		});
+		expect(resolveList(web, records, 2)).toMatchObject({ total: 3 });
+		expect(resolveList(web, records, 2).items).toHaveLength(2);
 	});
 });
 
@@ -148,11 +116,6 @@ describe('browseAll', () => {
 			href: '/mcp-servers',
 			label: 'MCP servers for Zed'
 		});
-		expect(browseAll(getDiscoverList('dark-themes')!)).toEqual({
-			href: '/themes',
-			label: 'Zed themes'
-		});
-		expect(browseAll(getDiscoverList('light-themes')!)?.href).toBe('/themes');
 	});
 
 	it('is null for keyword lists, which have no category page', () => {
@@ -162,8 +125,8 @@ describe('browseAll', () => {
 });
 
 describe('workflows', () => {
-	it('come first, then themes, with no other sections', () => {
-		expect(DISCOVER_SECTIONS.map((s) => s.key)).toEqual(['workflows', 'themes']);
+	it('are the only list section; themes have their own picker', () => {
+		expect(DISCOVER_SECTIONS.map((s) => s.key)).toEqual(['workflows']);
 	});
 
 	it('each say what Zed has built in', () => {
@@ -179,11 +142,11 @@ describe('workflows', () => {
 			record({ id: 'b', provides: ['icon-themes'], download_count: 5 }),
 			record({ id: 'c', download_count: 9 })
 		];
-		expect(resolveList(c, records, null)).toEqual({ items: [records[1], records[0]], total: 2 });
+		expect(resolveList(c, records)).toEqual({ items: [records[1], records[0]], total: 2 });
 	});
 
 	it('ignore prototype keys in id lists', () => {
 		const c: DiscoverList = { ...web, match: { ids: ['a'] } };
-		expect(resolveList(c, [record({ id: 'constructor' })], null).total).toBe(0);
+		expect(resolveList(c, [record({ id: 'constructor' })]).total).toBe(0);
 	});
 });

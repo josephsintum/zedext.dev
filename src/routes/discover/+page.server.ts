@@ -5,10 +5,10 @@ import { pageCacheControl } from '$lib/server/browse.js';
 import { DISCOVER_SECTIONS, DISCOVER_LISTS, resolveList } from '$lib/discover.js';
 import { newestExtensions, recentlyUpdated } from '$lib/new-extensions.js';
 import { hubSummaries } from '$lib/language-hub.js';
-import { themeTile } from '$lib/theme-tile.js';
+import { themeEntries } from '$lib/theme-picker.js';
 
 const CARDS_PER_ROW = 4;
-const TILES_PER_ROW = 6;
+const THEMES_ROW = 8;
 
 export const load: PageServerLoad = async ({ setHeaders }) => {
 	const [{ snapshot, degraded }, previews] = await Promise.all([requireSnapshot(), getPreviews()]);
@@ -22,21 +22,14 @@ export const load: PageServerLoad = async ({ setHeaders }) => {
 		key,
 		title,
 		rows: DISCOVER_LISTS.filter((c) => c.section === key)
-			.map((list) => {
-				const appearance = list.match.appearance;
-				const { items, total } = resolveList(
-					list,
-					records,
-					previews,
-					appearance ? TILES_PER_ROW : CARDS_PER_ROW
-				);
-				const tiles = appearance
-					? items.flatMap((r) => themeTile(previews, r, appearance) ?? [])
-					: null;
-				return { list, items, tiles, total };
-			})
-			.filter((row) => (row.tiles ? row.tiles.length > 0 : row.items.length > 0))
+			.map((list) => ({ list, ...resolveList(list, records, CARDS_PER_ROW) }))
+			.filter((row) => row.items.length > 0)
 	})).filter((s) => s.rows.length > 0);
+	// Most themes are dark-first; the picker has the light toggle. Cards only need the palette.
+	const themes = themeEntries(previews, records, 'dark', THEMES_ROW).map((e) => ({
+		...e,
+		variants: []
+	}));
 
-	return { newest, updated, hubs: hubSummaries(records), sections };
+	return { newest, updated, hubs: hubSummaries(records), sections, themes };
 };

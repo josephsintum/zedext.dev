@@ -1,9 +1,8 @@
 import { categoryPageForProvides } from './categories.js';
-import type { PreviewBundle } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 import { hasKeyword, nameWords } from './words.js';
 
-export type DiscoverSection = 'workflows' | 'themes';
+export type DiscoverSection = 'workflows';
 
 export interface DiscoverList {
 	slug: string;
@@ -20,8 +19,6 @@ export interface DiscoverList {
 		provides?: string[];
 		/** Exact words in id + name, as on the language hubs */
 		keywords?: string[];
-		/** Theme lists: a preview variant of this appearance */
-		appearance?: 'dark' | 'light';
 		/** Keyword rules skip extensions providing any of these (default KEYWORD_EXCLUDES) */
 		excludeProvides?: string[];
 	};
@@ -39,8 +36,7 @@ const DEFAULT_LIMIT = 48;
 
 /** In page order; the language hubs follow them, last */
 export const DISCOVER_SECTIONS: { key: DiscoverSection; title: string }[] = [
-	{ key: 'workflows', title: 'Workflows' },
-	{ key: 'themes', title: 'Themes' }
+	{ key: 'workflows', title: 'Workflows' }
 ];
 
 /**
@@ -193,22 +189,6 @@ export const DISCOVER_LISTS: DiscoverList[] = [
 				'org'
 			]
 		}
-	},
-	{
-		slug: 'dark-themes',
-		title: 'Dark themes',
-		emoji: '🌙',
-		description: 'The most downloaded Zed themes with a dark variant.',
-		section: 'themes',
-		match: { appearance: 'dark' }
-	},
-	{
-		slug: 'light-themes',
-		title: 'Light themes',
-		emoji: '☀️',
-		description: 'The most downloaded Zed themes with a light variant.',
-		section: 'themes',
-		match: { appearance: 'light' }
 	}
 ];
 
@@ -216,17 +196,9 @@ export function getDiscoverList(slug: string): DiscoverList | undefined {
 	return DISCOVER_LISTS.find((c) => c.slug === slug);
 }
 
-export function matchesList(
-	c: DiscoverList,
-	r: ExtensionRecord,
-	previews: PreviewBundle | null
-): boolean {
+export function matchesList(c: DiscoverList, r: ExtensionRecord): boolean {
 	const m = c.match;
 	if (m.ids) return m.ids.includes(r.id);
-	if (m.appearance) {
-		if (!previews || !Object.hasOwn(previews.themes, r.id)) return false;
-		return previews.themes[r.id].variants.some((v) => v.appearance === m.appearance);
-	}
 	if (m.provides && !m.provides.some((p) => r.provides.includes(p))) return false;
 	if (m.keywords) {
 		const excluded = m.excludeProvides ?? KEYWORD_EXCLUDES;
@@ -240,7 +212,6 @@ export function matchesList(
 export function resolveList(
 	c: DiscoverList,
 	records: ExtensionRecord[],
-	previews: PreviewBundle | null,
 	limit = c.limit ?? DEFAULT_LIMIT
 ): { items: ExtensionRecord[]; total: number } {
 	const hidden = new Set(c.hide ?? []);
@@ -251,7 +222,7 @@ export function resolveList(
 	});
 	const pinnedIds = new Set(pinned.map((r) => r.id));
 	const matched = records
-		.filter((r) => !hidden.has(r.id) && !pinnedIds.has(r.id) && matchesList(c, r, previews))
+		.filter((r) => !hidden.has(r.id) && !pinnedIds.has(r.id) && matchesList(c, r))
 		.sort((a, b) => b.download_count - a.download_count);
 	const all = [...pinned, ...matched];
 	return { items: all.slice(0, limit), total: all.length };
@@ -259,9 +230,8 @@ export function resolveList(
 
 /** The full category page behind a list, linked when the list page is capped */
 export function browseAll(c: DiscoverList): { href: string; label: string } | null {
-	const provides = c.match.appearance
-		? 'themes'
-		: c.match.provides?.length === 1 && !c.match.keywords && !c.match.ids
+	const provides =
+		c.match.provides?.length === 1 && !c.match.keywords && !c.match.ids
 			? c.match.provides[0]
 			: null;
 	const page = provides ? categoryPageForProvides(provides) : undefined;

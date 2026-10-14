@@ -1,6 +1,5 @@
 <script lang="ts">
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
-	import ThemeTile from '$lib/components/ThemeTile.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import WorkflowGuide from '$lib/components/WorkflowGuide.svelte';
 
@@ -53,13 +52,7 @@
 		<div class="max-w-3xl">
 			<WorkflowGuide guide={data.guide} />
 		</div>
-	{:else if data.tiles && data.tiles.length > 0}
-		<div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-			{#each data.tiles as tile (tile.record.id)}
-				<ThemeTile {tile} />
-			{/each}
-		</div>
-	{:else if !data.tiles && data.items.length > 0}
+	{:else if data.items.length > 0}
 		<div class="mt-8 grid auto-rows-fr grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.items as hit (hit.id)}
 				<ExtensionCard {hit} />
