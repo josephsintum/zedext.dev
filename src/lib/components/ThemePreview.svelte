@@ -9,7 +9,11 @@
 		type SampleId
 	} from '$lib/theme-samples.js';
 
-	let { variants }: { variants: ThemeVariant[] } = $props();
+	let { variants, size = 'md' }: { variants: ThemeVariant[]; size?: 'md' | 'lg' } = $props();
+
+	// The theme picker shows one big preview; extension pages keep the compact size
+	const codeSize = $derived(size === 'lg' ? 'text-[15px]' : 'text-[13px]');
+	const chromeSize = $derived(size === 'lg' ? 'text-[12px]' : 'text-[11px]');
 
 	// Light/dark first, then a variant of that appearance. Starts on the first variant's
 	// appearance (the author's order); the toggle only shows when a theme ships both.
@@ -119,14 +123,14 @@
 
 	<!-- All colors are validated hex values; style: sets them with setProperty -->
 	<div
-		class="font-code overflow-hidden rounded-lg border text-[13px] leading-relaxed shadow-sm"
+		class="font-code overflow-hidden rounded-lg border {codeSize} leading-relaxed shadow-sm"
 		style:background-color={c.bg}
 		style:color={c.fg}
 		style:border-color={c.border}
 	>
 		<!-- The editor's file tabs double as the language switcher -->
 		<div
-			class="flex overflow-x-auto text-[11px]"
+			class="flex overflow-x-auto {chromeSize}"
 			style:background-color={c.status}
 			role="tablist"
 			aria-label="Code sample language"
@@ -163,7 +167,7 @@
 							>{/each}</div>{/each}</pre>
 		</div>
 		<div
-			class="flex justify-between px-4 py-1 text-[11px]"
+			class="flex justify-between px-4 py-1 {chromeSize}"
 			style:background-color={c.status}
 			style:color={c.fg}
 		>

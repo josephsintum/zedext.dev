@@ -120,7 +120,7 @@
 				>
 			</div>
 			{#key `${appearance}:${selected.id}`}
-				<ThemePreview variants={selected.variants} />
+				<ThemePreview variants={selected.variants} size="lg" />
 			{/key}
 		</section>
 
