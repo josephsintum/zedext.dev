@@ -2,7 +2,13 @@ import type { PageServerLoad } from './$types';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
 import { pageCacheControl } from '$lib/server/browse.js';
-import { pickerState, themeEntries, type Appearance, type ThemeEntry } from '$lib/theme-picker.js';
+import {
+	pickerState,
+	themeEntries,
+	themeVariants,
+	type Appearance,
+	type ThemeEntry
+} from '$lib/theme-picker.js';
 
 /** Sent with the page; the rest load on "Show all" from /discover/themes.json */
 const INITIAL = 48;
@@ -28,6 +34,8 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 		appearance,
 		themeId,
 		entries: { dark: initial('dark'), light: initial('light') },
+		/** The rest load from /discover/themes/<id>.json on hover or click */
+		selectedVariants: (themeId && themeVariants(previews, themeId)) || [],
 		totals: { dark: all.dark.length, light: all.light.length }
 	};
 };

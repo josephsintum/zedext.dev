@@ -4,7 +4,9 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import ThemePaletteCard from '$lib/components/ThemePaletteCard.svelte';
 	import ThemePreview from '$lib/components/ThemePreview.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import type { Appearance, ThemeEntry } from '$lib/theme-picker.js';
+	import type { ThemeVariant } from '$lib/theme-preview.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
 	let { data } = $props();
@@ -21,6 +23,54 @@
 	const selected = $derived(list.find((e) => e.id === selectedId) ?? list[0]);
 	const total = $derived(data.totals[appearance]);
 
+	// Full variants load on intent (hover, focus or click) and are kept for the visit
+	const variantsById = new SvelteMap<string, ThemeVariant[]>();
+	/** Requests in flight; bookkeeping only, so a plain (non-reactive) Map */
+	const inflight = new Map<string, Promise<void>>();
+	let failedId = $state<string | null>(null);
+
+	function prefetch(id: string): Promise<void> {
+		if (variantsById.has(id) || id === data.themeId) return Promise.resolve();
+		const pending = inflight.get(id);
+		if (pending) return pending;
+		const request = fetch(`/discover/themes/${encodeURIComponent(id)}.json`)
+			.then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+			.then((variants: ThemeVariant[]) => void variantsById.set(id, variants))
+			.finally(() => inflight.delete(id));
+		inflight.set(id, request);
+		return request;
+	}
+
+	const variantsOf = (id: string | undefined) =>
+		!id ? undefined : id === data.themeId ? data.selectedVariants : variantsById.get(id);
+
+	/** The theme the preview last finished loading; it stays up while the next one loads */
+	let shownId = $derived<string | null>(data.themeId);
+
+	function show(id: string) {
+		failedId = null;
+		prefetch(id).then(
+			() => {
+				if (selected?.id === id) shownId = id;
+			},
+			() => {
+				if (selected?.id === id) failedId = id;
+			}
+		);
+	}
+
+	const preview = $derived.by(() => {
+		const loadedSelected = variantsOf(selected?.id);
+		if (selected && loadedSelected) return { id: selected.id, variants: loadedSelected };
+		const fallback = shownId ? variantsOf(shownId) : undefined;
+		return shownId && fallback ? { id: shownId, variants: fallback } : null;
+	});
+	const previewVariants = $derived.by(() => {
+		const all = preview?.variants ?? [];
+		const matching = all.filter((v) => v.appearance === appearance);
+		return matching.length > 0 ? matching : all;
+	});
+
 	/** Keep the URL shareable without re-running the page load */
 	function syncUrl() {
 		const url = new URL(page.url);
@@ -35,12 +85,14 @@
 		appearance = next;
 		const nextList = loaded[next] ?? data.entries[next];
 		selectedId = nextList.some((e) => e.id === keep) ? (keep ?? null) : (nextList[0]?.id ?? null);
+		if (selectedId) show(selectedId);
 		failed = false;
 		syncUrl();
 	}
 
 	function choose(id: string) {
 		selectedId = id;
+		show(id);
 		syncUrl();
 		// On phones the preview isn't pinned, so bring it into view
 		if (window.matchMedia('(max-width: 767px)').matches) {
@@ -119,9 +171,21 @@
 					>View extension →</a
 				>
 			</div>
-			{#key `${appearance}:${selected.id}`}
-				<ThemePreview variants={selected.variants} size="lg" />
-			{/key}
+			{#if preview && previewVariants.length > 0}
+				<div
+					class="transition-opacity {preview.id !== selected.id ? 'opacity-60' : ''}"
+					aria-busy={preview.id !== selected.id && failedId !== selected.id}
+				>
+					{#key `${appearance}:${preview.id}`}
+						<ThemePreview variants={previewVariants} size="lg" />
+					{/key}
+				</div>
+			{/if}
+			{#if failedId === selected.id}
+				<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]">
+					Couldn’t load this theme’s colors. Try again.
+				</p>
+			{/if}
 		</section>
 
 		<p class="mt-5 mb-3 text-[13px] text-[var(--color-text-tertiary)]">
@@ -134,6 +198,7 @@
 					{entry}
 					selected={entry.id === selected.id}
 					onselect={() => choose(entry.id)}
+					onintent={() => prefetch(entry.id).catch(() => {})}
 				/>
 			{/each}
 		</div>

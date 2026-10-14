@@ -1,16 +1,22 @@
 <script lang="ts">
-	import type { ThemeEntry } from '$lib/theme-picker.js';
+	import { PALETTE_ROLES, type ThemeEntry } from '$lib/theme-picker.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
 	let {
 		entry,
 		href,
 		selected = false,
-		onselect
-	}: { entry: ThemeEntry; href?: string; selected?: boolean; onselect?: () => void } = $props();
+		onselect,
+		onintent
+	}: {
+		entry: ThemeEntry;
+		href?: string;
+		selected?: boolean;
+		onselect?: () => void;
+		/** Hover or keyboard focus: a hint to start loading this theme */
+		onintent?: () => void;
+	} = $props();
 
-	// Background first and widest, then the syntax colors people notice most
-	const ROLES = ['keyword', 'function', 'string', 'type', 'number', 'comment'] as const;
 	const classes = $derived(
 		`block w-full overflow-hidden rounded-lg border bg-[var(--color-surface-raised)] text-left transition-colors ${
 			selected
@@ -24,7 +30,7 @@
 	<!-- Colors are validated hex values from the previews bundle -->
 	<span class="flex h-8" aria-hidden="true">
 		<span class="flex-[2.2]" style:background-color={entry.palette.bg}></span>
-		{#each ROLES as role (role)}
+		{#each PALETTE_ROLES as role (role)}
 			<span class="flex-1" style:background-color={entry.palette[role]}></span>
 		{/each}
 	</span>
@@ -42,7 +48,12 @@
 {#if href}
 	<a {href} class={classes}>{@render body()}</a>
 {:else}
-	<button type="button" class={classes} aria-pressed={selected} onclick={onselect}
-		>{@render body()}</button
+	<button
+		type="button"
+		class={classes}
+		aria-pressed={selected}
+		onclick={onselect}
+		onpointerenter={onintent}
+		onfocus={onintent}>{@render body()}</button
 	>
 {/if}

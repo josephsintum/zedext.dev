@@ -25,11 +25,8 @@ export const load: PageServerLoad = async ({ setHeaders }) => {
 			.map((list) => ({ list, ...resolveList(list, records, CARDS_PER_ROW) }))
 			.filter((row) => row.items.length > 0)
 	})).filter((s) => s.rows.length > 0);
-	// Most themes are dark-first; the picker has the light toggle. Cards only need the palette.
-	const themes = themeEntries(previews, records, 'dark', THEMES_ROW).map((e) => ({
-		...e,
-		variants: []
-	}));
+	// Most themes are dark-first; the picker has the light toggle
+	const themes = themeEntries(previews, records, 'dark', THEMES_ROW);
 
 	return { newest, updated, hubs: hubSummaries(records), sections, themes };
 };

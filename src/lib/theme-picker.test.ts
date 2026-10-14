@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { pickerState, themeEntries, themeHref, type ThemeEntry } from './theme-picker.js';
+import {
+	pickerState,
+	themeEntries,
+	themeHref,
+	themeVariants,
+	type ThemeEntry
+} from './theme-picker.js';
 import type { PreviewBundle, ThemeColors, ThemeVariant } from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 
@@ -30,7 +36,7 @@ describe('themeEntries', () => {
 	});
 	const records = [rec('night', 5), rec('cat', 9), rec('constructor', 1)];
 
-	it('lists themes with a variant of the appearance, by downloads, with only those variants', () => {
+	it('lists themes with a variant of the appearance, by downloads, with just the card colors', () => {
 		const dark = themeEntries(previews, records, 'dark');
 		expect(dark.map((e) => e.id)).toEqual(['cat', 'night', 'constructor']);
 		expect(dark[0]).toMatchObject({
@@ -40,7 +46,10 @@ describe('themeEntries', () => {
 			variantCount: 2,
 			palette: { bg: 'Mocha' }
 		});
-		expect(dark[0].variants.map((x) => x.name)).toEqual(['Mocha', 'Frappe']);
+		expect(Object.keys(dark[0].palette).sort()).toEqual(
+			['bg', 'comment', 'function', 'keyword', 'number', 'string', 'type'].sort()
+		);
+		expect(dark[0]).not.toHaveProperty('variants');
 		expect(themeEntries(previews, records, 'light').map((e) => e.id)).toEqual(['cat']);
 	});
 
@@ -80,5 +89,19 @@ describe('pickerState', () => {
 describe('themeHref', () => {
 	it('links to the picker with the theme selected', () => {
 		expect(themeHref('cat', 'light')).toBe('/discover/themes?appearance=light&theme=cat');
+	});
+});
+
+describe('themeVariants', () => {
+	const previews = bundle({ cat: [v('Latte', 'light'), v('Mocha', 'dark')] });
+
+	it('returns every variant of a theme, both appearances', () => {
+		expect(themeVariants(previews, 'cat')?.map((x) => x.name)).toEqual(['Latte', 'Mocha']);
+	});
+
+	it('is null for unknown ids, prototype keys and a missing bundle', () => {
+		expect(themeVariants(previews, 'nope')).toBeNull();
+		expect(themeVariants(previews, 'constructor')).toBeNull();
+		expect(themeVariants(null, 'cat')).toBeNull();
 	});
 });

@@ -16,12 +16,34 @@ export interface ThemeEntry {
 	name: string;
 	author: string;
 	downloads: number;
-	/** Variants of this appearance; kept when `variants` is dropped to save bytes */
+	/** How many variants of this appearance the theme ships */
 	variantCount: number;
 	/** The first variant's colors, drawn as the strip on top of the card */
-	palette: ThemeColors;
-	/** Only the variants of the requested appearance */
-	variants: ThemeVariant[];
+	palette: CardPalette;
+}
+
+/** Only what the card strip draws; full variants load when someone shows interest */
+export const PALETTE_ROLES = [
+	'keyword',
+	'function',
+	'string',
+	'type',
+	'number',
+	'comment'
+] as const;
+export type CardPalette = Pick<ThemeColors, 'bg' | (typeof PALETTE_ROLES)[number]>;
+
+function cardPalette(v: ThemeVariant): CardPalette {
+	const c = themeColors(v);
+	return {
+		bg: c.bg,
+		keyword: c.keyword,
+		function: c.function,
+		string: c.string,
+		type: c.type,
+		number: c.number,
+		comment: c.comment
+	};
 }
 
 /** Themes with a variant of this appearance, most downloaded first. */
@@ -44,8 +66,7 @@ export function themeEntries(
 					author: r.authors[0] ? parseAuthor(r.authors[0]).name : '',
 					downloads: r.download_count,
 					variantCount: variants.length,
-					palette: themeColors(variants[0]),
-					variants
+					palette: cardPalette(variants[0])
 				}
 			];
 		})
@@ -71,4 +92,10 @@ export function pickerState(
 
 export function themeHref(id: string, appearance: Appearance): string {
 	return `/discover/themes?appearance=${appearance}&theme=${encodeURIComponent(id)}`;
+}
+
+/** Every variant of one theme (both appearances), for the preview; null if unknown. */
+export function themeVariants(previews: PreviewBundle | null, id: string): ThemeVariant[] | null {
+	if (!previews || !Object.hasOwn(previews.themes, id)) return null;
+	return previews.themes[id].variants;
 }
