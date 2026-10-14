@@ -27,7 +27,7 @@
 
 	{#if list.builtIn}
 		<p class="mt-2.5 text-[12px] text-[var(--color-text-tertiary)]">
-			<span class="font-medium text-emerald-600 dark:text-emerald-400">Built in:</span>
+			<span class="font-medium text-emerald-700 dark:text-emerald-400">Built in:</span>
 			{list.builtIn.join(' · ')}
 		</p>
 	{/if}

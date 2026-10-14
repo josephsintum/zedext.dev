@@ -124,7 +124,7 @@
 			<CategoryTabs active={category} />
 			<div class="flex shrink-0 items-center gap-3">
 				{#if displayTotalHits > 0}
-					<span class="text-[12px] tabular-nums opacity-50">
+					<span class="text-[12px] text-[var(--color-text-tertiary)] tabular-nums">
 						{formatNumber(displayTotalHits)}
 					</span>
 				{/if}
@@ -140,7 +140,8 @@
 			>sort:
 			{#each sortOptions as sf, i}<button
 					onclick={() => selectSort(sf.value)}
-					class="transition-colors {sort === sf.value
+					aria-pressed={sort === sf.value}
+					class="hit-y px-1.5 transition-colors {sort === sf.value
 						? 'font-bold text-[var(--color-accent)]'
 						: 'hover:text-[var(--color-text-secondary)]'}">{sf.label}</button
 				>{#if i < sortOptions.length - 1}<span>/</span>{/if}{/each}
@@ -148,11 +149,12 @@
 		<div class="flex items-center gap-1">
 			<button
 				onclick={() => setViewMode('grid')}
-				class="flex h-7 w-7 items-center justify-center rounded-md transition-colors {viewMode ===
+				class="flex h-11 w-11 items-center justify-center rounded-md transition-colors sm:h-7 sm:w-7 {viewMode ===
 				'grid'
 					? 'bg-[var(--color-surface-hover)] text-[var(--color-text)]'
 					: 'hover:text-[var(--color-text-secondary)]'}"
 				aria-label="Grid view"
+				aria-pressed={viewMode === 'grid'}
 			>
 				<svg
 					class="h-4 w-4"
@@ -170,11 +172,12 @@
 			</button>
 			<button
 				onclick={() => setViewMode('list')}
-				class="flex h-7 w-7 items-center justify-center rounded-md transition-colors {viewMode ===
+				class="flex h-11 w-11 items-center justify-center rounded-md transition-colors sm:h-7 sm:w-7 {viewMode ===
 				'list'
 					? 'bg-[var(--color-surface-hover)] text-[var(--color-text)]'
 					: 'hover:text-[var(--color-text-secondary)]'}"
 				aria-label="List view"
+				aria-pressed={viewMode === 'list'}
 			>
 				<svg
 					class="h-4 w-4"
@@ -308,7 +311,7 @@
 						{#if owner}
 							<a
 								href="/authors/{owner}"
-								class="ml-auto truncate text-[11px] transition-colors hover:text-[var(--color-accent)]"
+								class="-my-3.5 ml-auto truncate py-3.5 text-[11px] transition-colors hover:text-[var(--color-accent)]"
 							>
 								{hit.authors[0] ?? 'Unknown'}
 							</a>
@@ -459,7 +462,7 @@
 	<!-- Empty state -->
 	{#if displayHits.length === 0 && !loading}
 		<div class="flex flex-col items-center py-20">
-			<p class="text-[14px] opacity-50">No extensions found</p>
+			<p class="text-[14px] text-[var(--color-text-secondary)]">No extensions found</p>
 		</div>
 	{/if}
 

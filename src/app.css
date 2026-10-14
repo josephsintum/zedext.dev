@@ -118,7 +118,8 @@
 
 	--color-text: oklch(0.2 0.02 260);
 	--color-text-secondary: oklch(0.45 0.01 260);
-	--color-text-tertiary: oklch(0.6 0.01 260);
+	/* 0.54: at least 4.5:1 (WCAG AA) on every surface, including code backgrounds */
+	--color-text-tertiary: oklch(0.54 0.01 260);
 
 	--color-code-bg: oklch(0.96 0.004 260);
 	--color-pre-bg: oklch(0.975 0.004 260);
@@ -143,8 +144,9 @@
 	--color-border-hover: oklch(0.36 0.008 270);
 
 	--color-text: oklch(0.87 0.005 270);
-	--color-text-secondary: oklch(0.65 0.008 270);
-	--color-text-tertiary: oklch(0.48 0.008 270);
+	--color-text-secondary: oklch(0.72 0.008 270);
+	/* 0.62: at least 4.5:1 (WCAG AA) on every dark surface */
+	--color-text-tertiary: oklch(0.62 0.008 270);
 
 	--color-code-bg: oklch(0.22 0.01 270);
 	--color-pre-bg: oklch(0.2 0.01 270);
@@ -171,7 +173,22 @@
 	background-size: 24px 24px;
 }
 
-/* Custom scrollbar for category tabs */
+/* Grows a small text control's touch area to at least 44px tall without changing its look.
+   (Doesn't work on overflow-hidden elements like truncate, which clip the area.) */
+@utility hit-y {
+	position: relative;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset-inline: 0;
+		top: 50%;
+		height: max(100%, 44px);
+		transform: translateY(-50%);
+	}
+}
+
+/* Scrollable rows that hide their scrollbar (category tabs) */
 .hide-scrollbar {
 	-ms-overflow-style: none;
 	scrollbar-width: none;

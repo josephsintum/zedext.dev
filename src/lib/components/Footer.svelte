@@ -4,18 +4,23 @@
 	>
 		<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-tertiary)]">
 			<span class="font-mono font-medium">ZedExt</span>
-			<span class="text-[var(--color-border)]">/</span>
+			<span class="text-[var(--color-border)]" aria-hidden="true">/</span>
 			<span>An unofficial community project. Not affiliated with Zed Industries.</span>
 		</div>
 
-		<div class="flex items-center gap-4 text-[12px] text-[var(--color-text-tertiary)]">
-			<a href="/about" class="transition-colors hover:text-[var(--color-text-secondary)]">
+		<div
+			class="flex flex-wrap items-center justify-center gap-x-4 text-[12px] text-[var(--color-text-tertiary)]"
+		>
+			<a
+				href="/about"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
+			>
 				About
 			</a>
-			<span class="text-[var(--color-border)]">&middot;</span>
+			<span class="text-[var(--color-border)]" aria-hidden="true">&middot;</span>
 			<a
 				href="https://zed.dev/extensions"
-				class="transition-colors hover:text-[var(--color-text-secondary)]"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -30,10 +35,10 @@
 					stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg
 				>
 			</a>
-			<span class="text-[var(--color-border)]">&middot;</span>
+			<span class="text-[var(--color-border)]" aria-hidden="true">&middot;</span>
 			<a
 				href="https://github.com/zed-industries/extensions"
-				class="transition-colors hover:text-[var(--color-text-secondary)]"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -48,10 +53,10 @@
 					stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg
 				>
 			</a>
-			<span class="text-[var(--color-border)]">&middot;</span>
+			<span class="text-[var(--color-border)]" aria-hidden="true">&middot;</span>
 			<a
 				href="https://github.com/josephsintum/zedext.dev"
-				class="transition-colors hover:text-[var(--color-text-secondary)]"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
 				target="_blank"
 				rel="noopener noreferrer"
 			>

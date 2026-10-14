@@ -6,6 +6,9 @@
 	import IconThemePreview from '$lib/components/IconThemePreview.svelte';
 	import VersionTable from '$lib/components/VersionTable.svelte';
 	import { badgeFor, healthPills } from '$lib/extension-page.js';
+	import { formatNumber } from '$lib/utils/format.js';
+
+	const counted = (n: number, noun: string) => `${formatNumber(n)} ${noun}${n === 1 ? '' : 's'}`;
 	import type { DetailContent } from './+page.server.js';
 
 	let { data } = $props();
@@ -148,6 +151,23 @@
 							{pill.label}
 						</span>
 					{/each}
+				</div>
+				<!-- Below lg the sidebar comes after the README, so the key numbers go here too -->
+				<div
+					class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[var(--color-text-secondary)] tabular-nums lg:hidden"
+				>
+					<span>{counted(extension.download_count, 'download')}</span>
+					{#if content?.github}
+						<span>{counted(content.github.stargazers_count, 'star')}</span>
+					{/if}
+					{#if extension.repository}
+						<a
+							href={extension.repository}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="hit-y text-[var(--color-accent)] hover:underline">Repository ↗</a
+						>
+					{/if}
 				</div>
 			</div>
 

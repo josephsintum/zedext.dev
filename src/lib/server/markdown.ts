@@ -132,7 +132,19 @@ export async function renderMarkdown(
 		/<a\s+href="(https?:\/\/[^"]+)"/g,
 		'<a href="$1" target="_blank" rel="noopener noreferrer"'
 	);
-	return renderAlerts(linked);
+	return markImageLinks(renderAlerts(linked));
+}
+
+/**
+ * Tags links that hold only images (logos, badges), so the README styles can leave them
+ * without an underline. CSS alone can't tell those from a link with an icon and a label.
+ * Runs after sanitizing, so the class is ours, not the README's.
+ */
+export function markImageLinks(html: string): string {
+	return html.replace(
+		/<a ([^>]*)>((?:\s*<img\b[^>]*>)+\s*)<\/a>/g,
+		'<a class="image-link" $1>$2</a>'
+	);
 }
 
 const HEX_COLOR = /^#[0-9a-f]{3,8}$/i;

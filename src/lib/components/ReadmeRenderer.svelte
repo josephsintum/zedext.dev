@@ -61,13 +61,22 @@
 	}
 
 	/* Links */
-	.readme-content :global(a) {
+	/* Underlined, not just colored: in dark mode the link blue is too close to body text.
+	   Only real links: the sanitizer leaves <a name> anchors as bare <a> */
+	.readme-content :global(a[href]) {
 		color: var(--color-accent);
-		text-decoration: none;
+		text-decoration: underline;
+		text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+		text-underline-offset: 0.2em;
 	}
 
-	.readme-content :global(a:hover) {
-		text-decoration: underline;
+	.readme-content :global(a[href]:hover) {
+		text-decoration-color: currentColor;
+	}
+
+	/* Image-only links (logos, badges) would underline the whitespace around the image */
+	.readme-content :global(a.image-link) {
+		text-decoration: none;
 	}
 
 	/* Images */

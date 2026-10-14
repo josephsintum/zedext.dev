@@ -50,9 +50,15 @@
 				>
 					New
 				</h2>
-				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+				<!-- Phones: one swipeable row (the next card peeks in) instead of four stacked cards.
+					 The vertical padding keeps the cards' hover lift and focus ring from being clipped -->
+				<div
+					class="-mx-6 -my-2 flex snap-x snap-mandatory scroll-px-6 gap-2 overflow-x-auto px-6 py-2 sm:mx-0 sm:my-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:py-0 lg:grid-cols-4"
+				>
 					{#each data.newestExtensions as hit (hit.id)}
-						<ExtensionCard {hit} />
+						<div class="w-[80%] shrink-0 snap-start sm:w-auto">
+							<ExtensionCard {hit} />
+						</div>
 					{/each}
 				</div>
 			</section>

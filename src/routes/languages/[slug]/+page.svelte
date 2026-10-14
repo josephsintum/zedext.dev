@@ -79,7 +79,7 @@
 						<ExtensionCard {hit} />
 						{#if data.alsoBuiltIn.includes(hit.id)}
 							<span
-								class="pointer-events-none absolute -top-1 right-3 rounded border border-emerald-500/30 bg-[var(--color-surface-raised)] px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600"
+								class="pointer-events-none absolute -top-1 right-3 rounded border border-emerald-500/30 bg-[var(--color-surface-raised)] px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400"
 							>
 								Also built in
 							</span>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderAlerts, renderMarkdown } from './markdown.js';
+import { markImageLinks, renderAlerts, renderMarkdown } from './markdown.js';
 
 const render = (md: string) => renderMarkdown(md, 'owner', 'repo', 'main');
 
@@ -61,5 +61,22 @@ describe('renderAlerts', () => {
 	it('leaves ordinary quotes alone', () => {
 		const quote = '<blockquote>\n<p>Just a quote</p>\n</blockquote>';
 		expect(renderAlerts(quote)).toBe(quote);
+	});
+});
+
+describe('markImageLinks', () => {
+	it('marks links that hold only images', async () => {
+		const html = await render('[![Stars](https://img.shields.io/x.svg)](https://github.com/a/b)');
+		expect(html).toContain('<a class="image-link" href="https://github.com/a/b"');
+	});
+
+	it('leaves links with an image and a label alone', () => {
+		const html = '<a href="https://x.dev"><img src="https://x.dev/i.svg" /> Download</a>';
+		expect(markImageLinks(html)).toBe(html);
+	});
+
+	it('leaves text links alone', () => {
+		const html = '<a href="https://x.dev">Docs</a>';
+		expect(markImageLinks(html)).toBe(html);
 	});
 });

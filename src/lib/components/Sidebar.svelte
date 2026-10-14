@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { copyText } from '$lib/utils/clipboard.js';
 	import type { ZedExtension, GitHubRepo } from '$lib/types.js';
 	import { firstReleased } from '$lib/extension-page.js';
 	import { formatDate, formatNumber, timeAgo } from '$lib/utils/format.js';
@@ -29,12 +30,10 @@
 
 	let copied = $state(false);
 	async function copyId() {
-		try {
-			await navigator.clipboard.writeText(extension.id);
+		// If the clipboard is blocked, the id is still visible to select
+		if (await copyText(extension.id)) {
 			copied = true;
 			setTimeout(() => (copied = false), 1500);
-		} catch {
-			// Clipboard blocked: the id is still visible to select
 		}
 	}
 
