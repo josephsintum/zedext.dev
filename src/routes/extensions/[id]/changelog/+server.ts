@@ -19,7 +19,12 @@ export const GET: RequestHandler = async ({ params }) => {
 	try {
 		const changelog = await getChangelog(repo.owner, repo.repo);
 		if (!changelog) return json({ error: 'No changelog' }, { status: 404 });
-		const html = await renderMarkdown(changelog.markdown, repo.owner, repo.repo, 'HEAD');
+		const html = await renderMarkdown(changelog.markdown, {
+			owner: repo.owner,
+			repo: repo.repo,
+			branch: 'HEAD',
+			idPrefix: 'changelog-'
+		});
 		return json(
 			{ html, url: changelog.url },
 			{ headers: { 'cache-control': 'public, s-maxage=86400, stale-while-revalidate=604800' } }

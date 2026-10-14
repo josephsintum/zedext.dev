@@ -132,8 +132,10 @@
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a> › Themes
+	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
+		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a>
+		<span aria-hidden="true">›</span>
+		<span aria-current="page">Themes</span>
 	</nav>
 	<div class="flex flex-wrap items-end justify-between gap-4">
 		<div>
@@ -190,8 +192,19 @@
 				</div>
 			{/if}
 			{#if selectedFailed}
-				<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]">
-					Couldn’t load this theme’s colors. Try again.
+				<div class="mt-2 flex flex-wrap items-center gap-3 text-[13px]" role="alert">
+					<span class="text-[var(--color-text-secondary)]">Couldn’t load this theme’s colors.</span>
+					<button
+						type="button"
+						onclick={() => show(selected.id)}
+						class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+					>
+						Try Again
+					</button>
+				</div>
+			{:else if preview && preview.id !== selected.id}
+				<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]" role="status">
+					Loading {selected.name}…
 				</p>
 			{/if}
 		</section>
@@ -221,8 +234,8 @@
 					{loading[appearance] ? 'Loading…' : `Show all ${total} ${appearance} themes`}
 				</button>
 				{#if failed[appearance]}
-					<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]">
-						Couldn’t load the rest. Try again.
+					<p class="mt-2 text-[13px] text-[var(--color-text-secondary)]" role="alert">
+						Couldn’t load the rest. Press the button to try again.
 					</p>
 				{/if}
 			</div>

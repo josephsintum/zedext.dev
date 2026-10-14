@@ -20,11 +20,11 @@
 			</select>
 		</label>
 	{:else if variants.length > 1}
-		<div class="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Icon theme variants">
+		<div class="mb-3 flex flex-wrap gap-1.5" role="group" aria-label="Icon theme variants">
 			{#each variants as variant, i (i)}
 				<button
-					role="tab"
-					aria-selected={selected === i}
+					type="button"
+					aria-pressed={selected === i}
 					onclick={() => (selected = i)}
 					class="rounded-full border px-3 py-1 text-[12px] transition-colors {selected === i
 						? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'

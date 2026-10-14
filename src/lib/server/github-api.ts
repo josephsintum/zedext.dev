@@ -52,12 +52,22 @@ export async function getGitHubUser(username: string): Promise<GitHubUser | null
 	});
 }
 
-export async function getReadmeMarkdown(owner: string, repo: string): Promise<string | null> {
+export interface Readme {
+	markdown: string;
+	/** The README's folder ('' at the root; GitHub also finds .github/ and docs/ READMEs) */
+	dir: string;
+}
+
+export async function getReadme(owner: string, repo: string): Promise<Readme | null> {
 	return getCached(`gh:readme:${owner}/${repo}`, TWENTY_FOUR_HOURS, async () => {
 		const res = await fetchOrNull(`${GITHUB_API}/repos/${owner}/${repo}/readme`);
 		if (!res) return null;
 		const data: GitHubReadme = await res.json();
-		return Buffer.from(data.content, 'base64').toString('utf-8');
+		const slash = data.path?.lastIndexOf('/') ?? -1;
+		return {
+			markdown: Buffer.from(data.content, 'base64').toString('utf-8'),
+			dir: slash > 0 ? data.path.slice(0, slash) : ''
+		};
 	});
 }
 

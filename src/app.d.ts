@@ -8,6 +8,8 @@ declare global {
 		interface PageState {
 			/** Search params set by a shallow update, see $lib/search/client.svelte.ts */
 			search?: string;
+			/** The extension page's section tab, see src/routes/extensions/[id]/+page.svelte */
+			tab?: string;
 		}
 		// interface Platform {}
 	}

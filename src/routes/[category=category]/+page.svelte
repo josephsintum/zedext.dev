@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ExtensionBrowser from '$lib/components/ExtensionBrowser.svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { formatNumber } from '$lib/utils/format.js';
+	import { countOf } from '$lib/utils/format.js';
 
 	let { data } = $props();
 </script>
@@ -20,7 +20,7 @@
 				{data.category.title}
 			</h1>
 			<p class="mt-3 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
-				{formatNumber(data.total)} extensions. {data.category.description}
+				{countOf(data.total, 'extension')}. {data.category.description}
 			</p>
 		</div>
 	{/snippet}

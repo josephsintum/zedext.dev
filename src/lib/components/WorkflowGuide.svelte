@@ -18,6 +18,7 @@
 	{#if guide.rest.length > 0}
 		<a
 			href="#everything-else"
+			onclick={() => document.getElementById('everything-else')?.setAttribute('open', '')}
 			class="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[12px] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]"
 			>Everything else</a
 		>

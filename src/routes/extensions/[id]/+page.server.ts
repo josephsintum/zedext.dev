@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { getExtensionWithVersions } from '$lib/server/zed-api.js';
 import {
 	getRepoMetadata,
-	getReadmeMarkdown,
+	getReadme,
 	getLanguageDocsMarkdown,
 	getGitHubUser
 } from '$lib/server/github-api.js';
@@ -111,7 +111,7 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 	const [langDocs, repoMeta, readme, owner] = await Promise.allSettled([
 		getLanguageDocsMarkdown(id),
 		ownRepo ? getRepoMetadata(ownRepo.owner, ownRepo.repo) : null,
-		ownRepo ? getReadmeMarkdown(ownRepo.owner, ownRepo.repo) : null,
+		ownRepo ? getReadme(ownRepo.owner, ownRepo.repo) : null,
 		parsed ? getGitHubUser(parsed.owner) : null
 	]);
 	const value = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null);
@@ -124,12 +124,25 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 	try {
 		const docsMarkdown = value(langDocs);
 		if (docsMarkdown) {
-			zedDocsHtml = await renderMarkdown(docsMarkdown, 'zed-industries', 'zed', 'main');
+			// Relative links go to the published docs on zed.dev, like the "Zed docs" link
+			zedDocsHtml = await renderMarkdown(docsMarkdown, {
+				owner: 'zed-industries',
+				repo: 'zed',
+				branch: 'main',
+				dir: 'docs/src/languages',
+				idPrefix: 'docs-',
+				siteBase: 'https://zed.dev/docs/languages/'
+			});
 		}
-		const readmeMarkdown = value(readme);
-		if (ownRepo && readmeMarkdown) {
-			const branch = github?.default_branch ?? 'main';
-			readmeHtml = await renderMarkdown(readmeMarkdown, ownRepo.owner, ownRepo.repo, branch);
+		const readmeFile = value(readme);
+		if (ownRepo && readmeFile) {
+			readmeHtml = await renderMarkdown(readmeFile.markdown, {
+				owner: ownRepo.owner,
+				repo: ownRepo.repo,
+				branch: github?.default_branch ?? 'main',
+				dir: readmeFile.dir,
+				idPrefix: 'readme-'
+			});
 		}
 	} catch (err) {
 		console.error(`Markdown render failed for ${id}:`, err);

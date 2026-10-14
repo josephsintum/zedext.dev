@@ -37,7 +37,7 @@ export const CATEGORY_PAGES: CategoryPage[] = [
 		provides: 'context-servers',
 		title: 'MCP servers for Zed',
 		description:
-			"Model Context Protocol servers that give Zed's AI agent access to more tools and data."
+			'Model Context Protocol servers that give Zed’s AI agent access to more tools and data.'
 	},
 	{
 		slug: 'agent-servers',

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { countOf } from '$lib/utils/format.js';
 	import ExtensionBrowser from '$lib/components/ExtensionBrowser.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 
@@ -19,7 +20,7 @@
 				Languages in Zed
 			</h1>
 			<p class="mt-3 text-[15px] text-[var(--color-text-secondary)]">
-				What's built in, and the extensions that add more, language by language.
+				What’s built in, and the extensions that add more, language by language.
 			</p>
 			<div class="mt-6 grid grid-cols-2 gap-2 text-left sm:grid-cols-3 lg:grid-cols-5">
 				{#each data.hubs as hub (hub.slug)}
@@ -31,7 +32,7 @@
 							>{hub.emoji} {hub.name}</span
 						>
 						<span class="text-[12px] text-[var(--color-text-tertiary)]">
-							{hub.builtIn ? 'Built in · ' : ''}{hub.count} extensions
+							{hub.builtIn ? 'Built in · ' : ''}{countOf(hub.count, 'extension')}
 						</span>
 					</a>
 				{/each}

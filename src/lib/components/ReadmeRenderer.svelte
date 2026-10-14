@@ -30,28 +30,35 @@
 		letter-spacing: -0.01em;
 	}
 
-	.readme-content :global(h1) {
+	/* Sized by the heading's level in the markdown (data-level), not its tag: the tags are
+	   shifted to fit under the page's h1 */
+	.readme-content :global([data-level='1']) {
 		font-size: 1.75em;
 		padding-bottom: 0.4em;
 		border-bottom: 1px solid var(--color-border);
 	}
 
-	.readme-content :global(h2) {
+	.readme-content :global([data-level='2']) {
 		font-size: 1.4em;
 		padding-bottom: 0.35em;
 		border-bottom: 1px solid var(--color-border);
 	}
 
-	.readme-content :global(h3) {
+	.readme-content :global([data-level='3']) {
 		font-size: 1.15em;
 	}
-	.readme-content :global(h4) {
+	.readme-content :global([data-level='4']) {
 		font-size: 1em;
 	}
 
-	.readme-content :global(h1:first-child),
-	.readme-content :global(h2:first-child) {
+	.readme-content :global([data-level='1']:first-child),
+	.readme-content :global([data-level='2']:first-child) {
 		margin-top: 0;
+	}
+
+	/* Table-of-contents jumps land below the sticky header */
+	.readme-content :global([id]) {
+		scroll-margin-top: 5rem;
 	}
 
 	/* Paragraphs */

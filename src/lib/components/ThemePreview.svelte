@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import ZedIcon from './ZedIcon.svelte';
+	import { tabKeys } from '$lib/tablist.js';
 	import { fontStyleOf, roleColor, themeColors, type ThemeVariant } from '$lib/theme-preview.js';
 	import {
 		DEFAULT_SAMPLE,
@@ -41,6 +42,7 @@
 	// renders the default first and switches after hydration.
 	let sampleId = $state<SampleId>(DEFAULT_SAMPLE);
 	const sample = $derived(SAMPLES.find((s) => s.id === sampleId) ?? SAMPLES[0]);
+	const uid = $props.id();
 
 	/** localStorage itself can throw (e.g. blocked cookies), not just its methods */
 	function storage(): Storage | null {
@@ -171,6 +173,7 @@
 			style:background-color="var(--tab-inactive)"
 			role="tablist"
 			aria-label="Code sample language"
+			{@attach tabKeys}
 		>
 			<span
 				class="flex items-center gap-2.5 border-r border-b px-2.5"
@@ -185,7 +188,10 @@
 				<button
 					type="button"
 					role="tab"
+					id="{uid}-tab-{s.id}"
 					aria-selected={active}
+					aria-controls="{uid}-code"
+					tabindex={active ? 0 : -1}
 					onclick={() => choose(s.id)}
 					class="shrink-0 border-r border-b px-4 py-1.5"
 					style:background-color={active ? 'var(--tab-active)' : 'var(--tab-inactive)'}
@@ -200,6 +206,9 @@
 		</div>
 
 		<div
+			id="{uid}-code"
+			role="tabpanel"
+			aria-labelledby="{uid}-tab-{sample.id}"
 			class="font-code flex overflow-x-auto py-3 leading-relaxed {codeSize}"
 			style:background-color="var(--bg)"
 			style:color="var(--fg)"

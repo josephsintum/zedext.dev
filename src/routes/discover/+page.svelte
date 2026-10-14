@@ -4,7 +4,7 @@
 	import { themeHref } from '$lib/theme-picker.js';
 	import WorkflowCard from '$lib/components/WorkflowCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { timeAgo } from '$lib/utils/format.js';
+	import { countOf, timeAgo } from '$lib/utils/format.js';
 
 	let { data } = $props();
 
@@ -40,7 +40,7 @@
 	<div class="text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-[var(--color-text)]">Discover</h1>
 		<p class="mt-3 text-[15px] text-[var(--color-text-secondary)]">
-			What's new, and the best extensions by workflow, theme and language.
+			What’s new, and the best extensions by workflow, theme and language.
 		</p>
 		<nav class="mt-5 flex flex-wrap justify-center gap-1.5" aria-label="Sections">
 			{#each jumps as j (j.id)}
@@ -113,7 +113,7 @@
 		{@render heading(
 			'languages',
 			'Languages',
-			"What's built in, and the extensions that add more",
+			'What’s built in, and the extensions that add more',
 			'/languages',
 			'All languages'
 		)}
@@ -127,7 +127,7 @@
 						>{hub.emoji} {hub.name}</span
 					>
 					<span class="text-[12px] text-[var(--color-text-tertiary)]">
-						{hub.builtIn ? 'Built in · ' : ''}{hub.count} extensions
+						{hub.builtIn ? 'Built in · ' : ''}{countOf(hub.count, 'extension')}
 					</span>
 				</a>
 			{/each}

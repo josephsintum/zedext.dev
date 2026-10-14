@@ -76,6 +76,8 @@ export interface GitHubRepo {
 
 export interface GitHubReadme {
 	content: string; // base64 encoded
+	/** Where GitHub found it, e.g. "README.md" or ".github/README.md" */
+	path: string;
 	encoding: string;
 	download_url: string;
 }

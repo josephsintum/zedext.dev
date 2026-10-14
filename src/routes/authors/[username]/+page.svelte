@@ -33,10 +33,10 @@
 
 <div class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Breadcrumb -->
-	<nav class="mb-6 text-[13px] text-[var(--color-text-tertiary)]">
-		<a href="/" class="transition-colors hover:text-[var(--color-text)]">Authors</a>
-		<span class="mx-2">/</span>
-		<span class="text-[var(--color-text)]">{user.login}</span>
+	<nav aria-label="Breadcrumb" class="mb-6 text-[13px] text-[var(--color-text-tertiary)]">
+		<a href="/" class="hit-y transition-colors hover:text-[var(--color-text)]">Extensions</a>
+		<span class="mx-2" aria-hidden="true">/</span>
+		<span class="text-[var(--color-text)]" aria-current="page">{user.login}</span>
 	</nav>
 
 	<!-- Profile header -->

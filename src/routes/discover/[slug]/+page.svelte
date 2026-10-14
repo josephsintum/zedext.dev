@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { countOf } from '$lib/utils/format.js';
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import WorkflowGuide from '$lib/components/WorkflowGuide.svelte';
@@ -14,11 +15,13 @@
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a> › {data.list.title}
+	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
+		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a>
+		<span aria-hidden="true">›</span>
+		<span aria-current="page">{data.list.title}</span>
 	</nav>
 	<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">
-		{data.list.emoji}
+		<span aria-hidden="true">{data.list.emoji}</span>
 		{data.list.title}
 	</h1>
 	<p class="mt-2 max-w-3xl text-[15px] text-[var(--color-text-secondary)]">
@@ -43,7 +46,7 @@
 
 	{#if data.total > 0}
 		<p class="mt-1 text-[13px] text-[var(--color-text-tertiary)]">
-			{data.total} extensions{data.total > data.items.length
+			{countOf(data.total, 'extension')}{data.total > data.items.length
 				? ` · showing the top ${data.items.length}`
 				: ''}
 		</p>

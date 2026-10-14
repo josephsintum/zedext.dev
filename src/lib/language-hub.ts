@@ -1,6 +1,6 @@
 import type { ExtensionRecord } from './types.js';
 import { LANGUAGE_HUBS, type LanguageHub } from './languages.js';
-import { formatNumber } from './utils/format.js';
+import { countOf } from './utils/format.js';
 import { hasKeyword, nameWords } from './words.js';
 
 export type HubGroupKey = 'language-servers' | 'tooling' | 'syntax' | 'snippets' | 'other';
@@ -148,8 +148,8 @@ function hubFaq(
 			hub.builtIn.length > 0
 				? `No. ${hub.name} support is built into Zed: ${list(hub.builtIn)}. Extensions add alternatives and extras.`
 				: primary
-					? `Yes. Install the ${primary.name} extension (${formatNumber(primary.download_count)} downloads), which adds ${hub.name} support to Zed.`
-					: `Zed doesn't include ${hub.name} support out of the box. The extensions below add it.`
+					? `Yes. Install the ${primary.name} extension (${countOf(primary.download_count, 'download')}), which adds ${hub.name} support to Zed.`
+					: `Zed doesn’t include ${hub.name} support out of the box. The extensions below add it.`
 	});
 
 	const servers = groups.find((g) => g.key === 'language-servers')?.items ?? [];
@@ -165,7 +165,7 @@ function hubFaq(
 	if (matched.length > 0) {
 		faq.push({
 			q: `What are the most popular ${hub.name} extensions for Zed?`,
-			a: `${list(matched.slice(0, 3).map((r) => `${r.name} (${formatNumber(r.download_count)} downloads)`))}.`
+			a: `${list(matched.slice(0, 3).map((r) => `${r.name} (${countOf(r.download_count, 'download')})`))}.`
 		});
 	}
 

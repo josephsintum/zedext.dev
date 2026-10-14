@@ -1,3 +1,8 @@
+/** "1 extension", "12 extensions", "1.2k downloads" */
+export function countOf(num: number, noun: string): string {
+	return `${formatNumber(num)} ${noun}${num === 1 ? '' : 's'}`;
+}
+
 export function formatNumber(num: number): string {
 	if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
 	if (num >= 1_000) return `${(num / 1_000).toFixed(num >= 10_000 ? 0 : 1)}k`;

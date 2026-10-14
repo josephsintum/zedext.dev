@@ -66,7 +66,7 @@
 				ZedExt is an <strong class="text-[var(--color-text)]"
 					>alternative extension marketplace</strong
 				>
-				for the Zed editor. Zed's official extension page at
+				for the Zed editor. Zed’s official extension page at
 				<a
 					href="https://zed.dev/extensions"
 					class="text-[var(--color-accent)] hover:underline"
@@ -112,13 +112,13 @@
 		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
 			<p>
 				<strong class="text-[var(--color-text)]">Not a registry.</strong>
-				ZedExt doesn't host or publish extensions. Authors continue to publish via PR to
+				ZedExt doesn’t host or publish extensions. Authors continue to publish via PR to
 				<a
 					href="https://github.com/zed-industries/extensions"
 					class="text-[var(--color-accent)] hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">zed-industries/extensions</a
-				>. We're a read-only browser of the official Zed extension registry.
+				>. We’re a read-only browser of the official Zed extension registry.
 			</p>
 			<p>
 				<strong class="text-[var(--color-text)]">Not affiliated with Zed Industries.</strong>

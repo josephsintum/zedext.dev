@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { countOf } from '$lib/utils/format.js';
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { faqJsonLd } from '$lib/language-hub.js';
@@ -6,9 +7,11 @@
 	let { data } = $props();
 	const title = $derived(`${data.hub.name} in Zed: extensions, language servers and setup`);
 	const description = $derived(
-		data.hub.builtIn.length > 0
-			? `What's built into Zed for ${data.hub.name}, plus ${data.total} ${data.hub.name} extensions: language servers, linters, formatters and snippets.`
-			: `Set up ${data.hub.name} in Zed: the main extension plus ${data.total} ${data.hub.name} extensions for language servers, linting and snippets.`
+		data.hub.builtIn.length === 0
+			? `Set up ${data.hub.name} in Zed: the main extension plus ${countOf(data.total, `${data.hub.name} extension`)} for language servers, linting and snippets.`
+			: data.total > 0
+				? `What’s built into Zed for ${data.hub.name}, plus ${countOf(data.total, `${data.hub.name} extension`)}: language servers, linters, formatters and snippets.`
+				: `What’s built into Zed for ${data.hub.name}, and how to set it up.`
 	);
 </script>
 
@@ -21,11 +24,13 @@
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/discover" class="hover:text-[var(--color-text)]">Discover</a> › {data.hub.name}
+	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
+		<a href="/languages" class="hover:text-[var(--color-text)]">Languages</a>
+		<span aria-hidden="true">›</span>
+		<span aria-current="page">{data.hub.name}</span>
 	</nav>
 	<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">
-		{data.hub.emoji}
+		<span aria-hidden="true">{data.hub.emoji}</span>
 		{data.hub.name} in Zed
 	</h1>
 	<p class="mt-2 max-w-2xl text-[15px] text-[var(--color-text-secondary)]">{description}</p>
@@ -46,7 +51,7 @@
 				rel="noopener noreferrer"
 				class="mt-3 inline-block text-[13px] text-[var(--color-accent)] hover:underline"
 			>
-				Zed's {data.hub.name} docs ↗
+				Zed’s {data.hub.name} docs ↗
 			</a>
 		</section>
 	{:else if data.primary}
@@ -64,7 +69,7 @@
 					href={data.docsUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-[var(--color-accent)] hover:underline">Zed's {data.hub.name} docs ↗</a
+					class="text-[var(--color-accent)] hover:underline">Zed’s {data.hub.name} docs ↗</a
 				>
 			</p>
 		</section>

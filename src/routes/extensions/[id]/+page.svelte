@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/state';
+	import { tabKeys } from '$lib/tablist.js';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import ReadmeRenderer from '$lib/components/ReadmeRenderer.svelte';
 	import InstallButton from '$lib/components/InstallButton.svelte';
@@ -6,9 +10,7 @@
 	import IconThemePreview from '$lib/components/IconThemePreview.svelte';
 	import VersionTable from '$lib/components/VersionTable.svelte';
 	import { badgeFor, healthPills } from '$lib/extension-page.js';
-	import { formatNumber } from '$lib/utils/format.js';
-
-	const counted = (n: number, noun: string) => `${formatNumber(n)} ${noun}${n === 1 ? '' : 's'}`;
+	import { countOf } from '$lib/utils/format.js';
 	import type { DetailContent } from './+page.server.js';
 
 	let { data } = $props();
@@ -17,16 +19,32 @@
 	const isMonorepo = $derived(data.isMonorepo);
 	const repoOwner = $derived(data.repoOwner);
 	let activeTab = $state<'docs' | 'readme'>('docs');
-	// Resets to Overview when moving to another extension (same pattern as ExtensionBrowser)
-	type PageTab = 'overview' | 'versions' | 'changelog';
-	let chosen = $state<{ id: string; tab: PageTab }>({ id: '', tab: 'overview' });
-	const pageTab = $derived(chosen.id === extension.id ? chosen.tab : 'overview');
-	const choose = (tab: PageTab) => {
-		chosen = { id: extension.id, tab };
-		if (tab === 'changelog') loadChangelog(extension.id);
-	};
 
-	// Fetched on first open, once per extension; a failure can be retried by reopening
+	// The section tab lives in the URL (?tab=), so it can be linked to and survives a reload.
+	// Choosing one updates the URL shallowly: Back still leaves the page rather than the tab.
+	// A new extension (a real navigation) starts on Overview.
+	type PageTab = 'overview' | 'versions' | 'changelog';
+	const requestedTab = $derived(page.state.tab ?? page.url.searchParams.get('tab'));
+	const pageTab = $derived<PageTab>(
+		requestedTab === 'versions' || (requestedTab === 'changelog' && data.hasChangelog)
+			? requestedTab
+			: 'overview'
+	);
+	function choose(tab: PageTab) {
+		const url = new URL(location.href);
+		if (tab === 'overview') url.searchParams.delete('tab');
+		else url.searchParams.set('tab', tab);
+		replaceState(url, { ...page.state, tab });
+	}
+	$effect(() => {
+		if (pageTab !== 'changelog') return;
+		const id = extension.id;
+		// Untracked: loadChangelog reads `changelog`, and re-running on its changes would retry
+		// a failed load in a loop. Only opening the tab (or another extension) starts a load
+		untrack(() => loadChangelog(id));
+	});
+
+	// Fetched on first open, once per extension; a failure can be retried
 	let changelog = $state<{
 		id: string;
 		status: 'loading' | 'ready' | 'none' | 'error';
@@ -110,10 +128,10 @@
 
 <div class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Breadcrumb -->
-	<nav class="mb-6 text-[13px] text-[var(--color-text-tertiary)]">
-		<a href="/" class="transition-colors hover:text-[var(--color-text)]">Extensions</a>
-		<span class="mx-2">/</span>
-		<span class="text-[var(--color-text)]">{extension.name}</span>
+	<nav aria-label="Breadcrumb" class="mb-6 text-[13px] text-[var(--color-text-tertiary)]">
+		<a href="/" class="hit-y transition-colors hover:text-[var(--color-text)]">Extensions</a>
+		<span class="mx-2" aria-hidden="true">/</span>
+		<span class="text-[var(--color-text)]" aria-current="page">{extension.name}</span>
 	</nav>
 
 	<!-- Header -->
@@ -156,9 +174,9 @@
 				<div
 					class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[var(--color-text-secondary)] tabular-nums lg:hidden"
 				>
-					<span>{counted(extension.download_count, 'download')}</span>
+					<span>{countOf(extension.download_count, 'download')}</span>
 					{#if content?.github}
-						<span>{counted(content.github.stargazers_count, 'star')}</span>
+						<span>{countOf(content.github.stargazers_count, 'star')}</span>
 					{/if}
 					{#if extension.repository}
 						<a
@@ -171,8 +189,8 @@
 				</div>
 			</div>
 
-			<!-- Mobile install button (hidden on lg+) -->
-			<div class="lg:hidden">
+			<!-- Below lg the sidebar's install button is far down the page; touch devices get none -->
+			<div class="lg:hidden pointer-coarse:hidden">
 				<InstallButton extensionId={extension.id} />
 			</div>
 		</div>
@@ -186,12 +204,15 @@
 				class="mb-5 flex gap-1 border-b border-[var(--color-border)]"
 				role="tablist"
 				aria-label="Extension sections"
+				{@attach tabKeys}
 			>
 				{#each tabs as t (t.id)}
 					<button
 						role="tab"
+						id="page-tab-{t.id}-label"
 						aria-selected={pageTab === t.id}
 						aria-controls="page-tab-{t.id}"
+						tabindex={pageTab === t.id ? 0 : -1}
 						class="-mb-px px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
 						t.id
 							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
@@ -203,7 +224,12 @@
 				{/each}
 			</div>
 			<!-- hidden, not removed: the README stays in the server HTML for crawlers -->
-			<div id="page-tab-overview" role="tabpanel" hidden={pageTab !== 'overview'}>
+			<div
+				id="page-tab-overview"
+				role="tabpanel"
+				aria-labelledby="page-tab-overview-label"
+				hidden={pageTab !== 'overview'}
+			>
 				<!-- Keyed so light/dark and variant choices reset when moving between themes -->
 				{#key extension.id}
 					{#if data.themePreview?.length}
@@ -214,8 +240,9 @@
 				{/key}
 				{#await data.content}
 					<div
-						class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-						aria-busy="true"
+						class="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 motion-safe:animate-pulse md:p-8"
+						role="status"
+						aria-label="Loading"
 					>
 						<div class="h-5 w-1/3 rounded bg-[var(--color-surface-hover)]"></div>
 						<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
@@ -224,11 +251,18 @@
 					</div>
 				{:then { readmeHtml, zedDocsHtml }}
 					{#if zedDocsHtml && readmeHtml}
-						<div class="mb-4 flex gap-1 border-b border-[var(--color-border)]" role="tablist">
+						<div
+							class="mb-4 flex gap-1 border-b border-[var(--color-border)]"
+							role="tablist"
+							aria-label="Documentation source"
+							{@attach tabKeys}
+						>
 							<button
 								role="tab"
+								id="tab-docs"
 								aria-selected={activeTab === 'docs'}
 								aria-controls="tabpanel-docs"
+								tabindex={activeTab === 'docs' ? 0 : -1}
 								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
 									? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
 									: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
@@ -238,8 +272,10 @@
 							</button>
 							<button
 								role="tab"
+								id="tab-readme"
 								aria-selected={activeTab === 'readme'}
 								aria-controls="tabpanel-readme"
+								tabindex={activeTab === 'readme' ? 0 : -1}
 								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
 									? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
 									: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
@@ -251,6 +287,7 @@
 						<div
 							id="tabpanel-{activeTab}"
 							role="tabpanel"
+							aria-labelledby="tab-{activeTab}"
 							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
 						>
 							{#if activeTab === 'docs'}
@@ -320,11 +357,11 @@
 				{/await}
 			</div>
 			{#if pageTab === 'versions'}
-				<div id="page-tab-versions" role="tabpanel">
+				<div id="page-tab-versions" role="tabpanel" aria-labelledby="page-tab-versions-label">
 					<VersionTable {versions} />
 				</div>
 			{:else if pageTab === 'changelog'}
-				<div id="page-tab-changelog" role="tabpanel">
+				<div id="page-tab-changelog" role="tabpanel" aria-labelledby="page-tab-changelog-label">
 					{#if changelog?.id === extension.id && changelog.status === 'ready' && changelog.html}
 						<div
 							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
@@ -341,24 +378,32 @@
 						</a>
 					{:else if changelog?.id === extension.id && changelog.status === 'none'}
 						<p class="text-[13px] text-[var(--color-text-tertiary)]">
-							This extension doesn't have a changelog yet.
+							This extension doesn’t have a changelog yet.
 						</p>
 					{:else if changelog?.id === extension.id && changelog.status === 'error'}
-						<p class="text-[13px] text-[var(--color-text-tertiary)]">
-							Couldn't load the changelog right now.
+						<div class="flex flex-wrap items-center gap-3 text-[13px]" role="alert">
+							<span class="text-[var(--color-text-secondary)]">Couldn’t load the changelog.</span>
+							<button
+								type="button"
+								onclick={() => loadChangelog(extension.id)}
+								class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+							>
+								Try Again
+							</button>
 							{#if extension.repository}
 								<a
 									href={extension.repository}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="text-[var(--color-accent)] hover:underline">View it on GitHub →</a
+									class="text-[var(--color-accent)] hover:underline">View on GitHub →</a
 								>
 							{/if}
-						</p>
+						</div>
 					{:else}
 						<div
-							class="animate-pulse space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-							aria-busy="true"
+							class="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 motion-safe:animate-pulse md:p-8"
+							role="status"
+							aria-label="Loading"
 						>
 							<div class="h-5 w-1/4 rounded bg-[var(--color-surface-hover)]"></div>
 							<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>

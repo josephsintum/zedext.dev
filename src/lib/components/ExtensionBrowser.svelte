@@ -93,6 +93,14 @@
 		{ value: 'name', label: 'a-z' }
 	];
 
+	function clearSearch() {
+		const next = currentSearchParams();
+		next.delete('q');
+		setSearchParams(next, { scroll: true });
+		// The button disappears with the empty state; keep keyboard focus somewhere useful
+		document.querySelector<HTMLInputElement>('main input[type="search"]')?.focus();
+	}
+
 	function selectSort(value: string) {
 		const next = currentSearchParams();
 		if (value === 'downloads') next.delete('sort');
@@ -461,8 +469,19 @@
 
 	<!-- Empty state -->
 	{#if displayHits.length === 0 && !loading}
-		<div class="flex flex-col items-center py-20">
-			<p class="text-[14px] text-[var(--color-text-secondary)]">No extensions found</p>
+		<div class="flex flex-col items-center gap-3 py-20 text-center">
+			<p class="text-[14px] text-[var(--color-text-secondary)]">
+				{query ? `No extensions match “${query}”.` : 'No extensions found.'}
+			</p>
+			{#if query}
+				<button
+					type="button"
+					onclick={clearSearch}
+					class="min-h-11 rounded-md border border-[var(--color-border)] px-4 text-[13px] font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+				>
+					Clear Search
+				</button>
+			{/if}
 		</div>
 	{/if}
 
@@ -472,7 +491,7 @@
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each Array(16) as _, i}
 					<div
-						class="animate-pulse rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3"
+						class="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3 motion-safe:animate-pulse"
 						style="animation-delay: {i * 25}ms"
 					>
 						<div class="mb-1.5 h-3.5 w-20 rounded bg-[var(--color-surface-hover)]"></div>
@@ -484,7 +503,7 @@
 			<div class="space-y-0">
 				{#each Array(12) as _, i}
 					<div
-						class="flex animate-pulse items-center gap-4 border-b border-[var(--color-border)]/50 py-2.5"
+						class="flex items-center gap-4 border-b border-[var(--color-border)]/50 py-2.5 motion-safe:animate-pulse"
 						style="animation-delay: {i * 25}ms"
 					>
 						<div class="h-3.5 w-24 rounded bg-[var(--color-surface-hover)]"></div>

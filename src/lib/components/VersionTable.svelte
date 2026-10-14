@@ -21,21 +21,24 @@
 	<tbody>
 		{#each rows as v, i (v.version)}
 			<tr class="border-b border-[var(--color-border)]/60">
-				<td class="py-2.5 font-mono text-[var(--color-text)]">
+				<td class="py-2.5 font-mono text-[var(--color-text)] tabular-nums">
 					{v.version}
 					{#if i === 0}<span class="ml-1.5 text-[11px] text-[var(--color-text-tertiary)]"
 							>latest</span
 						>{/if}
 				</td>
-				<td class="py-2.5 text-[var(--color-text-secondary)]">{formatDate(v.published_at)}</td>
+				<td class="py-2.5 text-[var(--color-text-secondary)] tabular-nums">
+					{formatDate(v.published_at)}
+				</td>
 			</tr>
 		{/each}
 	</tbody>
 </table>
 {#if versions.length > SHOWN && !showAll}
 	<button
+		type="button"
 		onclick={() => (showAll = true)}
-		class="mt-3 text-[13px] font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+		class="hit-y mt-3 text-[13px] font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
 	>
 		Show all {versions.length} versions
 	</button>
