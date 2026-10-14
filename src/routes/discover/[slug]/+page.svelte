@@ -2,6 +2,7 @@
 	import ExtensionCard from '$lib/components/ExtensionCard.svelte';
 	import ThemeTile from '$lib/components/ThemeTile.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import WorkflowGuide from '$lib/components/WorkflowGuide.svelte';
 
 	let { data } = $props();
 </script>
@@ -21,12 +22,15 @@
 		{data.list.emoji}
 		{data.list.title}
 	</h1>
-	<p class="mt-2 max-w-2xl text-[15px] text-[var(--color-text-secondary)]">
-		{data.list.description}
+	<p class="mt-2 max-w-3xl text-[15px] text-[var(--color-text-secondary)]">
+		{data.guide?.intro ?? data.list.description}
 	</p>
 
 	{#if data.list.builtIn}
-		<section class="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5">
+		<section
+			class="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5"
+			class:max-w-3xl={data.guide && data.guide.groups.length > 0}
+		>
 			<h2 class="text-[14px] font-semibold text-[var(--color-text)]">
 				✓ Built into Zed, no extension needed
 			</h2>
@@ -45,7 +49,11 @@
 				: ''}
 		</p>
 	{/if}
-	{#if data.tiles && data.tiles.length > 0}
+	{#if data.guide && data.guide.groups.length > 0}
+		<div class="max-w-3xl">
+			<WorkflowGuide guide={data.guide} />
+		</div>
+	{:else if data.tiles && data.tiles.length > 0}
 		<div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 			{#each data.tiles as tile (tile.record.id)}
 				<ThemeTile {tile} />
