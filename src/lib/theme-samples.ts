@@ -13,11 +13,20 @@ export type Role =
 	| 'string'
 	| 'number'
 	| 'punct'
+	| 'title'
+	| 'emphasis'
+	| 'strong'
+	| 'linkText'
+	| 'linkUri'
+	| 'literal'
+	| 'tag'
+	| 'attribute'
+	| 'property'
 	| 'fg';
 
 export type Token = [text: string, role: Role];
 
-export type SampleId = 'rust' | 'ts' | 'python' | 'go' | 'react';
+export type SampleId = 'rust' | 'ts' | 'python' | 'go' | 'react' | 'html' | 'json' | 'markdown';
 
 export interface Sample {
 	id: SampleId;
@@ -37,6 +46,15 @@ const s = (t: string): Token => [t, 'string'];
 const n = (t: string): Token => [t, 'number'];
 const p = (t: string): Token => [t, 'punct'];
 const x = (t: string): Token => [t, 'fg'];
+const title = (t: string): Token => [t, 'title'];
+const em = (t: string): Token => [t, 'emphasis'];
+const strong = (t: string): Token => [t, 'strong'];
+const linkText = (t: string): Token => [t, 'linkText'];
+const linkUri = (t: string): Token => [t, 'linkUri'];
+const lit = (t: string): Token => [t, 'literal'];
+const tag = (t: string): Token => [t, 'tag'];
+const attr = (t: string): Token => [t, 'attribute'];
+const prop = (t: string): Token => [t, 'property'];
 
 export const SAMPLES: Sample[] = [
 	{
@@ -319,6 +337,118 @@ export const SAMPLES: Sample[] = [
 			[x('    '), p('</'), ty('button'), p('>')],
 			[x('  '), p(');')],
 			[p('}')]
+		]
+	},
+	{
+		id: 'html',
+		file: 'index.html',
+		language: 'HTML',
+		lines: [
+			[c('<!-- Settings form -->')],
+			[
+				p('<'),
+				tag('form'),
+				x(' '),
+				attr('class'),
+				p('='),
+				s('"config"'),
+				x(' '),
+				attr('action'),
+				p('='),
+				s('"/save"'),
+				p('>')
+			],
+			[
+				x('  '),
+				p('<'),
+				tag('label'),
+				x(' '),
+				attr('for'),
+				p('='),
+				s('"retries"'),
+				p('>'),
+				x('Retries'),
+				p('</'),
+				tag('label'),
+				p('>')
+			],
+			[
+				x('  '),
+				p('<'),
+				tag('input'),
+				x(' '),
+				attr('id'),
+				p('='),
+				s('"retries"'),
+				x(' '),
+				attr('type'),
+				p('='),
+				s('"number"'),
+				x(' '),
+				attr('value'),
+				p('='),
+				s('"3"'),
+				p('>')
+			],
+			[
+				x('  '),
+				p('<'),
+				tag('button'),
+				x(' '),
+				attr('type'),
+				p('='),
+				s('"submit"'),
+				p('>'),
+				x('Save'),
+				p('</'),
+				tag('button'),
+				p('>')
+			],
+			[p('</'), tag('form'), p('>')]
+		]
+	},
+	{
+		id: 'json',
+		file: 'package.json',
+		language: 'JSON',
+		lines: [
+			[p('{')],
+			[x('  '), prop('"name"'), p(': '), s('"config-loader"'), p(',')],
+			[x('  '), prop('"version"'), p(': '), s('"1.2.0"'), p(',')],
+			[x('  '), prop('"retries"'), p(': '), n('3'), p(',')],
+			[x('  '), prop('"files"'), p(': ['), s('"settings.json"'), p('],')],
+			[
+				x('  '),
+				prop('"scripts"'),
+				p(': { '),
+				prop('"start"'),
+				p(': '),
+				s('"node index.js"'),
+				p(' }')
+			],
+			[p('}')]
+		]
+	},
+	{
+		id: 'markdown',
+		file: 'README.md',
+		language: 'Markdown',
+		lines: [
+			[title('# Config loader')],
+			[x('Loads '), strong('**settings.json**'), x(' and retries a '), em('*few*'), x(' times.')],
+			[title('## Usage')],
+			[p('- '), x('Call '), lit('`load_config(path)`'), x(' at startup')],
+			[
+				p('- '),
+				x('Read the '),
+				p('['),
+				linkText('docs'),
+				p(']('),
+				linkUri('https://zed.dev/docs'),
+				p(')'),
+				x(' for options')
+			],
+			[p('- '), x('Errors are '), strong('**returned**'), x(', never thrown')]
 		]
 	}
 ];

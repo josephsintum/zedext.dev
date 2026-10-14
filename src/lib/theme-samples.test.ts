@@ -17,6 +17,15 @@ const ROLES: Role[] = [
 	'string',
 	'number',
 	'punct',
+	'title',
+	'emphasis',
+	'strong',
+	'linkText',
+	'linkUri',
+	'literal',
+	'tag',
+	'attribute',
+	'property',
 	'fg'
 ];
 
@@ -39,8 +48,17 @@ const throwing = {
 };
 
 describe('SAMPLES', () => {
-	it('covers Rust, TypeScript, Python, Go and React, Rust first', () => {
-		expect(SAMPLES.map((s) => s.id)).toEqual(['rust', 'ts', 'python', 'go', 'react']);
+	it('covers code, markup and data files, Rust first', () => {
+		expect(SAMPLES.map((s) => s.id)).toEqual([
+			'rust',
+			'ts',
+			'python',
+			'go',
+			'react',
+			'html',
+			'json',
+			'markdown'
+		]);
 		expect(DEFAULT_SAMPLE).toBe('rust');
 	});
 
@@ -72,5 +90,22 @@ describe('remembered sample choice', () => {
 	it('never throws when storage is blocked', () => {
 		expect(() => writeSampleChoice(throwing, 'go')).not.toThrow();
 		expect(() => writeSampleChoice(null, 'go')).not.toThrow();
+	});
+});
+
+describe('markup samples', () => {
+	const roles = (id: string) =>
+		new Set(
+			SAMPLES.find((s) => s.id === id)!
+				.lines.flat()
+				.map(([, role]) => role)
+		);
+
+	it('use the colors Zed gives each format', () => {
+		expect([...roles('markdown')]).toEqual(
+			expect.arrayContaining(['title', 'emphasis', 'strong', 'linkText', 'linkUri', 'literal'])
+		);
+		expect([...roles('html')]).toEqual(expect.arrayContaining(['tag', 'attribute', 'string']));
+		expect([...roles('json')]).toEqual(expect.arrayContaining(['property', 'string', 'number']));
 	});
 });

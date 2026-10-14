@@ -18,7 +18,31 @@ export interface ThemeColors {
 	number: string;
 	punct: string;
 	variable: string;
+	/** Markdown, HTML and JSON colors: only stored when the theme defines them (see roleColor) */
+	title?: string;
+	emphasis?: string;
+	strong?: string;
+	linkText?: string;
+	linkUri?: string;
+	literal?: string;
+	tag?: string;
+	attribute?: string;
+	property?: string;
 }
+
+/** Colors for markup and data files; optional because many themes leave them out */
+const EXTRA_ROLES = [
+	'title',
+	'emphasis',
+	'strong',
+	'linkText',
+	'linkUri',
+	'literal',
+	'tag',
+	'attribute',
+	'property'
+] as const;
+type ExtraRole = (typeof EXTRA_ROLES)[number];
 
 /** The syntax roles the preview draws, keyed as in ThemeColors */
 export type StyledRole =
@@ -29,7 +53,8 @@ export type StyledRole =
 	| 'variable'
 	| 'string'
 	| 'number'
-	| 'punct';
+	| 'punct'
+	| ExtraRole;
 
 export interface ThemeVariant {
 	name: string;
@@ -95,7 +120,7 @@ function opaque(color: string, appearance: 'light' | 'dark'): string {
 	return `#${channel(0)}${channel(2)}${channel(4)}`;
 }
 
-/** Theme JSON syntax key for each role (only punctuation differs) */
+/** Theme JSON syntax key for each role */
 const SYNTAX_KEYS: Record<StyledRole, string> = {
 	comment: 'comment',
 	keyword: 'keyword',
@@ -104,8 +129,27 @@ const SYNTAX_KEYS: Record<StyledRole, string> = {
 	variable: 'variable',
 	string: 'string',
 	number: 'number',
-	punct: 'punctuation'
+	punct: 'punctuation',
+	title: 'title',
+	emphasis: 'emphasis',
+	strong: 'emphasis.strong',
+	linkText: 'link_text',
+	linkUri: 'link_uri',
+	literal: 'text.literal',
+	tag: 'tag',
+	attribute: 'attribute',
+	property: 'property'
 };
+
+/**
+ * The color a preview token uses. Like Zed, a missing "emphasis.strong" falls back to
+ * "emphasis", and any other missing role draws as plain text.
+ */
+export function roleColor(c: ThemeColors, role: StyledRole | 'fg'): string {
+	if (role === 'fg') return c.fg;
+	if (role === 'strong') return c.strong ?? c.emphasis ?? c.fg;
+	return c[role] ?? c.fg;
+}
 
 /** Weights appear as numbers (700) and as words or strings ("bold", "800") in real themes */
 function isBold(weight: unknown): boolean {
@@ -207,7 +251,13 @@ export function parseThemeFile(text: string): ThemeVariant[] {
 				comment,
 				number: s('number') ?? fg,
 				punct: s('punctuation') ?? fg,
-				variable: s('variable') ?? fg
+				variable: s('variable') ?? fg,
+				...Object.fromEntries(
+					EXTRA_ROLES.flatMap((r) => {
+						const color = s(SYNTAX_KEYS[r]);
+						return color ? [[r, color]] : [];
+					})
+				)
 			},
 			...(italic.length > 0 && { italic }),
 			...(bold.length > 0 && { bold })

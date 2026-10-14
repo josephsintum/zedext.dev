@@ -5,6 +5,7 @@ import {
 	parseIconThemeFile,
 	parseJsonLenient,
 	parseThemeFile,
+	roleColor,
 	svgDataUri
 } from './theme-preview.js';
 
@@ -71,6 +72,45 @@ describe('parseThemeFile', () => {
 		);
 		expect(v.colors.keyword).toBe('#cdd6f4');
 		expect(parseThemeFile(theme({ ...fullStyle, 'editor.background': evil }))).toEqual([]);
+	});
+
+	it('reads the Markdown, HTML and JSON colors when the theme defines them', () => {
+		const [v] = parseThemeFile(
+			theme({
+				...fullStyle,
+				syntax: {
+					...fullStyle.syntax,
+					title: { color: '#f38ba8', font_weight: 700 },
+					emphasis: { color: '#89dceb', font_style: 'italic' },
+					'emphasis.strong': { color: '#fab387' },
+					link_text: { color: '#b4befe' },
+					link_uri: { color: '#f5c2e7' },
+					'text.literal': { color: '#a6e3a1' },
+					tag: { color: '#89b4fa' },
+					attribute: { color: '#f9e2af' },
+					property: { color: '#b4befe' }
+				}
+			})
+		);
+		expect(v.colors).toMatchObject({
+			title: '#f38ba8',
+			emphasis: '#89dceb',
+			strong: '#fab387',
+			linkText: '#b4befe',
+			linkUri: '#f5c2e7',
+			literal: '#a6e3a1',
+			tag: '#89b4fa',
+			attribute: '#f9e2af',
+			property: '#b4befe'
+		});
+		expect(fontStyleOf(v, 'title')).toEqual({ italic: false, bold: true });
+		expect(fontStyleOf(v, 'emphasis')).toEqual({ italic: true, bold: false });
+	});
+
+	it('leaves the extra colors out when the theme has none, to keep the bundle small', () => {
+		const [v] = parseThemeFile(theme(fullStyle));
+		expect(Object.keys(v.colors)).not.toContain('title');
+		expect(Object.keys(v.colors)).not.toContain('tag');
 	});
 
 	it('skips variants without a background or text color', () => {
@@ -217,5 +257,22 @@ describe('svgDataUri', () => {
 		expect(svgDataUri('<svg a="1"/>')).toBe(
 			'data:image/svg+xml;charset=utf-8,%3Csvg%20a%3D%221%22%2F%3E'
 		);
+	});
+});
+
+describe('roleColor', () => {
+	const [v] = parseThemeFile(
+		theme({ ...fullStyle, syntax: { ...fullStyle.syntax, emphasis: { color: '#89dceb' } } })
+	);
+
+	it('uses the role color when the theme defines it', () => {
+		expect(roleColor(v.colors, 'keyword')).toBe('#cba6f7');
+		expect(roleColor(v.colors, 'emphasis')).toBe('#89dceb');
+	});
+
+	it('falls back like Zed: emphasis.strong to emphasis, anything else to the text color', () => {
+		expect(roleColor(v.colors, 'strong')).toBe('#89dceb');
+		expect(roleColor(v.colors, 'tag')).toBe('#cdd6f4');
+		expect(roleColor(v.colors, 'fg')).toBe('#cdd6f4');
 	});
 });

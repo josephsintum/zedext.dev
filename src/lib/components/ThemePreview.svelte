@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fontStyleOf, type ThemeVariant } from '$lib/theme-preview.js';
+	import { fontStyleOf, roleColor, type ThemeVariant } from '$lib/theme-preview.js';
 	import {
 		DEFAULT_SAMPLE,
 		readSampleChoice,
@@ -163,7 +163,7 @@
 				class="font-code m-0 pr-4">{#each sample.lines as line, i (i)}<div>{#each line as [text, role], j (j)}<span
 								class:italic={fontStyleOf(current, role).italic}
 								class:font-bold={fontStyleOf(current, role).bold}
-								style:color={c[role]}>{text}</span
+								style:color={roleColor(c, role)}>{text}</span
 							>{/each}</div>{/each}</pre>
 		</div>
 		<div
