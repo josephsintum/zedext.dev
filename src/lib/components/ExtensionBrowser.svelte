@@ -1,14 +1,16 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import type { Snippet } from 'svelte';
 	import type { SearchResults } from '$lib/types.js';
 	import {
 		currentSearchParams,
 		getIndex,
-		getIndexStatus,
 		loadIndex,
+		setPageParam,
 		setSearchParams
 	} from '$lib/search/client.svelte.js';
+	import { clampPage, PER_PAGE } from '$lib/search/paging.js';
 	import { searchIndex } from '$lib/search/engine.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import CategoryTabs from '$lib/components/CategoryTabs.svelte';
@@ -23,6 +25,7 @@
 		provideDotColor
 	} from '$lib/utils/extension-ui.js';
 	import { getMatchingBuiltinFeatures } from '$lib/utils/constants.js';
+	import { categoryForPath } from '$lib/categories.js';
 
 	let {
 		initialResults,
@@ -42,11 +45,9 @@
 	let sort = $derived(params.get('sort') ?? 'downloads');
 	const builtinMatches = $derived(getMatchingBuiltinFeatures(query));
 
-	const PER_PAGE = 24;
-	const searchKey = $derived(`${query}|${category}|${sort}`);
-	// Pages shown for the current search; resets when the search changes
-	let shown = $state({ key: '', pages: 1 });
-	const pages = $derived(shown.key === searchKey ? shown.pages : 1);
+	// Pages shown live in the URL (?page=), so Back from an extension returns to the same spot.
+	// Any search change drops the param, which resets to one page.
+	const pages = $derived(clampPage(params.get('page')));
 
 	const index = $derived(getIndex());
 	const results = $derived(
@@ -59,15 +60,28 @@
 	const displayTotalHits = $derived(results.nbHits);
 	const hasMore = $derived(displayHits.length < displayTotalHits);
 	const remaining = $derived(displayTotalHits - displayHits.length);
-	// Only a search on this page dims the list, not navigating elsewhere
-	const loading = $derived(navigating.to?.url.pathname === page.url.pathname);
-	const loadingMore = $derived(pages > 1 && !index && getIndexStatus() === 'loading');
+	// The server is rendering more pages of this same list (Show more without the index)
+	const loadingMore = $derived(
+		navigating.to?.url.pathname === page.url.pathname && navigating.to.url.searchParams.has('page')
+	);
+	// A search on this page or a switch to another category dims the list, not leaving it
+	const loading = $derived(
+		!!navigating.to &&
+			!loadingMore &&
+			(navigating.to.url.pathname === page.url.pathname ||
+				categoryForPath(navigating.to.url.pathname) !== undefined)
+	);
 
 	function loadMore() {
-		// Without the index, queue one extra page and load it; if loading fails the button
-		// re-enables and the next click retries
-		shown = { key: searchKey, pages: index ? pages + 1 : Math.max(pages, 2) };
-		loadIndex();
+		const next = currentSearchParams();
+		next.set('page', String(pages + 1));
+		if (index) {
+			setPageParam(next);
+		} else {
+			// The server renders the longer list; meanwhile the index loads for the next click
+			goto(`?${next}`, { replaceState: true, noScroll: true, keepFocus: true });
+			loadIndex();
+		}
 	}
 
 	let viewMode = $derived(getViewMode());
@@ -218,7 +232,7 @@
 						hit
 					)}"
 				>
-					<a href="/extensions/{hit.id}" class="contents">
+					<a href="/extensions/{hit.id}" class="block rounded-sm outline-offset-4">
 						<!-- Name + downloads -->
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
@@ -488,7 +502,7 @@
 				class="rounded-md border border-[var(--color-border)] px-5 py-2 text-[13px] font-medium opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
 			>
 				{#if loadingMore}
-					Loading...
+					Loading…
 				{:else}
 					Show more ({formatNumber(remaining)})
 				{/if}

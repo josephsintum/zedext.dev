@@ -117,17 +117,20 @@
 		line-height: 1.6;
 	}
 
-	/* Shiki dual-theme: light by default */
+	/* The .shiki pre already has the padding */
+	.readme-content :global(.shiki code) {
+		padding: 0;
+	}
+
+	/* Shiki dual-theme token colors, light by default. Backgrounds come from the pre styles */
 	.readme-content :global(.shiki),
 	.readme-content :global(.shiki span) {
 		color: var(--shiki-light);
-		background-color: var(--shiki-light-bg);
 	}
 
 	:global(.dark) .readme-content :global(.shiki),
 	:global(.dark) .readme-content :global(.shiki span) {
 		color: var(--shiki-dark);
-		background-color: var(--shiki-dark-bg);
 	}
 
 	/* Lists */
@@ -136,6 +139,19 @@
 		margin-top: 0;
 		margin-bottom: 1em;
 		padding-left: 2em;
+	}
+
+	/* The CSS reset strips list markers; numbered steps need their numbers back */
+	.readme-content :global(ul) {
+		list-style: disc;
+	}
+
+	.readme-content :global(ol) {
+		list-style: decimal;
+	}
+
+	.readme-content :global(ul ul) {
+		list-style: circle;
 	}
 
 	.readme-content :global(li) {
@@ -158,6 +174,57 @@
 
 	.readme-content :global(blockquote p:last-child) {
 		margin-bottom: 0;
+	}
+
+	/* GitHub alerts: > [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION] */
+	.readme-content :global(.alert-title) {
+		margin-bottom: 0.25em;
+		font-weight: 600;
+		color: var(--alert-color);
+	}
+
+	.readme-content :global(.alert) {
+		border-left-color: var(--alert-color);
+	}
+
+	.readme-content :global(.alert-note) {
+		--alert-color: #0969da;
+	}
+
+	.readme-content :global(.alert-tip) {
+		--alert-color: #1a7f37;
+	}
+
+	.readme-content :global(.alert-important) {
+		--alert-color: #8250df;
+	}
+
+	.readme-content :global(.alert-warning) {
+		--alert-color: #9a6700;
+	}
+
+	.readme-content :global(.alert-caution) {
+		--alert-color: #cf222e;
+	}
+
+	:global(.dark) .readme-content :global(.alert-note) {
+		--alert-color: #4493f8;
+	}
+
+	:global(.dark) .readme-content :global(.alert-tip) {
+		--alert-color: #3fb950;
+	}
+
+	:global(.dark) .readme-content :global(.alert-important) {
+		--alert-color: #ab7df8;
+	}
+
+	:global(.dark) .readme-content :global(.alert-warning) {
+		--alert-color: #d29922;
+	}
+
+	:global(.dark) .readme-content :global(.alert-caution) {
+		--alert-color: #f85149;
 	}
 
 	/* Tables */

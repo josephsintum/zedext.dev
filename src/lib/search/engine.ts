@@ -1,5 +1,6 @@
 import MiniSearch from 'minisearch';
 import type { ExtensionRecord, SearchResults } from '$lib/types.js';
+import { PER_PAGE } from './paging.js';
 
 /**
  * Search over the extension snapshot. Pure and shared by the server (SSR) and
@@ -122,7 +123,7 @@ export function searchIndex(
 	query: string,
 	options: SearchOptions = {}
 ): SearchResults {
-	const { category = 'all', sort = 'downloads', page = 0, hitsPerPage = 24 } = options;
+	const { category = 'all', sort = 'downloads', page = 0, hitsPerPage = PER_PAGE } = options;
 
 	const q = query.trim();
 	const matches = q ? rankMatches(index, q) : index.byDownloads;

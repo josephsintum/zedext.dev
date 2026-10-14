@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { formatNumber } from '$lib/utils/format.js';
 	import { currentSearchParams, loadIndex, setSearchParams } from '$lib/search/client.svelte.js';
 
@@ -16,6 +16,24 @@
 
 	let input = $state(untrack(() => value));
 	let focused = $state(false);
+	let field: HTMLInputElement;
+
+	// The server is rendering results for a search or sort on this page (before the index
+	// loads; after, results are instant). Show more navigations carry ?page= and aren't searches.
+	const busy = $derived(
+		navigating.to?.url.pathname === page.url.pathname && !navigating.to.url.searchParams.has('page')
+	);
+
+	// "/" jumps to search from anywhere on the page, unless you're already typing somewhere
+	function handleGlobalKeydown(e: KeyboardEvent) {
+		if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+		const target = e.target as HTMLElement;
+		if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+			return;
+		}
+		e.preventDefault();
+		field.focus();
+	}
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	// Follow outside URL changes (back button, links), but never overwrite what's being typed
@@ -52,6 +70,8 @@
 	}
 </script>
 
+<svelte:window onkeydown={handleGlobalKeydown} />
+
 <div
 	class="relative w-full transition-all duration-200 motion-reduce:transition-none"
 	class:scale-[1.01]={focused}
@@ -78,6 +98,7 @@
 			/>
 		</svg>
 		<input
+			bind:this={field}
 			type="search"
 			aria-label="Search extensions"
 			{placeholder}
@@ -93,10 +114,18 @@
 			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
 		/>
 		<div class="absolute top-1/2 right-4 -translate-y-1/2">
-			<kbd
-				class="hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-text-tertiary)] sm:inline-block"
-				>/</kbd
-			>
+			{#if busy}
+				<span
+					class="block h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] motion-reduce:animate-none"
+					role="status"
+					aria-label="Searching"
+				></span>
+			{:else if !focused}
+				<kbd
+					class="hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-text-tertiary)] sm:inline-block"
+					>/</kbd
+				>
+			{/if}
 		</div>
 	</div>
 </div>

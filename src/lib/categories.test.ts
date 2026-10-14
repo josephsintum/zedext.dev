@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	CATEGORY_PAGES,
+	categoryForPath,
 	categoryHref,
 	categoryPageForProvides,
 	categoryPageForSlug,
@@ -61,5 +62,18 @@ describe('legacyCategoryRedirect', () => {
 		expect(at('/?q=git')).toBeNull();
 		expect(at('/?category=bogus')).toBeNull();
 		expect(at('/themes?category=snippets')).toBeNull();
+	});
+});
+
+describe('categoryForPath', () => {
+	it('finds the browse tab a path shows', () => {
+		expect(categoryForPath('/')).toBe('all');
+		expect(categoryForPath('/mcp-servers')).toBe('context-servers');
+		expect(categoryForPath('/languages')).toBe('languages');
+	});
+
+	it('ignores pages that are not browse pages', () => {
+		expect(categoryForPath('/extensions/html')).toBeUndefined();
+		expect(categoryForPath('/discover')).toBeUndefined();
 	});
 });

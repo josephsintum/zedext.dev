@@ -86,6 +86,14 @@ export function setSearchParams(
 	loadIndex();
 }
 
+/**
+ * Record how many pages are shown, without a navigation: the list grows from the index,
+ * and the URL just remembers it for Back and reloads (where the server renders them all).
+ */
+export function setPageParam(params: URLSearchParams): void {
+	applyShallow(params.toString());
+}
+
 function currentSearch(): string {
 	return currentSearchParams().toString();
 }

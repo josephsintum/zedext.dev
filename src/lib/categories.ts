@@ -1,3 +1,5 @@
+import { CATEGORIES } from '$lib/utils/constants.js';
+
 /**
  * Clean, indexable URLs for each category, e.g. /mcp-servers for `context-servers`.
  * The `languages` category lives at /languages (also the language hub index).
@@ -69,6 +71,11 @@ export function categoryHref(provides: string): string {
 	if (provides === 'languages') return '/languages';
 	const page = categoryPageForProvides(provides);
 	return page ? `/${page.slug}` : '/';
+}
+
+/** The browse tab (CATEGORIES slug) a pathname shows, or undefined if it isn't a browse page. */
+export function categoryForPath(pathname: string): string | undefined {
+	return CATEGORIES.find((cat) => categoryHref(cat.provides ?? 'all') === pathname)?.slug;
 }
 
 /** Where an old `/?category=<provides>` link should 301 to, or null to leave it alone. */
