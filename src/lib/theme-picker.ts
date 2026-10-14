@@ -1,4 +1,9 @@
-import type { PreviewBundle, ThemeColors, ThemeVariant } from './theme-preview.js';
+import {
+	themeColors,
+	type PreviewBundle,
+	type ThemeColors,
+	type ThemeVariant
+} from './theme-preview.js';
 import type { ExtensionRecord } from './types.js';
 import { parseAuthor } from './utils/parse-author.js';
 
@@ -39,7 +44,7 @@ export function themeEntries(
 					author: r.authors[0] ? parseAuthor(r.authors[0]).name : '',
 					downloads: r.download_count,
 					variantCount: variants.length,
-					palette: variants[0].colors,
+					palette: themeColors(variants[0]),
 					variants
 				}
 			];

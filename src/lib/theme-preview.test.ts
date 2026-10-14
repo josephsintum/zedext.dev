@@ -6,7 +6,10 @@ import {
 	parseJsonLenient,
 	parseThemeFile,
 	roleColor,
-	svgDataUri
+	svgDataUri,
+	themeColors,
+	firstVariantColors,
+	type ThemeVariant
 } from './theme-preview.js';
 
 const theme = (style: Record<string, unknown>, extra: Record<string, unknown> = {}) =>
@@ -33,24 +36,22 @@ const fullStyle = {
 describe('parseThemeFile', () => {
 	it('reads every color of a complete variant', () => {
 		const [v] = parseThemeFile(theme(fullStyle));
-		expect(v).toEqual({
-			name: 'Mocha',
-			appearance: 'dark',
-			colors: {
-				bg: '#1e1e2e',
-				fg: '#cdd6f4',
-				gutter: '#7f849c',
-				status: '#11111b',
-				border: '#45475a',
-				keyword: '#cba6f7',
-				string: '#a6e3a1',
-				function: '#89b4fa',
-				type: '#f9e2af',
-				comment: '#6c7086',
-				number: '#fab387',
-				punct: '#94e2d5',
-				variable: '#f5e0dc'
-			}
+		expect(v.name).toBe('Mocha');
+		expect(v.appearance).toBe('dark');
+		expect(themeColors(v)).toMatchObject({
+			bg: '#1e1e2e',
+			fg: '#cdd6f4',
+			gutter: '#7f849c',
+			status: '#11111b',
+			border: '#45475a',
+			keyword: '#cba6f7',
+			string: '#a6e3a1',
+			function: '#89b4fa',
+			type: '#f9e2af',
+			comment: '#6c7086',
+			number: '#fab387',
+			punct: '#94e2d5',
+			variable: '#f5e0dc'
 		});
 	});
 
@@ -61,8 +62,8 @@ describe('parseThemeFile', () => {
 		};
 		delete style['editor.line_number'];
 		const [v] = parseThemeFile(theme(style));
-		expect(v.colors.gutter).toBe('#6c7086'); // comment color
-		expect(v.colors.punct).toBe('#cdd6f4'); // text color
+		expect(themeColors(v).gutter).toBe('#6c7086'); // comment color
+		expect(themeColors(v).punct).toBe('#cdd6f4'); // text color
 	});
 
 	it('rejects anything that is not a hex color', () => {
@@ -70,7 +71,7 @@ describe('parseThemeFile', () => {
 		const [v] = parseThemeFile(
 			theme({ ...fullStyle, syntax: { ...fullStyle.syntax, keyword: { color: evil } } })
 		);
-		expect(v.colors.keyword).toBe('#cdd6f4');
+		expect(themeColors(v).keyword).toBe('#cdd6f4');
 		expect(parseThemeFile(theme({ ...fullStyle, 'editor.background': evil }))).toEqual([]);
 	});
 
@@ -92,7 +93,7 @@ describe('parseThemeFile', () => {
 				}
 			})
 		);
-		expect(v.colors).toMatchObject({
+		expect(themeColors(v)).toMatchObject({
 			title: '#f38ba8',
 			emphasis: '#89dceb',
 			strong: '#fab387',
@@ -109,8 +110,8 @@ describe('parseThemeFile', () => {
 
 	it('leaves the extra colors out when the theme has none, to keep the bundle small', () => {
 		const [v] = parseThemeFile(theme(fullStyle));
-		expect(Object.keys(v.colors)).not.toContain('title');
-		expect(Object.keys(v.colors)).not.toContain('tag');
+		expect(Object.keys(v.raw ?? {})).not.toContain('title');
+		expect(Object.keys(v.raw ?? {})).not.toContain('tag');
 	});
 
 	it('skips variants without a background or text color', () => {
@@ -239,16 +240,16 @@ describe('translucent backgrounds', () => {
 		});
 
 	it('composites transparent backgrounds over black (dark) or white (light)', () => {
-		expect(parseThemeFile(bgOnly('#00000000', 'dark'))[0].colors.bg).toBe('#000000');
-		expect(parseThemeFile(bgOnly('#ffffff00', 'light'))[0].colors.bg).toBe('#ffffff');
-		const half = parseThemeFile(bgOnly('#24273a80', 'dark'))[0].colors;
+		expect(themeColors(parseThemeFile(bgOnly('#00000000', 'dark'))[0]).bg).toBe('#000000');
+		expect(themeColors(parseThemeFile(bgOnly('#ffffff00', 'light'))[0]).bg).toBe('#ffffff');
+		const half = themeColors(parseThemeFile(bgOnly('#24273a80', 'dark'))[0]);
 		expect(half.bg).toBe('#12141d');
 		expect(half.status).toBe('#12141d');
 	});
 
-	it('leaves opaque colors alone, including 8-digit ones', () => {
-		expect(parseThemeFile(bgOnly('#1e1e2eff', 'dark'))[0].colors.bg).toBe('#1e1e2eff');
-		expect(parseThemeFile(bgOnly('#1e1e2e', 'dark'))[0].colors.bg).toBe('#1e1e2e');
+	it('leaves opaque colors alone, dropping a redundant ff alpha', () => {
+		expect(themeColors(parseThemeFile(bgOnly('#1e1e2eff', 'dark'))[0]).bg).toBe('#1e1e2e');
+		expect(themeColors(parseThemeFile(bgOnly('#1e1e2e', 'dark'))[0]).bg).toBe('#1e1e2e');
 	});
 });
 
@@ -266,13 +267,158 @@ describe('roleColor', () => {
 	);
 
 	it('uses the role color when the theme defines it', () => {
-		expect(roleColor(v.colors, 'keyword')).toBe('#cba6f7');
-		expect(roleColor(v.colors, 'emphasis')).toBe('#89dceb');
+		expect(roleColor(themeColors(v), 'keyword')).toBe('#cba6f7');
+		expect(roleColor(themeColors(v), 'emphasis')).toBe('#89dceb');
 	});
 
 	it('falls back like Zed: emphasis.strong to emphasis, anything else to the text color', () => {
-		expect(roleColor(v.colors, 'strong')).toBe('#89dceb');
-		expect(roleColor(v.colors, 'tag')).toBe('#cdd6f4');
-		expect(roleColor(v.colors, 'fg')).toBe('#cdd6f4');
+		expect(roleColor(themeColors(v), 'strong')).toBe('#89dceb');
+		expect(roleColor(themeColors(v), 'tag')).toBe('#cdd6f4');
+		expect(roleColor(themeColors(v), 'fg')).toBe('#cdd6f4');
+	});
+});
+
+describe('raw colors and window chrome', () => {
+	const ui = {
+		...fullStyle,
+		background: '#181825',
+		'surface.background': '#1e1e2e',
+		'title_bar.background': '#11111b',
+		'tab.active_background': '#1e1e2e',
+		'tab.inactive_background': '#181825',
+		text: '#cdd6f4',
+		'text.muted': '#a6adc8',
+		icon: '#bac2de',
+		'editor.active_line_number': '#f5e0dc',
+		'editor.active_line.background': '#31324466',
+		error: '#f38ba8',
+		warning: '#f9e2af',
+		players: [{ cursor: '#f5e0dc', selection: '#f5e0dc40' }]
+	};
+
+	it('stores only the keys a theme defines, under short names', () => {
+		const [v] = parseThemeFile(
+			theme({ ...fullStyle, syntax: { ...fullStyle.syntax, punctuation: undefined } })
+		);
+		expect(v.raw?.bg).toBe('#1e1e2e');
+		expect(v.raw?.keyword).toBe('#cba6f7');
+		expect(v.raw).not.toHaveProperty('punct');
+		expect(v.raw).not.toHaveProperty('titleBar');
+		expect(v).not.toHaveProperty('colors');
+	});
+
+	it('reads the window chrome keys, keeping alpha only where it overlays the editor', () => {
+		const [v] = parseThemeFile(theme(ui));
+		expect(themeColors(v)).toMatchObject({
+			titleBar: '#11111b',
+			tabActive: '#1e1e2e',
+			tabInactive: '#181825',
+			text: '#cdd6f4',
+			textMuted: '#a6adc8',
+			icon: '#bac2de',
+			gutterActive: '#f5e0dc',
+			activeLine: '#31324466',
+			error: '#f38ba8',
+			warning: '#f9e2af',
+			cursor: '#f5e0dc'
+		});
+		expect(v.raw).toMatchObject({
+			textMuted: '#a6adc8',
+			activeLine: '#31324466',
+			cursor: '#f5e0dc'
+		});
+	});
+
+	it('fills missing chrome colors from their parents, like the Zed theme builder', () => {
+		const c = themeColors(parseThemeFile(theme(fullStyle))[0]);
+		expect(c).toMatchObject({
+			tabActive: '#1e1e2e', // editor background
+			tabInactive: '#1e1e2e',
+			titleBar: '#11111b', // status bar
+			text: '#cdd6f4', // editor text
+			textMuted: '#cdd6f4',
+			icon: '#cdd6f4',
+			gutterActive: '#cdd6f4',
+			activeLine: 'transparent',
+			cursor: '#cdd6f4'
+		});
+		expect(c.error).toMatch(/^#/);
+		expect(c.warning).toMatch(/^#/);
+		const withSurface = themeColors(
+			parseThemeFile(theme({ ...fullStyle, 'surface.background': '#222233' }))[0]
+		);
+		expect(withSurface.tabInactive).toBe('#222233');
+	});
+
+	it('still reads variants saved in the previous bundle format', () => {
+		const legacy = {
+			name: 'Old',
+			appearance: 'light',
+			colors: {
+				bg: '#ffffff',
+				fg: '#111111',
+				gutter: '#999999',
+				status: '#eeeeee',
+				border: '#dddddd',
+				keyword: '#aa00aa',
+				string: '#00aa00',
+				function: '#0000aa',
+				type: '#aaaa00',
+				comment: '#888888',
+				number: '#aa5500',
+				punct: '#111111',
+				variable: '#111111'
+			}
+		} as ThemeVariant;
+		expect(themeColors(legacy)).toMatchObject({
+			bg: '#ffffff',
+			keyword: '#aa00aa',
+			titleBar: '#eeeeee',
+			tabActive: '#ffffff',
+			text: '#111111'
+		});
+	});
+});
+
+describe('firstVariantColors', () => {
+	const bundle = {
+		generatedAt: '',
+		icons: {},
+		themes: { cat: { version: '1', variants: parseThemeFile(theme(fullStyle)) } }
+	};
+
+	it('resolves the first variant of a theme', () => {
+		expect(firstVariantColors(bundle, 'cat')?.bg).toBe('#1e1e2e');
+	});
+
+	it('is null for unknown ids, prototype keys and a missing bundle', () => {
+		expect(firstVariantColors(bundle, 'nope')).toBeNull();
+		expect(firstVariantColors(bundle, 'constructor')).toBeNull();
+		expect(firstVariantColors(null, 'cat')).toBeNull();
+	});
+});
+
+describe('compact storage', () => {
+	it('drops colors that resolve the same without them, and opaque alpha', () => {
+		const [v] = parseThemeFile(
+			theme({
+				...fullStyle,
+				'editor.background': '#1e1e2eFF',
+				'tab.active_background': '#1e1e2e', // same as the editor background
+				text: '#cdd6f4', // same as the editor text
+				'title_bar.background': '#11111b', // same as the status bar
+				'tab.inactive_background': '#181825' // different: kept
+			})
+		);
+		expect(v.raw?.bg).toBe('#1e1e2e');
+		expect(v.raw).not.toHaveProperty('tabActive');
+		expect(v.raw).not.toHaveProperty('text');
+		expect(v.raw).not.toHaveProperty('titleBar');
+		expect(v.raw?.tabInactive).toBe('#181825');
+		expect(themeColors(v)).toMatchObject({
+			tabActive: '#1e1e2e',
+			text: '#cdd6f4',
+			titleBar: '#11111b'
+		});
 	});
 });

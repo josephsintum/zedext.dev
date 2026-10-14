@@ -7,7 +7,7 @@ import {
 } from './previews-sync.js';
 import { tarGz } from './testing/tar.js';
 import type { ExtensionRecord } from '$lib/types.js';
-import type { PreviewBundle } from '$lib/theme-preview.js';
+import { themeColors, type PreviewBundle } from '$lib/theme-preview.js';
 
 const rec = (id: string, provides: string[], version = '1.0.0'): ExtensionRecord => ({
 	id,
@@ -171,7 +171,7 @@ describe('buildPreviews', () => {
 			{ limit: 10, log: silent, deps: d }
 		);
 		expect(downloaded).toBe(2);
-		expect(bundle.themes.dark.variants[0].colors.bg).toBe('#111111');
+		expect(themeColors(bundle.themes.dark.variants[0]).bg).toBe('#111111');
 		expect(bundle.icons.icons.variants[0].folder).toBe('<svg/>');
 		expect(d.fetch).toHaveBeenCalledTimes(2); // never for non-theme extensions
 		expect(d.fetch.mock.calls[0][1]).toMatchObject({
@@ -209,7 +209,7 @@ describe('buildPreviews', () => {
 		);
 		expect(downloaded).toBe(1);
 		expect(pending).toBe(2);
-		expect(bundle.themes.a.variants[0].colors.bg).toBe('#aaaaaa');
+		expect(themeColors(bundle.themes.a.variants[0]).bg).toBe('#aaaaaa');
 		expect(bundle.themes.b.version).toBe('0.9.0'); // stale but kept
 		expect(bundle.themes.c).toBeUndefined();
 	});

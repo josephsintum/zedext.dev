@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fontStyleOf, roleColor, type ThemeVariant } from '$lib/theme-preview.js';
+	import ZedIcon from './ZedIcon.svelte';
+	import { fontStyleOf, roleColor, themeColors, type ThemeVariant } from '$lib/theme-preview.js';
 	import {
 		DEFAULT_SAMPLE,
 		readSampleChoice,
@@ -25,7 +26,9 @@
 	const shown = $derived(variants.filter((v) => v.appearance === activeMode));
 	let picked = $state(0);
 	const current = $derived(shown[Math.min(picked, shown.length - 1)] ?? variants[0]);
-	const c = $derived(current.colors);
+	const c = $derived(themeColors(current));
+	/** The line with the cursor, drawn as Zed's active line */
+	const ACTIVE_LINE = 3;
 
 	function chooseMode(next: 'light' | 'dark') {
 		mode = next;
@@ -121,59 +124,132 @@
 		</div>
 	{/if}
 
-	<!-- All colors are validated hex values; style: sets them with setProperty -->
+	<!-- A Zed-like window. All colors are validated hex values, set as CSS variables once per
+	     variant; the markup below only refers to the variables. -->
 	<div
-		class="font-code overflow-hidden rounded-lg border {codeSize} leading-relaxed shadow-sm"
-		style:background-color={c.bg}
-		style:color={c.fg}
-		style:border-color={c.border}
+		class="overflow-hidden rounded-lg border shadow-sm {chromeSize}"
+		style:--bg={c.bg}
+		style:--fg={c.fg}
+		style:--border={c.border}
+		style:--title-bar={c.titleBar}
+		style:--tab-active={c.tabActive}
+		style:--tab-inactive={c.tabInactive}
+		style:--status={c.status}
+		style:--text={c.text}
+		style:--text-muted={c.textMuted}
+		style:--icon={c.icon}
+		style:--gutter={c.gutter}
+		style:--gutter-active={c.gutterActive}
+		style:--active-line={c.activeLine}
+		style:--cursor={c.cursor}
+		style:--error={c.error}
+		style:--warning={c.warning}
+		style:border-color="var(--border)"
 	>
-		<!-- The editor's file tabs double as the language switcher -->
 		<div
-			class="flex overflow-x-auto {chromeSize}"
-			style:background-color={c.status}
+			class="flex h-8 items-center gap-3 border-b px-3"
+			style:background-color="var(--title-bar)"
+			style:border-color="var(--border)"
+			style:color="var(--text)"
+		>
+			<span class="flex gap-1.5" aria-hidden="true">
+				<i class="size-2.5 rounded-full bg-[#ff5f57]"></i>
+				<i class="size-2.5 rounded-full bg-[#febc2e]"></i>
+				<i class="size-2.5 rounded-full bg-[#28c840]"></i>
+			</span>
+			<span class="font-medium">zedext</span>
+			<span class="flex items-center gap-1" style:color="var(--text-muted)">
+				<ZedIcon name="gitBranch" size={12} /> main
+			</span>
+		</div>
+
+		<!-- The file tabs double as the language switcher -->
+		<div
+			class="flex overflow-x-auto [scrollbar-width:none]"
+			style:background-color="var(--tab-inactive)"
 			role="tablist"
 			aria-label="Code sample language"
 		>
+			<span
+				class="flex items-center gap-2.5 border-r border-b px-2.5"
+				style:border-color="var(--border)"
+				style:color="var(--icon)"
+				aria-hidden="true"
+			>
+				<ZedIcon name="arrowLeft" size={13} /><ZedIcon name="arrowRight" size={13} />
+			</span>
 			{#each SAMPLES as s (s.id)}
+				{@const active = s.id === sample.id}
 				<button
+					type="button"
 					role="tab"
-					aria-selected={s.id === sample.id}
+					aria-selected={active}
 					onclick={() => choose(s.id)}
-					class="shrink-0 px-4 py-2 transition-opacity {s.id === sample.id
-						? ''
-						: 'opacity-60 hover:opacity-100'}"
-					style:background-color={s.id === sample.id ? c.bg : 'transparent'}
-					style:color={c.fg}
+					class="shrink-0 border-r border-b px-4 py-1.5"
+					style:background-color={active ? 'var(--tab-active)' : 'var(--tab-inactive)'}
+					style:color={active ? 'var(--text)' : 'var(--text-muted)'}
+					style:border-color="var(--border)"
+					style:border-bottom-color={active ? 'transparent' : 'var(--border)'}
 				>
 					{s.file}
 				</button>
 			{/each}
+			<span class="min-w-4 flex-1 border-b" style:border-color="var(--border)"></span>
 		</div>
-		<div class="flex overflow-x-auto py-3">
-			<!-- Text color at reduced opacity: a theme's own line-number color is often too faint here -->
-			<div
-				class="pr-4 pl-4 text-right opacity-45 select-none"
-				style:color={c.fg}
-				aria-hidden="true"
-			>
-				{#each sample.lines as _, i (i)}<div>{i + 1}</div>{/each}
-			</div>
-			<pre
-				class="font-code m-0 pr-4">{#each sample.lines as line, i (i)}<div>{#each line as [text, role], j (j)}<span
-								class:italic={fontStyleOf(current, role).italic}
-								class:font-bold={fontStyleOf(current, role).bold}
-								style:color={roleColor(c, role)}>{text}</span
-							>{/each}</div>{/each}</pre>
-		</div>
+
 		<div
-			class="flex justify-between px-4 py-1 {chromeSize}"
-			style:background-color={c.status}
-			style:color={c.fg}
+			class="font-code flex overflow-x-auto py-3 leading-relaxed {codeSize}"
+			style:background-color="var(--bg)"
+			style:color="var(--fg)"
 		>
-			<span class="opacity-70">{sample.language} · UTF-8</span><span class="opacity-70"
-				>Ln 4, Col 18</span
-			>
+			<pre class="m-0 min-w-full font-[inherit]">{#each sample.lines as line, i (i)}{@const active =
+						i === ACTIVE_LINE}<div
+						class="flex pr-4"
+						style:background-color={active ? 'var(--active-line)' : undefined}><span
+							class="w-12 shrink-0 pr-4 text-right select-none"
+							style:color={active ? 'var(--gutter-active)' : 'var(--gutter)'}
+							aria-hidden="true">{i + 1}</span
+						><span
+							>{#each line as [text, role], j (j)}<span
+									class:italic={fontStyleOf(current, role).italic}
+									class:font-bold={fontStyleOf(current, role).bold}
+									style:color={roleColor(c, role)}>{text}</span
+								>{/each}{#if active}<span
+									class="ml-px inline-block h-[1.1em] w-0.5 align-[-0.2em]"
+									style:background-color="var(--cursor)"
+									aria-hidden="true"></span>{/if}</span
+						></div>{/each}</pre>
+		</div>
+
+		<div
+			class="flex h-7 items-center justify-between gap-3 border-t px-2"
+			style:background-color="var(--status)"
+			style:border-color="var(--border)"
+			style:color="var(--icon)"
+			aria-hidden="true"
+		>
+			<span class="flex items-center gap-2.5">
+				<ZedIcon name="panelLeft" size={13} />
+				<ZedIcon name="sparkles" size={13} />
+				<span class="h-3.5 w-px" style:background-color="var(--border)"></span>
+				<ZedIcon name="search" size={13} />
+				<ZedIcon name="zap" size={13} />
+				<span class="flex items-center gap-1" style:color="var(--text)">
+					<span style:color="var(--error)"><ZedIcon name="octagonAlert" size={13} /></span>1
+					<span style:color="var(--warning)"><ZedIcon name="triangleAlert" size={13} /></span>5
+				</span>
+			</span>
+			<span class="flex items-center gap-2.5">
+				<span style:color="var(--text)">{sample.language}</span>
+				<span class="h-3.5 w-px max-sm:hidden" style:background-color="var(--border)"></span>
+				<span class="flex items-center gap-2.5 max-sm:hidden">
+					<ZedIcon name="terminal" size={13} />
+					<ZedIcon name="bug" size={13} />
+					<ZedIcon name="listTree" size={13} />
+					<ZedIcon name="users" size={13} />
+					<ZedIcon name="gitBranch" size={13} />
+				</span>
+			</span>
 		</div>
 	</div>
 </section>

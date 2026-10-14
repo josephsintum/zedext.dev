@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 import { getPreviews } from '$lib/server/previews.js';
-import type { ThemeColors } from '$lib/theme-preview.js';
+import { firstVariantColors, type ThemeColors } from '$lib/theme-preview.js';
 
 let fontDataCache: ArrayBuffer | null = null;
 let fontBoldCache: ArrayBuffer | null = null;
@@ -139,8 +139,7 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 	const type = url.searchParams.get('type') || 'default';
 	const themeColors =
 		type === 'theme'
-			? ((await getPreviews())?.themes[url.searchParams.get('id') ?? '']?.variants[0]?.colors ??
-				null)
+			? firstVariantColors(await getPreviews(), url.searchParams.get('id') ?? '')
 			: null;
 
 	const [fontRegular, fontBold] = await Promise.all([loadFont(400), loadFont(700)]);

@@ -4,12 +4,26 @@
  * SVGs are only ever shown through <img> data URIs (see svgDataUri), never inlined.
  */
 
+/** Fully resolved colors for drawing a preview: see themeColors() */
 export interface ThemeColors {
 	bg: string;
 	fg: string;
 	gutter: string;
 	status: string;
 	border: string;
+	/** Window chrome around the editor */
+	titleBar: string;
+	tabActive: string;
+	tabInactive: string;
+	text: string;
+	textMuted: string;
+	icon: string;
+	gutterActive: string;
+	/** May be translucent; drawn over the editor background */
+	activeLine: string;
+	error: string;
+	warning: string;
+	cursor: string;
 	keyword: string;
 	string: string;
 	function: string;
@@ -56,10 +70,18 @@ export type StyledRole =
 	| 'punct'
 	| ExtraRole;
 
+/**
+ * Only the colors a theme actually defines, under short names (see RAW_KEYS). Fallbacks are
+ * applied when drawing, so changing them never needs a re-download.
+ */
+export type RawColors = Partial<Record<RawKey, string>>;
+
 export interface ThemeVariant {
 	name: string;
 	appearance: 'light' | 'dark';
-	colors: ThemeColors;
+	raw?: RawColors;
+	/** Bundle format 3 stored resolved colors here; still read until every theme is re-parsed */
+	colors?: Partial<ThemeColors>;
 	/** Roles the theme draws in italic / bold; omitted when none (most themes) */
 	italic?: StyledRole[];
 	bold?: StyledRole[];
@@ -141,6 +163,92 @@ const SYNTAX_KEYS: Record<StyledRole, string> = {
 	property: 'property'
 };
 
+/** Zed theme JSON keys we keep, by short name. Syntax keys are read from `style.syntax`. */
+const RAW_KEYS = {
+	bg: 'editor.background',
+	fg: 'editor.foreground',
+	appBg: 'background',
+	surface: 'surface.background',
+	titleBar: 'title_bar.background',
+	tabActive: 'tab.active_background',
+	tabInactive: 'tab.inactive_background',
+	status: 'status_bar.background',
+	border: 'border',
+	text: 'text',
+	textMuted: 'text.muted',
+	icon: 'icon',
+	gutter: 'editor.line_number',
+	gutterActive: 'editor.active_line_number',
+	activeLine: 'editor.active_line.background',
+	error: 'error',
+	warning: 'warning'
+} as const;
+type RawKey = keyof typeof RAW_KEYS | StyledRole | 'cursor';
+
+/** Backgrounds that the site's page would show through; flattened when parsed */
+const SOLID_KEYS = new Set([
+	'bg',
+	'appBg',
+	'surface',
+	'titleBar',
+	'tabActive',
+	'tabInactive',
+	'status'
+]);
+
+/** Used only when a theme defines neither the color nor any of its parents */
+const DEFAULT_STATUS = {
+	dark: { error: '#f87171', warning: '#facc15' },
+	light: { error: '#dc2626', warning: '#ca8a04' }
+};
+
+/**
+ * Every color a preview needs. Missing ones borrow from a parent, as the Zed theme builder
+ * links them (tabs to the editor background, chrome text to the editor text, and so on).
+ */
+export function themeColors(v: ThemeVariant): ThemeColors {
+	const r: RawColors = v.raw ?? (v.colors as RawColors | undefined) ?? {};
+	const fg = r.fg ?? r.text ?? '#888888';
+	const bg = r.bg ?? r.appBg ?? (v.appearance === 'light' ? '#ffffff' : '#000000');
+	const comment = r.comment ?? fg;
+	const status = r.status ?? r.titleBar ?? r.appBg ?? bg;
+	const text = r.text ?? fg;
+	return {
+		bg,
+		fg,
+		gutter: r.gutter ?? comment,
+		status,
+		border: r.border ?? comment,
+		titleBar: r.titleBar ?? r.status ?? r.appBg ?? bg,
+		tabActive: r.tabActive ?? bg,
+		tabInactive: r.tabInactive ?? r.surface ?? r.appBg ?? bg,
+		text,
+		textMuted: r.textMuted ?? text,
+		icon: r.icon ?? text,
+		gutterActive: r.gutterActive ?? fg,
+		activeLine: r.activeLine ?? 'transparent',
+		error: r.error ?? DEFAULT_STATUS[v.appearance].error,
+		warning: r.warning ?? DEFAULT_STATUS[v.appearance].warning,
+		cursor: r.cursor ?? fg,
+		keyword: r.keyword ?? fg,
+		string: r.string ?? fg,
+		function: r.function ?? fg,
+		type: r.type ?? fg,
+		comment,
+		number: r.number ?? fg,
+		punct: r.punct ?? fg,
+		variable: r.variable ?? fg,
+		...Object.fromEntries(EXTRA_ROLES.flatMap((k) => (r[k] ? [[k, r[k]]] : [])))
+	};
+}
+
+/** The first variant's colors of a theme in the bundle, or null (prototype-safe id lookup). */
+export function firstVariantColors(previews: PreviewBundle | null, id: string): ThemeColors | null {
+	if (!previews || !Object.hasOwn(previews.themes, id)) return null;
+	const first = previews.themes[id].variants[0];
+	return first ? themeColors(first) : null;
+}
+
 /**
  * The color a preview token uses. Like Zed, a missing "emphasis.strong" falls back to
  * "emphasis", and any other missing role draws as plain text.
@@ -220,45 +328,63 @@ const nameOf = (v: RawVariant) => (typeof v.name === 'string' ? v.name : 'Defaul
 const appearanceOf = (v: RawVariant): 'light' | 'dark' =>
 	v.appearance === 'light' ? 'light' : 'dark';
 
+type RawStyle = Record<string, unknown> & {
+	syntax?: Record<
+		string,
+		{ color?: unknown; font_style?: unknown; font_weight?: unknown } | undefined
+	>;
+	players?: unknown;
+};
+
+/** "#AABBCCFF" and "#aabbcc" are the same color; store the short form */
+function normalize(color: string): string {
+	const c = color.toLowerCase();
+	return c.length === 9 && c.endsWith('ff') ? c.slice(0, 7) : c;
+}
+
+/**
+ * Drop every color the preview would resolve the same without (a tab that matches the editor
+ * background, chrome text that matches the editor text...). Roughly halves the stored size.
+ */
+function compact(raw: RawColors, appearance: 'light' | 'dark'): void {
+	const resolve = (r: RawColors) => JSON.stringify(themeColors({ name: '', appearance, raw: r }));
+	const target = resolve(raw);
+	for (const key of Object.keys(raw) as RawKey[]) {
+		if (key === 'bg' || key === 'fg') continue; // the anchors everything else falls back to
+		const color = raw[key];
+		delete raw[key];
+		if (resolve(raw) !== target) raw[key] = color;
+	}
+}
+
 export function parseThemeFile(text: string): ThemeVariant[] {
 	const out: ThemeVariant[] = [];
 	for (const v of variantsOf(text)) {
-		const style = v.style ?? {};
+		const style = (v.style ?? {}) as RawStyle;
 		const syntax = style.syntax ?? {};
-		const s = (key: string) => hex(syntax[key]?.color);
-		const bg = hex(style['editor.background']) ?? hex(style['background']);
-		const fg = hex(style['editor.foreground']) ?? hex(style['text']);
-		if (!bg || !fg) continue; // nothing sensible to draw
-		const comment = s('comment') ?? fg;
 		const appearance = appearanceOf(v);
-		const status = hex(style['status_bar.background']) ?? hex(style['title_bar.background']) ?? bg;
+		const raw: RawColors = {};
+		for (const [key, themeKey] of Object.entries(RAW_KEYS) as [keyof typeof RAW_KEYS, string][]) {
+			const color = hex(style[themeKey]);
+			if (color) raw[key] = normalize(SOLID_KEYS.has(key) ? opaque(color, appearance) : color);
+		}
+		for (const role of Object.keys(SYNTAX_KEYS) as StyledRole[]) {
+			const color = hex(syntax[SYNTAX_KEYS[role]]?.color);
+			if (color) raw[role] = normalize(color);
+		}
+		const players = Array.isArray(style.players) ? style.players : [];
+		const cursor = hex((players[0] as { cursor?: unknown } | undefined)?.cursor);
+		if (cursor) raw.cursor = normalize(cursor);
+		if (!(raw.bg ?? raw.appBg) || !(raw.fg ?? raw.text)) continue; // nothing sensible to draw
+		compact(raw, appearance);
+
 		const roles = Object.keys(SYNTAX_KEYS) as StyledRole[];
 		const italic = roles.filter((r) => syntax[SYNTAX_KEYS[r]]?.font_style === 'italic');
 		const bold = roles.filter((r) => isBold(syntax[SYNTAX_KEYS[r]]?.font_weight));
 		out.push({
 			name: nameOf(v),
 			appearance,
-			colors: {
-				bg: opaque(bg, appearance),
-				fg,
-				gutter: hex(style['editor.line_number']) ?? comment,
-				status: opaque(status, appearance),
-				border: hex(style['border']) ?? comment,
-				keyword: s('keyword') ?? fg,
-				string: s('string') ?? fg,
-				function: s('function') ?? fg,
-				type: s('type') ?? fg,
-				comment,
-				number: s('number') ?? fg,
-				punct: s('punctuation') ?? fg,
-				variable: s('variable') ?? fg,
-				...Object.fromEntries(
-					EXTRA_ROLES.flatMap((r) => {
-						const color = s(SYNTAX_KEYS[r]);
-						return color ? [[r, color]] : [];
-					})
-				)
-			},
+			raw,
 			...(italic.length > 0 && { italic }),
 			...(bold.length > 0 && { bold })
 		});
