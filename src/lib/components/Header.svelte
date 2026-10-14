@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
 
 	const isDark = $derived(getTheme() === 'dark');
+	const onList = $derived(page.url.pathname === '/extensions');
 
 	const externalLinks = [
 		{ href: 'https://zed.dev/docs/extensions/developing-extensions', label: 'Create Extension' },
@@ -30,7 +32,10 @@
 		<nav class="flex items-center gap-5">
 			<a
 				href="/extensions"
-				class="hit-y text-[13px] font-medium text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text)]"
+				aria-current={onList ? 'page' : undefined}
+				class="hit-y text-[13px] font-medium transition-colors hover:text-[var(--color-text)] {onList
+					? 'text-[var(--color-text)]'
+					: 'text-[var(--color-text-secondary)]'}"
 			>
 				All extensions
 			</a>

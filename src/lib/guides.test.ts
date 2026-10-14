@@ -159,6 +159,11 @@ describe('discoverRedirect', () => {
 		expect(discoverRedirect('vim', '')).toBe('/guides/vim');
 	});
 
+	it('re-encodes theme ids, which arrive decoded', () => {
+		expect(discoverRedirect('themes/a#b.json', '')).toBe('/themes/a%23b.json');
+		expect(discoverRedirect('themes/a\r\nb.json', '')).toBe('/themes/a%0D%0Ab.json');
+	});
+
 	it('is null for URLs that never existed', () => {
 		expect(discoverRedirect('nope', '')).toBeNull();
 		expect(discoverRedirect('themes/a/b.json', '')).toBeNull();

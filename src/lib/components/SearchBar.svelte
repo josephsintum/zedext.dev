@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { onMount, untrack } from 'svelte';
-	import { goto, preloadData } from '$app/navigation';
+	import { untrack } from 'svelte';
+	import { afterNavigate, goto, preloadCode } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { formatNumber } from '$lib/utils/format.js';
 	import {
 		carryQuery,
 		currentSearchParams,
+		dropCarriedQuery,
 		loadIndex,
 		setSearchParams,
 		takeCarriedQuery
@@ -32,11 +33,16 @@
 	let focused = $state(false);
 	let field: HTMLInputElement;
 
+	/** Switching to the `to` page after the first keystroke */
+	let leaving = $state(false);
+
 	// The server is rendering results for a search or sort on this page (before the index
 	// loads; after, results are instant). Show more navigations carry ?page= and aren't searches.
 	const busy = $derived(
-		navigating.to?.url.pathname === (to ?? page.url.pathname) &&
-			!navigating.to.url.searchParams.has('page')
+		to
+			? leaving
+			: navigating.to?.url.pathname === page.url.pathname &&
+					!navigating.to.url.searchParams.has('page')
 	);
 
 	// "/" jumps to search from anywhere on the page, unless you're already typing somewhere
@@ -61,8 +67,9 @@
 	$effect(() => () => clearTimeout(debounceTimer));
 
 	// Arrived from another page's search box: keep what was typed, including keystrokes
-	// made while this page loaded, and keep typing here
-	onMount(() => {
+	// made while this page loaded, and keep typing here. After the navigation, not on mount:
+	// SvelteKit resets shallow state as its last step, which would undo the search
+	afterNavigate(() => {
 		if (to) return;
 		const typed = takeCarriedQuery(page.url.pathname);
 		if (typed === null) return;
@@ -72,12 +79,16 @@
 		if (typed !== value) performSearch(typed, page.url.pathname);
 	});
 
-	let leaving = false;
 	function searchElsewhere(target: string) {
+		if (!leaving && !input) return;
 		carryQuery(target, input);
-		if (leaving || !input) return;
+		if (leaving) return;
 		leaving = true;
-		goto(`${target}?q=${encodeURIComponent(input)}`).finally(() => (leaving = false));
+		// A cancelled or failed switch (another link clicked meanwhile) must not leave text
+		// behind for a later visit
+		goto(`${target}?q=${encodeURIComponent(input)}`)
+			.then(() => page.url.pathname !== target && dropCarriedQuery(), dropCarriedQuery)
+			.finally(() => (leaving = false));
 	}
 
 	function performSearch(q: string, path: string) {
@@ -100,7 +111,10 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			input = '';
-			if (to) return carryQuery(to, '');
+			if (to) {
+				if (leaving) carryQuery(to, '');
+				return;
+			}
 			clearTimeout(debounceTimer);
 			performSearch('', page.url.pathname);
 		}
@@ -146,10 +160,11 @@
 				focused = true;
 				// Start loading the search index as soon as someone looks like they'll search
 				loadIndex();
-				if (to) preloadData(to).catch(() => {});
+				// Searches go to `to?q=…`, so only its code can be loaded ahead, not its data
+				if (to) preloadCode(to).catch(() => {});
 			}}
 			onblur={() => (focused = false)}
-			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[15px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
+			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[16px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none sm:text-[15px]"
 		/>
 		<div class="absolute top-1/2 right-4 -translate-y-1/2">
 			{#if busy}

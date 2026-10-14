@@ -7,7 +7,8 @@
 
 	let { active = 'all' }: { active?: string } = $props();
 
-	// Switching category keeps the current search and sort
+	// Switching category keeps the current search and sort. Not for Themes: the picker filters
+	// by name only, so a search like "python" would find nothing there
 	const keep = $derived.by(() => {
 		const params = currentSearchParams();
 		const kept = new URLSearchParams();
@@ -61,7 +62,7 @@
 >
 	{#each CATEGORIES as cat (cat.slug)}
 		<a
-			href={categoryHref(cat.provides ?? 'all') + keep}
+			href={categoryHref(cat.provides ?? 'all') + (cat.provides === 'themes' ? '' : keep)}
 			data-slug={cat.slug}
 			aria-current={active === cat.slug ? 'page' : undefined}
 			class={clsx(

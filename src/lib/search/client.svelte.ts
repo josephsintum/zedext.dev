@@ -27,6 +27,10 @@ export function carryQuery(path: string, q: string): void {
 	carried = { path, q };
 }
 
+export function dropCarriedQuery(): void {
+	carried = null;
+}
+
 /** The carried text, once, if it was meant for this page. */
 export function takeCarriedQuery(path: string): string | null {
 	const found = carried?.path === path ? carried.q : null;

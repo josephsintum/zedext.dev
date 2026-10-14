@@ -220,6 +220,8 @@
 
 <!-- Content -->
 <div class="mx-auto max-w-6xl px-6 pb-5">
+	<!-- Cards are h3s; screen readers need a level above them -->
+	<h2 class="sr-only">Extensions</h2>
 	{#if viewMode === 'grid'}
 		<!-- Grid view -->
 		<div

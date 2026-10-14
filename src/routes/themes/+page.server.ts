@@ -27,8 +27,10 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	const linked = state.themeId === url.searchParams.get('theme');
 
 	// A filtered link (/themes?q=nord) sends every match, so it works before any script runs
-	const q = url.searchParams.get('q') ?? '';
-	const shown = (a: Appearance) => (q ? filterThemes(all[a], q) : all[a].slice(0, INITIAL));
+	// (only for the appearance shown; switching appearance loads the other list)
+	const q = url.searchParams.get('q')?.trim() ?? '';
+	const shown = (a: Appearance) =>
+		q && a === appearance ? filterThemes(all[a], q) : all[a].slice(0, INITIAL);
 	// Without a linked theme, a filtered page previews its best match
 	const themeId = linked || !q ? state.themeId : (shown(appearance)[0]?.id ?? null);
 

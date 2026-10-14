@@ -94,20 +94,31 @@
 		replaceState(url, page.state);
 	}
 
-	/** The filter searches every theme, so the first keystroke loads the full list */
+	let urlTimer: ReturnType<typeof setTimeout>;
+	$effect(() => () => clearTimeout(urlTimer));
+
+	/**
+	 * The filter searches every theme, so the first keystroke loads the full list (once: after
+	 * a failure, the Try Again button retries). The URL catches up when typing pauses, since
+	 * browsers limit how often it can change.
+	 */
 	function filter(next: string) {
 		q = next;
-		if (!loaded[appearance] && !loading[appearance]) showAll();
-		syncUrl();
+		if (!loaded[appearance] && !loading[appearance] && !failed[appearance]) showAll();
+		clearTimeout(urlTimer);
+		urlTimer = setTimeout(syncUrl, 300);
 	}
 
-	function chooseAppearance(next: Appearance) {
+	async function chooseAppearance(next: Appearance) {
 		if (next === appearance) return;
 		const keep = selected?.id;
 		appearance = next;
-		if (q && !loaded[next] && !loading[next]) showAll();
+		// While filtering, the new selection has to come from every theme, not the top 48
+		if (q && !loaded[next] && !loading[next]) await showAll();
+		if (appearance !== next) return; // switched back while the list loaded
 		const nextList = loaded[next] ?? data.entries[next];
-		selectedId = nextList.some((e) => e.id === keep) ? (keep ?? null) : (nextList[0]?.id ?? null);
+		const fallback = filterThemes(nextList, q)[0] ?? nextList[0];
+		selectedId = nextList.some((e) => e.id === keep) ? (keep ?? null) : (fallback?.id ?? null);
 		if (selectedId) show(selectedId);
 		syncUrl();
 	}
@@ -237,7 +248,7 @@
 				oninput={(e) => filter(e.currentTarget.value)}
 				placeholder="Filter by name or author"
 				aria-label="Filter themes"
-				class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1.5 text-[14px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none sm:w-64"
+				class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1.5 text-[16px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none sm:w-64 sm:text-[14px]"
 			/>
 		</div>
 		{#if list.length > 0}
@@ -251,7 +262,7 @@
 					/>
 				{/each}
 			</div>
-		{:else if !loading[appearance]}
+		{:else if q && !loading[appearance]}
 			<div class="py-10 text-center text-[14px] text-[var(--color-text-secondary)]">
 				No {appearance} themes match “{q}”.
 				<button
@@ -291,6 +302,9 @@
 	{:else}
 		<p class="mt-8 text-[14px] text-[var(--color-text-tertiary)]">
 			Theme previews are temporarily unavailable.
+			<a href="/extensions?q=theme" class="text-[var(--color-accent)]"
+				>Search themes in All extensions →</a
+			>
 		</p>
 	{/if}
 </div>

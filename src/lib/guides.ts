@@ -233,6 +233,8 @@ export function discoverRedirect(path: string, search: string): string | null {
 	if (path === '') return '/';
 	if (path === 'themes') return `/themes${search}`;
 	if (path === 'themes.json') return `/themes.json${search}`;
-	if (/^themes\/[^/]+\.json$/.test(path)) return `/${path}`;
+	// The path arrives decoded; re-encode the id so "#" or line breaks can't change the target
+	const theme = /^themes\/([^/]+)\.json$/.exec(path);
+	if (theme) return `/themes/${encodeURIComponent(theme[1])}.json`;
 	return getGuideList(path) ? `/guides/${path}` : null;
 }
