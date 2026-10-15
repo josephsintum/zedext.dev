@@ -9,6 +9,7 @@ import {
 	svgDataUri,
 	themeColors,
 	firstVariantColors,
+	haloColors,
 	type ThemeVariant
 } from './theme-preview.js';
 
@@ -420,5 +421,31 @@ describe('compact storage', () => {
 			text: '#cdd6f4',
 			titleBar: '#11111b'
 		});
+	});
+});
+
+describe('haloColors', () => {
+	it('uses the keyword, function and string colors', () => {
+		const c = themeColors({
+			name: 'T',
+			appearance: 'dark',
+			raw: {
+				bg: '#111111',
+				fg: '#eeeeee',
+				keyword: '#ff00aa',
+				function: '#00aaff',
+				string: '#aaff00'
+			}
+		} as ThemeVariant);
+		expect(haloColors(c)).toEqual(['#ff00aa', '#00aaff', '#aaff00']);
+	});
+
+	it('falls back to the text color when a theme leaves syntax colors out', () => {
+		const c = themeColors({
+			name: 'T',
+			appearance: 'light',
+			raw: { bg: '#ffffff', fg: '#222222' }
+		} as ThemeVariant);
+		expect(haloColors(c)).toEqual(['#222222', '#222222', '#222222']);
 	});
 });

@@ -244,6 +244,11 @@ export function themeColors(v: ThemeVariant): ThemeColors {
 	};
 }
 
+/** The glow behind the theme picker's preview: the variant's most characteristic colors */
+export function haloColors(c: ThemeColors): [string, string, string] {
+	return [c.keyword, c.function, c.string];
+}
+
 /** The first variant's colors of a theme in the bundle, or null (prototype-safe id lookup). */
 export function firstVariantColors(previews: PreviewBundle | null, id: string): ThemeColors | null {
 	if (!previews || !Object.hasOwn(previews.themes, id)) return null;
