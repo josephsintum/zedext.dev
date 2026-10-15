@@ -177,6 +177,17 @@ describe('cardColors', () => {
 		).toEqual(['#ca9ee6', '#8caaee', '#aabbcc']);
 	});
 
+	it('returns each color as the theme wrote it', () => {
+		expect(cardColors({ ...palette, function: '#ABC', number: '#123456FF' })).toEqual([
+			'#ca9ee6',
+			'#ABC',
+			'#a6d189',
+			'#e5c890',
+			'#123456FF',
+			'#949cbb'
+		]);
+	});
+
 	it('keeps colors that differ only in transparency apart', () => {
 		expect(cardColors({ ...palette, number: '#ca9ee680' })).toContain('#ca9ee680');
 	});

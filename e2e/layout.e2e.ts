@@ -21,12 +21,16 @@ for (const path of paths) {
 // The accent was once group-hover:border-l-*, on the .group element itself, so it never matched
 test('hovering an extension card colors its left border', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'reduce' }); // no border-color transition
-	await page.goto('/', { waitUntil: 'networkidle' });
+	await page.goto('/');
 	const card = page.locator('a.card-hover').first();
-	const leftBorder = () => card.evaluate((a) => getComputedStyle(a).borderLeftColor);
-	const before = await leftBorder();
+	const leftDiffersFromTop = () =>
+		card.evaluate((a) => {
+			const style = getComputedStyle(a);
+			return style.borderLeftColor !== style.borderTopColor;
+		});
+	expect(await leftDiffersFromTop()).toBe(false);
 	await card.hover();
-	expect(await leftBorder()).not.toBe(before);
+	await expect.poll(leftDiffersFromTop).toBe(true); // only the left edge takes the accent
 });
 
 test('the film grain is hidden when printing', async ({ page }) => {
