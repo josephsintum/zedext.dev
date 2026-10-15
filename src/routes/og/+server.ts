@@ -13,7 +13,7 @@ async function loadFont(weight: 400 | 700): Promise<ArrayBuffer> {
 	if (weight === 700 && fontBoldCache) return fontBoldCache;
 
 	const res = await fetch(
-		`https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-${weight}-normal.woff`,
+		`https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-${weight}-normal.woff`,
 		{ signal: AbortSignal.timeout(5000) }
 	);
 	if (!res.ok) throw new Error(`Failed to load font: ${res.status}`);
@@ -46,7 +46,7 @@ function themeCard(title: string, c: ThemeColors) {
 				flexDirection: 'column',
 				padding: '48px',
 				background: c.status,
-				fontFamily: 'Geist Sans'
+				fontFamily: 'IBM Plex Sans'
 			},
 			children: [
 				{
@@ -159,7 +159,7 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				padding: '60px 70px',
 				backgroundColor: '#111216',
 				color: '#fafaf9',
-				fontFamily: 'Geist Sans'
+				fontFamily: 'IBM Plex Sans'
 			},
 			children: [
 				{
@@ -289,8 +289,8 @@ export const GET: RequestHandler = async ({ url, setHeaders }) => {
 				width: 1200,
 				height: 630,
 				fonts: [
-					{ name: 'Geist Sans', data: fontRegular, weight: 400, style: 'normal' },
-					{ name: 'Geist Sans', data: fontBold, weight: 700, style: 'normal' }
+					{ name: 'IBM Plex Sans', data: fontRegular, weight: 400, style: 'normal' },
+					{ name: 'IBM Plex Sans', data: fontBold, weight: 700, style: 'normal' }
 				]
 			}
 		);

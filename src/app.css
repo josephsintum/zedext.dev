@@ -3,9 +3,14 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Zed's own fonts: IBM Plex Sans for text (".ZedSans" in Zed) and Lilex for code (".ZedMono").
+ * Served by Fontsource on jsDelivr, pinned so the site doesn't change unannounced. Browsers only
+ * download a face when text uses it (~20 KB each).
+ */
 @font-face {
-	font-family: 'Geist';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-400-normal.woff2')
+	font-family: 'IBM Plex Sans';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-400-normal.woff2')
 		format('woff2');
 	font-weight: 400;
 	font-style: normal;
@@ -13,8 +18,8 @@
 }
 
 @font-face {
-	font-family: 'Geist';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-500-normal.woff2')
+	font-family: 'IBM Plex Sans';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-500-normal.woff2')
 		format('woff2');
 	font-weight: 500;
 	font-style: normal;
@@ -22,8 +27,8 @@
 }
 
 @font-face {
-	font-family: 'Geist';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-600-normal.woff2')
+	font-family: 'IBM Plex Sans';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-600-normal.woff2')
 		format('woff2');
 	font-weight: 600;
 	font-style: normal;
@@ -31,37 +36,14 @@
 }
 
 @font-face {
-	font-family: 'Geist';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-700-normal.woff2')
+	font-family: 'IBM Plex Sans';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-700-normal.woff2')
 		format('woff2');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;
 }
 
-@font-face {
-	font-family: 'Geist Mono';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-400-normal.woff2')
-		format('woff2');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Geist Mono';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-mono@latest/latin-500-normal.woff2')
-		format('woff2');
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-/*
- * Lilex: the font Zed uses for code (".ZedMono" maps to Lilex in Zed). Served by Fontsource on
- * jsDelivr like Geist, pinned so previews don't change unannounced. Browsers only download a
- * face when text uses it, so only pages with a theme preview fetch these (~20 KB each).
- */
 @font-face {
 	font-family: 'Lilex';
 	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-400-normal.woff2')
@@ -80,7 +62,25 @@
 	font-display: swap;
 }
 
-/* Bold faces: only fetched for themes that draw some tokens in bold */
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-500-normal.woff2')
+		format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Lilex';
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-600-normal.woff2')
+		format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* Bold: names in mono, and themes that draw some tokens in bold */
 @font-face {
 	font-family: 'Lilex';
 	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-700-normal.woff2')
@@ -100,10 +100,8 @@
 }
 
 @theme {
-	--font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
-	--font-mono: 'Geist Mono', ui-monospace, monospace;
-	/* Code in theme previews; falls back to Geist Mono (already loaded), then the system's */
-	--font-code: 'Lilex', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	--color-accent: oklch(0.53 0.21 260);
 	--color-accent-soft: oklch(0.9 0.06 260);

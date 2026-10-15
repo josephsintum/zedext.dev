@@ -209,7 +209,7 @@
 			id="{uid}-code"
 			role="tabpanel"
 			aria-labelledby="{uid}-tab-{sample.id}"
-			class="font-code flex overflow-x-auto py-3 leading-relaxed {codeSize}"
+			class="flex overflow-x-auto py-3 font-mono leading-relaxed {codeSize}"
 			style:background-color="var(--bg)"
 			style:color="var(--fg)"
 		>
