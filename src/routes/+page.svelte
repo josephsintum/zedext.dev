@@ -78,7 +78,7 @@
 		<CardCarousel hits={data.popular} label="popular extensions" />
 	</section>
 
-	<section class="mt-14 border-t border-[var(--color-border)] pt-8">
+	<section class="mt-10">
 		{@render heading(
 			'languages',
 			'Languages',
