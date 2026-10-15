@@ -20,6 +20,17 @@
 
 	$effect(update);
 
+	// Tabbing to a card that's only partly in the row (under the fade) brings it fully into view
+	function revealFocused(event: FocusEvent) {
+		const card = [...row.children].find((c) => c.contains(event.target as Node));
+		const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+		card?.scrollIntoView({
+			inline: 'nearest',
+			block: 'nearest',
+			behavior: smooth ? 'smooth' : 'auto'
+		});
+	}
+
 	// Fade whichever edge has more cards past it, so the arrow sits over a faded card, not text
 	const fade = $derived(
 		`linear-gradient(to right, ${atStart ? '#000' : 'transparent'}, #000 48px, #000 calc(100% - 72px), ${atEnd ? '#000' : 'transparent'})`
@@ -62,7 +73,9 @@
 	<div
 		bind:this={row}
 		onscroll={update}
+		onfocusin={revealFocused}
 		style:mask-image={fade}
+		style:-webkit-mask-image={fade}
 		class="-mx-6 -my-2 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 py-2 [scrollbar-width:none]"
 	>
 		{#each hits as hit (hit.id)}
