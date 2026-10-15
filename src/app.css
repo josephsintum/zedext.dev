@@ -124,7 +124,6 @@
 	--color-blockquote-bg: oklch(0.98 0.004 260);
 	--color-table-header-bg: oklch(0.975 0.004 260);
 	--color-table-row-bg: oklch(0.985 0.002 260);
-	--color-dot-grid: oklch(0.85 0.01 260);
 	--color-card-shadow: oklch(0.2 0.02 260 / 0.08);
 }
 
@@ -151,7 +150,6 @@
 	--color-blockquote-bg: oklch(0.19 0.01 270);
 	--color-table-header-bg: oklch(0.21 0.01 270);
 	--color-table-row-bg: oklch(0.18 0.01 270);
-	--color-dot-grid: oklch(0.23 0.008 270);
 	--color-card-shadow: oklch(0 0 0 / 0.4);
 }
 
@@ -163,12 +161,6 @@
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 	}
-}
-
-/* Dot grid background */
-.dot-grid {
-	background-image: radial-gradient(circle, var(--color-dot-grid) 0.5px, transparent 0.5px);
-	background-size: 24px 24px;
 }
 
 /* Grows a small text control's touch area to at least 44px tall without changing its look.
@@ -207,76 +199,11 @@
 	box-shadow: 0 8px 24px -8px var(--color-card-shadow);
 }
 
-/* Staggered fade-in animation */
-@keyframes fade-up {
-	from {
-		opacity: 0;
-		transform: translateY(8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-.animate-fade-up {
-	animation: fade-up 0.15s ease forwards;
-	opacity: 0;
-}
-
-/* Noise texture overlay */
-.noise-overlay {
-	position: relative;
-}
-.noise-overlay::before {
-	content: '';
-	position: absolute;
-	inset: 0;
-	opacity: 0.03;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-	pointer-events: none;
-	z-index: 1;
-}
-
-/* Scanline overlay */
-.scanlines {
-	position: relative;
-}
-.scanlines::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	background: repeating-linear-gradient(
-		transparent 0px,
-		transparent 1px,
-		rgba(0, 0, 0, 0.03) 1px,
-		rgba(0, 0, 0, 0.03) 2px
-	);
-	pointer-events: none;
-}
-
-/* Slow rotation for decorative squares */
-@keyframes spin-slow {
-	to {
-		transform: rotate(360deg);
-	}
-}
-.animate-spin-slow {
-	animation: spin-slow 20s linear infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
 	.card-hover {
 		transition: none;
 	}
 	.card-hover:hover {
 		transform: none;
-	}
-	.animate-fade-up {
-		animation: none;
-		opacity: 1;
-	}
-	.animate-spin-slow {
-		animation: none;
 	}
 }
