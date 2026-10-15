@@ -24,3 +24,7 @@ vite.config.ts.timestamp-*
 
 # Dev cache
 .cache/
+
+# Playwright
+/test-results/
+/playwright-report/
