@@ -43,7 +43,8 @@
 			Extensions for Zed
 		</h1>
 		<p class="mt-3 text-[15px] text-[var(--color-text-secondary)]">
-			Featured picks, theme previews, the most popular extensions, languages and setup guides.
+			Every extension in Zed’s registry, ranked by downloads, with theme previews and setup guides.
+			Updated nightly.
 		</p>
 		<div class="mx-auto mt-6 max-w-2xl">
 			<SearchBar to="/extensions" totalHits={data.extensionCount} />
@@ -116,11 +117,7 @@
 
 	{#if data.guides.length > 0}
 		<section class="mt-10">
-			{@render heading(
-				'guides',
-				'Guides',
-				'Set Zed up for how you work: what’s built in, then the extensions that add more'
-			)}
+			{@render heading('guides', 'Guides', 'Set Zed up for how you work')}
 			<div class="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each data.guides as guide (guide.list.slug)}
 					<GuideCard list={guide.list} items={guide.items} total={guide.total} />
