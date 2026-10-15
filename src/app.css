@@ -249,34 +249,40 @@ body::before {
 }
 
 /* Scrollable rows that hide their scrollbar (category tabs) */
-.hide-scrollbar {
+@utility hide-scrollbar {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
-}
-.hide-scrollbar::-webkit-scrollbar {
-	display: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
-/* Card hover lift */
-.card-hover {
-	transition:
-		transform 0.2s ease,
-		box-shadow 0.2s ease,
-		border-color 0.2s ease;
-}
-.card-hover:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+/* Card hover lift. In the components layer so utilities on the same card can override it. */
+@layer components {
+	.card-hover {
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease,
+			border-color 0.2s ease;
+	}
+	.card-hover:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card-hover {
+			transition: none;
+		}
+		.card-hover:hover {
+			transform: none;
+		}
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.theme-halo {
 		transition: none;
-	}
-	.card-hover {
-		transition: none;
-	}
-	.card-hover:hover {
-		transform: none;
 	}
 }
