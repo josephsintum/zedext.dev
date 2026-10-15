@@ -4,6 +4,7 @@ import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
 import tailwindcss from 'eslint-plugin-tailwindcss';
 import globals from 'globals';
+import { fileURLToPath } from 'node:url';
 
 export default ts.config(
 	js.configs.recommended,
@@ -46,8 +47,8 @@ export default ts.config(
 		settings: {
 			tailwindcss: {
 				// Read the theme from app.css so token utilities like text-text-secondary are known
-				config: new URL('./src/app.css', import.meta.url).pathname,
-				whitelist: ['dot-grid', 'hide-scrollbar', 'card-hover', 'animate-fade-up', 'readme-content']
+				config: fileURLToPath(new URL('./src/app.css', import.meta.url)),
+				whitelist: ['readme-content']
 			}
 		}
 	},

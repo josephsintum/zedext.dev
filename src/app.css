@@ -102,14 +102,14 @@
 	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-	/* Small font sizes, named by their size in px at the default 16px root because each is used
-	   for mixed roles. In rem so they follow the reader's browser font size. No line-height of
-	   their own: the text inherits it, as it did with text-[13px]. */
-	--text-11: 0.6875rem;
-	--text-12: 0.75rem;
-	--text-13: 0.8125rem;
-	--text-14: 0.875rem;
-	--text-15: 0.9375rem;
+	/* Small font sizes, named by size because each is used for mixed roles. In px like every
+	   other size on the site, so they keep their order with headings and the README. No
+	   line-height of their own: the text inherits it, as it did with text-[13px]. */
+	--text-11: 11px;
+	--text-12: 12px;
+	--text-13: 13px;
+	--text-14: 14px;
+	--text-15: 15px;
 
 	--color-accent: oklch(0.53 0.21 260);
 	--color-accent-soft: oklch(0.9 0.06 260);
@@ -250,7 +250,6 @@ body::before {
 
 /* Scrollable rows that hide their scrollbar (category tabs) */
 @utility hide-scrollbar {
-	-ms-overflow-style: none;
 	scrollbar-width: none;
 
 	&::-webkit-scrollbar {
@@ -258,7 +257,8 @@ body::before {
 	}
 }
 
-/* Card hover lift. In the components layer so utilities on the same card can override it. */
+/* Card hover lift. In the components layer so utilities on the same card can override it, and
+   behind (hover: hover) like Tailwind's hover: variants so a tap doesn't leave it half-hovered. */
 @layer components {
 	.card-hover {
 		transition:
@@ -266,9 +266,11 @@ body::before {
 			box-shadow 0.2s ease,
 			border-color 0.2s ease;
 	}
-	.card-hover:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+	@media (hover: hover) {
+		.card-hover:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
