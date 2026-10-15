@@ -33,12 +33,19 @@ export const PALETTE_ROLES = [
 ] as const;
 export type CardPalette = Pick<ThemeColors, 'bg' | (typeof PALETTE_ROLES)[number]>;
 
+/** One spelling per color: #abc → #aabbcc, and a fully opaque alpha (#aabbccff) is dropped */
+function colorKey(color: string): string {
+	let hex = color.toLowerCase();
+	if (/^#[0-9a-f]{3,4}$/.test(hex)) hex = '#' + [...hex.slice(1)].map((d) => d + d).join('');
+	return hex.length === 9 && hex.endsWith('ff') ? hex.slice(0, 7) : hex;
+}
+
 /** The card's circles: each syntax color once, in role order. Themes that leave roles out get
     the text color for them, so without this a card can repeat one color several times. */
 export function cardColors(palette: CardPalette): string[] {
 	const seen = new Set<string>();
 	return PALETTE_ROLES.map((role) => palette[role]).filter((color) => {
-		const key = color.toLowerCase();
+		const key = colorKey(color);
 		if (seen.has(key)) return false;
 		seen.add(key);
 		return true;

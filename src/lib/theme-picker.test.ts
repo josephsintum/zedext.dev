@@ -164,6 +164,22 @@ describe('cardColors', () => {
 		]);
 	});
 
+	it('treats short and opaque-alpha spellings of a color as the same color', () => {
+		expect(
+			cardColors({
+				...palette,
+				function: '#aabbcc',
+				type: '#abc',
+				number: '#8CAAEEFF',
+				comment: '#abcf'
+			})
+		).toEqual(['#ca9ee6', '#aabbcc', '#a6d189', '#8CAAEEFF']);
+	});
+
+	it('keeps colors that differ only in transparency apart', () => {
+		expect(cardColors({ ...palette, number: '#ca9ee680' })).toContain('#ca9ee680');
+	});
+
 	it('keeps one color for a theme that sets none (every role falls back to the text color)', () => {
 		const fg = '#d0d0d0';
 		const bare = {
