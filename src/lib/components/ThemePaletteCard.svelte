@@ -39,16 +39,18 @@
 
 {#snippet body()}
 	<!-- The syntax colors as circles on the theme's background, ringed in it so they stay
-	     distinct where they overlap; they spread apart on hover. Colors are validated hex
-	     values from the previews bundle -->
+	     distinct where they overlap. The circles size to the card (a container query): smaller
+	     and still on narrow cards, so six always fit without squashing; full size and spreading
+	     apart on hover once there's room. Colors are validated hex values from the previews
+	     bundle -->
 	<span
-		class="flex h-14 items-center px-3.5"
+		class="@container flex h-14 items-center px-3"
 		aria-hidden="true"
 		style:background-color={entry.palette.bg}
 	>
 		{#each cardColors(entry.palette) as color (color)}
 			<span
-				class="size-6 rounded-full transition-[margin] duration-200 not-first:-ml-1 group-hover:not-first:ml-0.5 motion-reduce:transition-none"
+				class="size-5 shrink-0 rounded-full transition-[margin] duration-200 not-first:-ml-1.5 motion-reduce:transition-none @min-[160px]:size-6 @min-[160px]:not-first:-ml-1 @min-[160px]:group-hover:not-first:ml-0.5"
 				style:background-color={color}
 				style:box-shadow="0 0 0 2px {entry.palette.bg}"
 			></span>
