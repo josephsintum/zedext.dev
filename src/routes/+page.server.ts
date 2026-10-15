@@ -5,7 +5,7 @@ import { getPreviews } from '$lib/server/previews.js';
 import { pageCacheControl } from '$lib/server/browse.js';
 import { legacyHomeRedirect } from '$lib/categories.js';
 import { GUIDE_LISTS, resolveList } from '$lib/guides.js';
-import { newestExtensions, recentlyUpdated } from '$lib/new-extensions.js';
+import { featuredExtensions, mostPopular } from '$lib/home-rows.js';
 import { hubSummaries } from '$lib/language-hub.js';
 import { themeEntries } from '$lib/theme-picker.js';
 
@@ -21,8 +21,6 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	setHeaders({ 'cache-control': pageCacheControl(degraded || !previews) });
 
 	const records = snapshot.extensions;
-	const newest = newestExtensions(snapshot);
-	const updated = recentlyUpdated(records, new Set(newest.map((r) => r.id)));
 
 	const guides = GUIDE_LISTS.map((list) => ({
 		list,
@@ -32,8 +30,8 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 	const themes = themeEntries(previews, records, 'dark', THEMES_ROW);
 
 	return {
-		newest,
-		updated,
+		featured: featuredExtensions(records),
+		popular: mostPopular(records),
 		hubs: hubSummaries(records),
 		guides,
 		themes,

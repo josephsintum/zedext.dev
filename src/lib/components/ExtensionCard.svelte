@@ -3,7 +3,8 @@
 	import { formatNumber } from '$lib/utils/format.js';
 	import ProvideTag from './ProvideTag.svelte';
 
-	let { hit, note }: { hit: ExtensionHit; note?: string } = $props();
+	// The homepage rows show downloads where other pages show the version
+	let { hit, badge = 'version' }: { hit: ExtensionHit; badge?: 'version' | 'downloads' } = $props();
 
 	const primaryProvides = $derived(
 		hit.provides.filter(
@@ -29,6 +30,26 @@
 	);
 </script>
 
+{#snippet downloads()}
+	<span class="flex items-center gap-1 tabular-nums">
+		<svg
+			aria-hidden="true"
+			class="h-3.5 w-3.5"
+			fill="none"
+			stroke="currentColor"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+			/>
+		</svg>
+		{formatNumber(hit.download_count)}<span class="sr-only"> downloads</span>
+	</span>
+{/snippet}
+
 <a
 	href="/extensions/{hit.id}"
 	class="card-hover group bg-surface-raised flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
@@ -40,9 +61,16 @@
 			{hit.name}
 		</h3>
 		<span
-			class="shrink-0 rounded-md bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-text-tertiary)]"
+			class="shrink-0 rounded-md bg-[var(--color-surface)] px-1.5 py-0.5 text-[11px] text-[var(--color-text-tertiary)] {badge ===
+			'version'
+				? 'font-mono'
+				: ''}"
 		>
-			v{hit.version}
+			{#if badge === 'version'}
+				v{hit.version}
+			{:else}
+				{@render downloads()}
+			{/if}
 		</span>
 	</div>
 
@@ -65,24 +93,9 @@
 	<div
 		class="mt-3 flex items-center gap-3 border-t border-[var(--color-border)] pt-3 text-[12px] text-[var(--color-text-tertiary)]"
 	>
-		<!-- Downloads -->
-		<span class="flex items-center gap-1 tabular-nums">
-			<svg
-				aria-hidden="true"
-				class="h-3.5 w-3.5"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-				/>
-			</svg>
-			{formatNumber(hit.download_count)}
-		</span>
+		{#if badge === 'version'}
+			{@render downloads()}
+		{/if}
 
 		<!-- Stars -->
 		{#if hit.github_stars > 0}
@@ -105,12 +118,8 @@
 			</span>
 		{/if}
 
-		{#if note}
-			<span class="ml-auto truncate text-[11px] text-[var(--color-accent)]">{note}</span>
-		{:else}
-			<span class="ml-auto truncate text-[11px]">
-				{hit.authors[0] ?? 'Unknown'}
-			</span>
-		{/if}
+		<span class="ml-auto truncate text-[11px]">
+			{hit.authors[0] ?? 'Unknown'}
+		</span>
 	</div>
 </a>
