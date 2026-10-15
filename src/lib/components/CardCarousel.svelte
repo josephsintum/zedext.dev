@@ -20,8 +20,11 @@
 
 	$effect(update);
 
-	// Tabbing to a card that's only partly in the row (under the fade) brings it fully into view
+	// Tabbing to a card that's only partly in the row (under the fade) brings it fully into view.
+	// Keyboard focus only: Chrome focuses a link on mousedown, and scrolling the snapping row then
+	// would slide another card under the pointer before the click lands
 	function revealFocused(event: FocusEvent) {
+		if (!(event.target as Element).matches(':focus-visible')) return;
 		const card = [...row.children].find((c) => c.contains(event.target as Node));
 		const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
 		card?.scrollIntoView({
