@@ -165,15 +165,16 @@ describe('cardColors', () => {
 	});
 
 	it('treats short and opaque-alpha spellings of a color as the same color', () => {
+		// type and comment repeat string (#aabbcc); number repeats function (#8caaee)
 		expect(
 			cardColors({
 				...palette,
-				function: '#aabbcc',
+				string: '#aabbcc',
 				type: '#abc',
 				number: '#8CAAEEFF',
 				comment: '#abcf'
 			})
-		).toEqual(['#ca9ee6', '#aabbcc', '#a6d189', '#8CAAEEFF']);
+		).toEqual(['#ca9ee6', '#8caaee', '#aabbcc']);
 	});
 
 	it('keeps colors that differ only in transparency apart', () => {
