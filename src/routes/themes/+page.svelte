@@ -163,12 +163,12 @@
 		<div class="flex flex-wrap items-end justify-between gap-4">
 			<div>
 				<h1 class="text-text text-3xl font-bold tracking-tight">Themes</h1>
-				<p class="text-text-secondary mt-2 text-[15px]">
+				<p class="text-text-secondary text-15 mt-2">
 					Pick a theme to preview it. The most downloaded Zed themes, dark or light.
 				</p>
 			</div>
 			<div
-				class="border-border bg-surface-raised inline-flex rounded-lg border p-0.5 text-[13px]"
+				class="border-border bg-surface-raised text-13 inline-flex rounded-lg border p-0.5"
 				role="group"
 				aria-label="Appearance"
 			>
@@ -196,12 +196,12 @@
 					aria-label="Theme preview"
 				>
 					<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-						<p class="text-text-tertiary text-[13px]">
+						<p class="text-text-tertiary text-13">
 							<span class="text-text text-[16px] font-semibold">{selected.name}</span>
 							{#if selected.author}by {selected.author} ·{/if}
 							↓ {formatNumber(selected.downloads)}
 						</p>
-						<a href="/extensions/{selected.id}" class="text-accent text-[13px]">View extension →</a>
+						<a href="/extensions/{selected.id}" class="text-accent text-13">View extension →</a>
 					</div>
 					{#if preview && previewVariants.length > 0}
 						<div
@@ -214,7 +214,7 @@
 						</div>
 					{/if}
 					{#if selectedFailed}
-						<div class="mt-2 flex flex-wrap items-center gap-3 text-[13px]" role="alert">
+						<div class="text-13 mt-2 flex flex-wrap items-center gap-3" role="alert">
 							<span class="text-text-secondary">Couldn’t load this theme’s colors.</span>
 							<button
 								type="button"
@@ -225,7 +225,7 @@
 							</button>
 						</div>
 					{:else if preview && preview.id !== selected.id}
-						<p class="text-text-tertiary mt-2 text-[13px]" role="status">
+						<p class="text-text-tertiary text-13 mt-2" role="status">
 							Loading {selected.name}…
 						</p>
 					{/if}
@@ -233,7 +233,7 @@
 			{/if}
 
 			<div class="mt-5 mb-3 flex flex-wrap items-center justify-between gap-3">
-				<p class="text-text-tertiary text-[13px]" aria-live="polite">
+				<p class="text-text-tertiary text-13" aria-live="polite">
 					{#if q}
 						{list.length} matching {appearance} themes
 					{:else}
@@ -247,7 +247,7 @@
 					oninput={(e) => filter(e.currentTarget.value)}
 					placeholder="Filter by name or author"
 					aria-label="Filter themes"
-					class="border-border bg-surface-raised text-text placeholder:text-text-tertiary focus:border-accent w-full rounded-lg border px-3 py-1.5 text-[16px] focus:outline-none sm:w-64 sm:text-[14px]"
+					class="border-border bg-surface-raised text-text placeholder:text-text-tertiary focus:border-accent sm:text-14 w-full rounded-lg border px-3 py-1.5 text-[16px] focus:outline-none sm:w-64"
 				/>
 			</div>
 			{#if list.length > 0}
@@ -262,7 +262,7 @@
 					{/each}
 				</div>
 			{:else if q && !loading[appearance]}
-				<div class="text-text-secondary py-10 text-center text-[14px]">
+				<div class="text-text-secondary text-14 py-10 text-center">
 					No {appearance} themes match “{q}”.
 					<button
 						type="button"
@@ -277,14 +277,14 @@
 						type="button"
 						onclick={showAll}
 						disabled={loading[appearance]}
-						class="border-border bg-surface-raised text-text hover:border-border-hover rounded-lg border px-4 py-2 text-[13px] disabled:opacity-60"
+						class="border-border bg-surface-raised text-text hover:border-border-hover text-13 rounded-lg border px-4 py-2 disabled:opacity-60"
 					>
 						{loading[appearance] ? 'Loading…' : `Show all ${total} ${appearance} themes`}
 					</button>
 				</div>
 			{/if}
 			{#if failed[appearance]}
-				<div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-[13px]" role="alert">
+				<div class="text-13 mt-3 flex flex-wrap items-center justify-center gap-3" role="alert">
 					<span class="text-text-secondary">
 						Couldn’t load {q ? 'every theme, so some matches may be missing' : 'the rest'}.
 					</span>
@@ -298,7 +298,7 @@
 				</div>
 			{/if}
 		{:else}
-			<p class="text-text-tertiary mt-8 text-[14px]">
+			<p class="text-text-tertiary text-14 mt-8">
 				Theme previews are temporarily unavailable.
 				<a href="/extensions?q=theme" class="text-accent">Search themes in All extensions →</a>
 			</p>

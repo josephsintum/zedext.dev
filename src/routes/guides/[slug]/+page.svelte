@@ -15,7 +15,7 @@
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav aria-label="Breadcrumb" class="text-text-tertiary mb-3 text-[12px]">
+	<nav aria-label="Breadcrumb" class="text-text-tertiary text-12 mb-3">
 		<a href="/#guides" class="hover:text-text">Guides</a>
 		<span aria-hidden="true">›</span>
 		<span aria-current="page">{data.list.title}</span>
@@ -24,7 +24,7 @@
 		<span aria-hidden="true">{data.list.emoji}</span>
 		{data.list.title}
 	</h1>
-	<p class="text-text-secondary mt-2 max-w-3xl text-[15px]">
+	<p class="text-text-secondary text-15 mt-2 max-w-3xl">
 		{data.guide?.intro ?? data.list.description}
 	</p>
 
@@ -33,8 +33,8 @@
 			class="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5"
 			class:max-w-3xl={data.guide && data.guide.groups.length > 0}
 		>
-			<h2 class="text-text text-[14px] font-semibold">✓ Built into Zed, no extension needed</h2>
-			<ul class="text-text-secondary mt-2 list-disc space-y-1 pl-5 text-[13px]">
+			<h2 class="text-text text-14 font-semibold">✓ Built into Zed, no extension needed</h2>
+			<ul class="text-text-secondary text-13 mt-2 list-disc space-y-1 pl-5">
 				{#each data.list.builtIn as item (item)}
 					<li>{item}</li>
 				{/each}
@@ -43,7 +43,7 @@
 	{/if}
 
 	{#if data.total > 0}
-		<p class="text-text-tertiary mt-1 text-[13px]">
+		<p class="text-text-tertiary text-13 mt-1">
 			{countOf(data.total, 'extension')}{data.total > data.items.length
 				? ` · showing the top ${data.items.length}`
 				: ''}
@@ -60,11 +60,11 @@
 			{/each}
 		</div>
 	{:else}
-		<p class="text-text-tertiary mt-8 text-[14px]">These extensions are temporarily unavailable.</p>
+		<p class="text-text-tertiary text-14 mt-8">These extensions are temporarily unavailable.</p>
 	{/if}
 
 	{#if data.browseAll && data.total > data.items.length}
-		<a href={data.browseAll.href} class="text-accent mt-6 inline-block text-[13px]"
+		<a href={data.browseAll.href} class="text-accent text-13 mt-6 inline-block"
 			>Browse all {data.browseAll.label} →</a
 		>
 	{/if}

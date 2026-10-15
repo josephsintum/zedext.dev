@@ -24,8 +24,8 @@
 	}: { variants: ThemeVariant[]; size?: 'md' | 'lg'; halo?: boolean } = $props();
 
 	// The theme picker shows one big preview; extension pages keep the compact size
-	const codeSize = $derived(size === 'lg' ? 'text-[15px]' : 'text-[13px]');
-	const chromeSize = $derived(size === 'lg' ? 'text-[12px]' : 'text-[11px]');
+	const codeSize = $derived(size === 'lg' ? 'text-15' : 'text-13');
+	const chromeSize = $derived(size === 'lg' ? 'text-12' : 'text-11');
 
 	// Light/dark first, then a variant of that appearance. Starts on the first variant's
 	// appearance (the author's order); the toggle only shows when a theme ships both.
@@ -81,7 +81,7 @@
 		<div class="mb-3 flex flex-wrap items-center gap-3">
 			{#if appearances.length > 1}
 				<div
-					class="border-border inline-flex rounded-md border p-0.5 text-[12px]"
+					class="border-border text-12 inline-flex rounded-md border p-0.5"
 					role="group"
 					aria-label="Appearance"
 				>
@@ -101,13 +101,13 @@
 
 			<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 			{#if shown.length > 8}
-				<label class="text-text-secondary flex items-center gap-2 text-[12px]">
+				<label class="text-text-secondary text-12 flex items-center gap-2">
 					{shown.length} variants
 					<span class="relative inline-flex">
 						<select
 							bind:value={picked}
 							aria-label="Theme variant"
-							class="border-border bg-surface-raised text-text appearance-none rounded-md border py-1 pr-8 pl-2.5 text-[12px]"
+							class="border-border bg-surface-raised text-text text-12 appearance-none rounded-md border py-1 pr-8 pl-2.5"
 						>
 							{#each shown as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 						</select>
@@ -128,7 +128,7 @@
 						<button
 							aria-pressed={current === v}
 							onclick={() => (picked = i)}
-							class="rounded-full border px-3 py-1 text-[12px] transition-colors {current === v
+							class="text-12 rounded-full border px-3 py-1 transition-colors {current === v
 								? 'border-accent text-accent font-semibold'
 								: 'border-border text-text-secondary hover:border-border-hover'}"
 						>

@@ -21,10 +21,10 @@
 	<div class="mb-3 flex items-end justify-between gap-4">
 		<div>
 			<h2 {id} class="text-text scroll-mt-20 text-[18px] font-semibold">{title}</h2>
-			<p class="text-text-tertiary text-[13px]">{sub}</p>
+			<p class="text-text-tertiary text-13">{sub}</p>
 		</div>
 		{#if href && more}
-			<a {href} class="text-accent shrink-0 text-[13px]">{more} →</a>
+			<a {href} class="text-accent text-13 shrink-0">{more} →</a>
 		{/if}
 	</div>
 {/snippet}
@@ -32,7 +32,7 @@
 <div class="mx-auto max-w-6xl px-6 pt-12 pb-20">
 	<div class="text-center">
 		<h1 class="text-text text-4xl font-bold tracking-tight text-balance">Extensions for Zed</h1>
-		<p class="text-text-secondary mt-3 text-[15px]">
+		<p class="text-text-secondary text-15 mt-3">
 			Every extension in Zed’s registry, ranked by downloads, with theme previews and setup guides.
 			Updated nightly.
 		</p>
@@ -105,7 +105,7 @@
 	<div class="mt-14 text-center">
 		<a
 			href="/extensions"
-			class="border-border bg-surface-raised text-text hover:border-border-hover inline-block rounded-lg border px-4 py-2.5 text-[14px] font-medium"
+			class="border-border bg-surface-raised text-text hover:border-border-hover text-14 inline-block rounded-lg border px-4 py-2.5 font-medium"
 		>
 			Browse all {data.extensionCount.toLocaleString('en-US')} extensions →
 		</a>

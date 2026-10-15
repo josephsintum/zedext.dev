@@ -66,7 +66,7 @@
 			data-slug={cat.slug}
 			aria-current={active === cat.slug ? 'page' : undefined}
 			class={clsx(
-				'group relative shrink-0 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors duration-150',
+				'group text-13 relative shrink-0 rounded-lg px-3 py-2.5 font-medium transition-colors duration-150',
 				shown === cat.slug
 					? 'bg-text text-surface shadow-sm'
 					: 'text-text-secondary hover:bg-surface-hover hover:text-text'

@@ -55,11 +55,11 @@
 	class="card-hover group bg-surface-raised border-border relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
-		<h3 class="text-text group-hover:text-accent-hover min-w-0 truncate text-[14px] font-semibold">
+		<h3 class="text-text group-hover:text-accent-hover text-14 min-w-0 truncate font-semibold">
 			{hit.name}
 		</h3>
 		<span
-			class="bg-surface text-text-tertiary shrink-0 rounded-md px-1.5 py-0.5 text-[11px] {badge ===
+			class="bg-surface text-text-tertiary text-11 shrink-0 rounded-md px-1.5 py-0.5 {badge ===
 			'version'
 				? 'font-mono'
 				: ''}"
@@ -73,7 +73,7 @@
 	</div>
 
 	{#if hit.description}
-		<p class="text-text-secondary mb-3 line-clamp-2 min-w-0 text-[13px] leading-relaxed">
+		<p class="text-text-secondary text-13 mb-3 line-clamp-2 min-w-0 leading-relaxed">
 			{hit.description}
 		</p>
 	{:else}
@@ -86,9 +86,7 @@
 		{/each}
 	</div>
 
-	<div
-		class="border-border text-text-tertiary mt-3 flex items-center gap-3 border-t pt-3 text-[12px]"
-	>
+	<div class="border-border text-text-tertiary text-12 mt-3 flex items-center gap-3 border-t pt-3">
 		{#if badge === 'version'}
 			{@render downloads()}
 		{/if}
@@ -114,7 +112,7 @@
 			</span>
 		{/if}
 
-		<span class="ml-auto truncate text-[11px]">
+		<span class="text-11 ml-auto truncate">
 			{hit.authors[0] ?? 'Unknown'}
 		</span>
 	</div>

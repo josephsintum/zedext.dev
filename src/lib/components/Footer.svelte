@@ -15,14 +15,14 @@
 	<div
 		class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row"
 	>
-		<div class="text-text-tertiary text-center text-[13px] sm:text-left">
+		<div class="text-text-tertiary text-13 text-center sm:text-left">
 			<div class="flex flex-wrap items-center justify-center gap-x-2 sm:justify-start">
 				<span class="font-mono font-medium">ZedExt</span>
 				<span class="text-border" aria-hidden="true">/</span>
 				<span>An unofficial community project. Not affiliated with Zed Industries.</span>
 			</div>
 			{#if updatedAt}
-				<p class="mt-1 text-[12px]">
+				<p class="text-12 mt-1">
 					Data from Zed’s extension registry and GitHub · updated
 					<time datetime={updatedAt} title={new Date(updatedAt).toUTCString()}
 						>{timeAgo(updatedAt)}</time
@@ -31,7 +31,7 @@
 			{/if}
 		</div>
 
-		<div class="text-text-tertiary flex flex-wrap items-center justify-center gap-x-4 text-[12px]">
+		<div class="text-text-tertiary text-12 flex flex-wrap items-center justify-center gap-x-4">
 			<a
 				href="/about"
 				class="hover:text-text-secondary inline-flex min-h-11 items-center whitespace-nowrap transition-colors"

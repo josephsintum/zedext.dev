@@ -55,9 +55,9 @@
 		{/each}
 	</span>
 	<span class="block px-2.5 py-2">
-		<span class="text-text block truncate text-[13px] font-medium">{entry.name}</span>
+		<span class="text-text text-13 block truncate font-medium">{entry.name}</span>
 		<!-- Downloads on the right, so they line up down the grid -->
-		<span class="text-text-tertiary flex justify-between gap-2 text-[12px] tabular-nums">
+		<span class="text-text-tertiary text-12 flex justify-between gap-2 tabular-nums">
 			<span>{entry.variantCount > 1 ? `${entry.variantCount} variants` : ''}</span>
 			<span>↓ {formatNumber(entry.downloads)}</span>
 		</span>

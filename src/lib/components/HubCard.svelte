@@ -9,8 +9,8 @@
 	href="/languages/{hub.slug}"
 	class="border-border bg-surface-raised hover:border-border-hover rounded-lg border px-3 py-2.5"
 >
-	<span class="text-text block text-[14px] font-medium">{hub.emoji} {hub.name}</span>
-	<span class="text-text-tertiary text-[12px]">
+	<span class="text-text text-14 block font-medium">{hub.emoji} {hub.name}</span>
+	<span class="text-text-tertiary text-12">
 		{hub.builtIn ? 'Built in · ' : ''}{countOf(hub.count, 'extension')}
 	</span>
 </a>

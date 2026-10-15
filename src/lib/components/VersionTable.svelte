@@ -9,9 +9,9 @@
 	const rows = $derived(showAll ? versions : versions.slice(0, SHOWN));
 </script>
 
-<table class="w-full text-[13px]">
+<table class="text-13 w-full">
 	<thead>
-		<tr class="border-border text-text-tertiary border-b text-left text-[12px]">
+		<tr class="border-border text-text-tertiary text-12 border-b text-left">
 			<th class="py-2 font-medium">Version</th>
 			<th class="py-2 font-medium">Released</th>
 		</tr>
@@ -21,7 +21,7 @@
 			<tr class="border-border/60 border-b">
 				<td class="text-text py-2.5 font-mono tabular-nums">
 					{v.version}
-					{#if i === 0}<span class="text-text-tertiary ml-1.5 text-[11px]">latest</span>{/if}
+					{#if i === 0}<span class="text-text-tertiary text-11 ml-1.5">latest</span>{/if}
 				</td>
 				<td class="text-text-secondary py-2.5 tabular-nums">
 					{formatDate(v.published_at)}
@@ -34,7 +34,7 @@
 	<button
 		type="button"
 		onclick={() => (showAll = true)}
-		class="hit-y text-accent hover:text-accent-hover mt-3 text-[13px] font-medium"
+		class="hit-y text-accent hover:text-accent-hover text-13 mt-3 font-medium"
 	>
 		Show all {versions.length} versions
 	</button>

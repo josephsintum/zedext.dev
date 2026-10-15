@@ -35,7 +35,7 @@
 				<a
 					href={link.href}
 					aria-current={current ? 'page' : undefined}
-					class="hit-y hover:text-text text-[13px] font-medium whitespace-nowrap transition-colors {current
+					class="hit-y hover:text-text text-13 font-medium whitespace-nowrap transition-colors {current
 						? 'text-text'
 						: 'text-text-secondary'} {link.hide}"
 				>
@@ -104,7 +104,7 @@
 				bind:this={menu}
 				id="site-menu"
 				popover
-				class="border-border bg-surface-raised inset-auto top-14 right-4 m-0 hidden w-56 rounded-lg border p-1 text-[14px] shadow-lg max-sm:open:block"
+				class="border-border bg-surface-raised text-14 inset-auto top-14 right-4 m-0 hidden w-56 rounded-lg border p-1 shadow-lg max-sm:open:block"
 			>
 				{#each siteLinks as link (link.href)}
 					<a

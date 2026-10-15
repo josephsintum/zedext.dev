@@ -13,15 +13,15 @@
 	<div class="flex gap-2.5">
 		<span class="text-[22px] leading-tight" aria-hidden="true">{list.emoji}</span>
 		<div class="min-w-0">
-			<h3 id="c-{list.slug}" class="text-text scroll-mt-20 text-[15px] font-semibold">
+			<h3 id="c-{list.slug}" class="text-text text-15 scroll-mt-20 font-semibold">
 				<a href="/guides/{list.slug}" class="hover:text-accent-hover">{list.title}</a>
 			</h3>
-			<p class="text-text-secondary text-[13px]">{list.description}</p>
+			<p class="text-text-secondary text-13">{list.description}</p>
 		</div>
 	</div>
 
 	{#if list.builtIn}
-		<p class="text-text-tertiary mt-2.5 text-[12px]">
+		<p class="text-text-tertiary text-12 mt-2.5">
 			<span class="font-medium text-emerald-700 dark:text-emerald-400">Built in:</span>
 			{list.builtIn.join(' · ')}
 		</p>
@@ -32,12 +32,12 @@
 			<li>
 				<a
 					href="/extensions/{hit.id}"
-					class="group border-border flex justify-between gap-2 border-b px-0.5 py-1.5 text-[13px]"
+					class="group border-border text-13 flex justify-between gap-2 border-b px-0.5 py-1.5"
 				>
 					<span class="text-text group-hover:text-accent-hover truncate font-mono text-[12.5px]"
 						>{hit.name}</span
 					>
-					<span class="text-text-tertiary shrink-0 text-[12px] tabular-nums"
+					<span class="text-text-tertiary text-12 shrink-0 tabular-nums"
 						>↓ {formatNumber(hit.download_count)}</span
 					>
 				</a>
@@ -45,5 +45,5 @@
 		{/each}
 	</ul>
 
-	<a href="/guides/{list.slug}" class="text-accent mt-auto text-[13px]">See all {total} →</a>
+	<a href="/guides/{list.slug}" class="text-accent text-13 mt-auto">See all {total} →</a>
 </div>

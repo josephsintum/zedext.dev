@@ -16,7 +16,7 @@
 	{#snippet intro()}
 		<div class="mx-auto max-w-2xl text-center">
 			<h1 class="text-text text-4xl font-bold tracking-tight text-balance">All extensions</h1>
-			<p class="text-text-secondary mt-3 text-[15px] leading-relaxed">
+			<p class="text-text-secondary text-15 mt-3 leading-relaxed">
 				The full Zed extension registry, with instant search, GitHub stats and README previews.
 			</p>
 		</div>

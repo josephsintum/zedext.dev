@@ -123,7 +123,7 @@
 			<CategoryTabs active={category} />
 			<div class="flex shrink-0 items-center gap-3">
 				{#if displayTotalHits > 0}
-					<span class="text-text-tertiary text-[12px] tabular-nums">
+					<span class="text-text-tertiary text-12 tabular-nums">
 						{formatNumber(displayTotalHits)}
 					</span>
 				{/if}
@@ -134,7 +134,7 @@
 
 <!-- Sort bar + view toggle -->
 <div class="mx-auto max-w-6xl px-6">
-	<div class="text-text-tertiary flex items-center justify-between py-3 text-[12px]">
+	<div class="text-text-tertiary text-12 flex items-center justify-between py-3">
 		<span
 			>sort:
 			{#each sortOptions as sf, i}<button
@@ -207,10 +207,10 @@
 				class="border-border bg-surface-raised hover:border-text-tertiary mb-2 flex items-center justify-between rounded-lg border border-dashed px-5 py-3.5 transition-colors"
 			>
 				<div class="flex items-center gap-3">
-					<span class="text-text text-[13px] font-medium">{feature.name}</span>
-					<span class="text-text-tertiary text-[13px]">{feature.message}</span>
+					<span class="text-text text-13 font-medium">{feature.name}</span>
+					<span class="text-text-tertiary text-13">{feature.message}</span>
 				</div>
-				<span class="text-text-tertiary shrink-0 text-[12px]">View docs ↗</span>
+				<span class="text-text-tertiary text-12 shrink-0">View docs ↗</span>
 			</a>
 		{/each}
 	</div>
@@ -240,12 +240,12 @@
 						<!-- Name + downloads -->
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
-								class="text-accent group-hover:text-accent-hover min-w-0 truncate font-mono text-[14px] font-semibold"
+								class="text-accent group-hover:text-accent-hover text-14 min-w-0 truncate font-mono font-semibold"
 							>
 								{hit.name}
 							</h3>
 							<span
-								class="text-text-tertiary flex shrink-0 items-center gap-1 text-[12px] tabular-nums"
+								class="text-text-tertiary text-12 flex shrink-0 items-center gap-1 tabular-nums"
 							>
 								<svg
 									class="h-3.5 w-3.5"
@@ -267,7 +267,7 @@
 
 						<!-- Description -->
 						{#if hit.description}
-							<p class="text-text-secondary mb-3 line-clamp-2 text-[13px] leading-relaxed">
+							<p class="text-text-secondary text-13 mb-3 line-clamp-2 leading-relaxed">
 								{hit.description}
 							</p>
 						{:else}
@@ -286,7 +286,7 @@
 
 					<!-- Footer: stars + author -->
 					<div
-						class="border-border text-text-tertiary mt-auto flex items-center gap-3 border-t pt-3 text-[12px]"
+						class="border-border text-text-tertiary text-12 mt-auto flex items-center gap-3 border-t pt-3"
 					>
 						{#if hit.github_stars > 0}
 							<span class="flex items-center gap-1 tabular-nums">
@@ -310,12 +310,12 @@
 						{#if owner}
 							<a
 								href="/authors/{owner}"
-								class="hover:text-accent -my-3.5 ml-auto truncate py-3.5 text-[11px] transition-colors"
+								class="hover:text-accent text-11 -my-3.5 ml-auto truncate py-3.5 transition-colors"
 							>
 								{hit.authors[0] ?? 'Unknown'}
 							</a>
 						{:else}
-							<span class="ml-auto truncate text-[11px]">
+							<span class="text-11 ml-auto truncate">
 								{hit.authors[0] ?? 'Unknown'}
 							</span>
 						{/if}
@@ -332,7 +332,7 @@
 		>
 			<!-- Column headers -->
 			<div
-				class="border-border text-text-tertiary hidden border-b py-2 text-[11px] font-medium sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
+				class="border-border text-text-tertiary text-11 hidden border-b py-2 font-medium sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
 			>
 				<button
 					onclick={() => selectSort('name')}
@@ -374,7 +374,7 @@
 				<!-- Desktop: grid row -->
 				<a
 					href="/extensions/{hit.id}"
-					class="border-border/50 hover:bg-surface-hover hidden border-b py-2.5 text-[13px] transition-colors sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
+					class="border-border/50 hover:bg-surface-hover text-13 hidden border-b py-2.5 transition-colors sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
 				>
 					<span class="min-w-0 truncate">
 						<span class="text-text font-mono font-semibold">{hit.name}</span>
@@ -383,7 +383,7 @@
 						{/if}
 					</span>
 
-					<span class="text-text-tertiary flex items-center gap-1.5 text-[12px]">
+					<span class="text-text-tertiary text-12 flex items-center gap-1.5">
 						{#if provides.length > 0}
 							<span
 								class="inline-block h-2.5 w-2.5 rounded-full {provideDotColor[provides[0]] ??
@@ -393,7 +393,7 @@
 						{/if}
 					</span>
 
-					<span class="text-text-tertiary flex items-center gap-1 text-[12px] tabular-nums">
+					<span class="text-text-tertiary text-12 flex items-center gap-1 tabular-nums">
 						<svg
 							class="h-3.5 w-3.5"
 							fill="none"
@@ -411,7 +411,7 @@
 						{formatNumber(hit.download_count)}
 					</span>
 
-					<span class="text-text-tertiary flex items-center gap-1 text-[12px] tabular-nums">
+					<span class="text-text-tertiary text-12 flex items-center gap-1 tabular-nums">
 						{#if hit.github_stars > 0}
 							<svg
 								class="h-3.5 w-3.5"
@@ -433,7 +433,7 @@
 						{/if}
 					</span>
 
-					<span class="text-text-tertiary text-[12px]">
+					<span class="text-text-tertiary text-12">
 						{timeAgo(hit.published_at)}
 					</span>
 				</a>
@@ -441,10 +441,10 @@
 				<!-- Mobile: simple row -->
 				<a
 					href="/extensions/{hit.id}"
-					class="border-border/50 hover:bg-surface-hover flex items-center justify-between gap-4 border-b py-2.5 text-[13px] transition-colors sm:hidden"
+					class="border-border/50 hover:bg-surface-hover text-13 flex items-center justify-between gap-4 border-b py-2.5 transition-colors sm:hidden"
 				>
 					<span class="text-text min-w-0 truncate font-mono font-semibold">{hit.name}</span>
-					<span class="text-text-tertiary shrink-0 text-[11px] tabular-nums"
+					<span class="text-text-tertiary text-11 shrink-0 tabular-nums"
 						>{formatNumber(hit.download_count)}</span
 					>
 				</a>
@@ -455,14 +455,14 @@
 	<!-- Empty state -->
 	{#if displayHits.length === 0 && !loading}
 		<div class="flex flex-col items-center gap-3 py-20 text-center">
-			<p class="text-text-secondary text-[14px]">
+			<p class="text-text-secondary text-14">
 				{query ? `No extensions match “${query}”.` : 'No extensions found.'}
 			</p>
 			{#if query}
 				<button
 					type="button"
 					onclick={clearSearch}
-					class="border-border text-text hover:bg-surface-hover min-h-11 rounded-md border px-4 text-[13px] font-medium"
+					class="border-border text-text hover:bg-surface-hover text-13 min-h-11 rounded-md border px-4 font-medium"
 				>
 					Clear Search
 				</button>
@@ -506,7 +506,7 @@
 			<button
 				onclick={loadMore}
 				disabled={loadingMore}
-				class="border-border rounded-md border px-5 py-2 text-[13px] font-medium opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+				class="border-border text-13 rounded-md border px-5 py-2 font-medium opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
 			>
 				{#if loadingMore}
 					Loading…

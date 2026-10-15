@@ -38,8 +38,8 @@
 	}
 
 	const panel = 'rounded-lg border border-border bg-surface-raised p-4';
-	const panelTitle = 'mb-3 text-[12px] font-semibold tracking-wide text-text-tertiary uppercase';
-	const row = 'flex items-center justify-between gap-3 py-1 text-[13px]';
+	const panelTitle = 'mb-3 text-12 font-semibold tracking-wide text-text-tertiary uppercase';
+	const row = 'flex items-center justify-between gap-3 py-1 text-13';
 	const link = 'text-text-secondary transition-colors hover:text-accent';
 </script>
 
@@ -66,7 +66,7 @@
 			<div class="text-text font-mono text-2xl font-bold">
 				{formatNumber(extension.download_count)}
 			</div>
-			<div class="text-text-tertiary text-[11px]">downloads</div>
+			<div class="text-text-tertiary text-11">downloads</div>
 		</div>
 	</div>
 
@@ -78,14 +78,14 @@
 			<button
 				onclick={copyId}
 				title="Copy identifier"
-				class="text-text-secondary hover:text-text min-w-0 truncate font-mono text-[12px]"
+				class="text-text-secondary hover:text-text text-12 min-w-0 truncate font-mono"
 			>
 				{copied ? 'Copied' : extension.id}
 			</button>
 		</div>
 		<div class={row}>
 			<span class="text-text-tertiary">Version</span>
-			<span class="text-text-secondary font-mono text-[12px]">{extension.version}</span>
+			<span class="text-text-secondary text-12 font-mono">{extension.version}</span>
 		</div>
 		{#if firstReleasedAt}
 			<div class={row}>
@@ -100,7 +100,7 @@
 		{#if github?.license}
 			<div class={row}>
 				<span class="text-text-tertiary">License</span>
-				<span class="text-text-secondary font-mono text-[12px]">{github.license.spdx_id}</span>
+				<span class="text-text-secondary text-12 font-mono">{github.license.spdx_id}</span>
 			</div>
 		{/if}
 	</section>
@@ -109,7 +109,7 @@
 	{#if extension.repository || zedDocsUrl || repoOwner}
 		<section class={panel} aria-labelledby="resources">
 			<h3 id="resources" class={panelTitle}>Resources</h3>
-			<ul class="space-y-1.5 text-[13px]">
+			<ul class="text-13 space-y-1.5">
 				{#if extension.repository}
 					<li>
 						<a href={extension.repository} target="_blank" rel="noopener noreferrer" class={link}
@@ -167,9 +167,7 @@
 
 	<!-- Provides -->
 	<div>
-		<h3 class="text-text-tertiary mb-2 text-[13px] font-semibold tracking-wide uppercase">
-			Provides
-		</h3>
+		<h3 class="text-text-tertiary text-13 mb-2 font-semibold tracking-wide uppercase">Provides</h3>
 		<div class="flex flex-wrap gap-1.5">
 			{#each extension.provides as provide}
 				<ProvideTag {provide} />
@@ -179,15 +177,13 @@
 
 	<!-- Authors -->
 	<div>
-		<h3 class="text-text-tertiary mb-2 text-[13px] font-semibold tracking-wide uppercase">
-			Authors
-		</h3>
+		<h3 class="text-text-tertiary text-13 mb-2 font-semibold tracking-wide uppercase">Authors</h3>
 		<div class="space-y-2">
 			{#each authorNames as name, i}
 				{#if i === 0 && repoOwner}
 					<a
 						href="/authors/{repoOwner}"
-						class="text-text-secondary hover:text-accent flex items-center gap-2 text-[13px] transition-colors"
+						class="text-text-secondary hover:text-accent text-13 flex items-center gap-2 transition-colors"
 					>
 						{#if repoOwnerAvatar}
 							<img
@@ -199,7 +195,7 @@
 						<span>~{repoOwner}</span>
 					</a>
 				{:else}
-					<div class="text-text-secondary flex items-center gap-2 text-[13px]">
+					<div class="text-text-secondary text-13 flex items-center gap-2">
 						<div
 							class="bg-surface-hover text-text-tertiary flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium"
 						>

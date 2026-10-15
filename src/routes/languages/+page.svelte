@@ -17,7 +17,7 @@
 	{#snippet intro()}
 		<div class="mx-auto max-w-3xl text-center">
 			<h1 class="text-text text-4xl font-bold tracking-tight text-balance">Languages in Zed</h1>
-			<p class="text-text-secondary mt-3 text-[15px]">
+			<p class="text-text-secondary text-15 mt-3">
 				What’s built in, and the extensions that add more, language by language.
 			</p>
 			<div class="mt-6 grid grid-cols-2 gap-2 text-left sm:grid-cols-3 lg:grid-cols-5">

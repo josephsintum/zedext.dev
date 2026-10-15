@@ -11,7 +11,7 @@
 	{#each guide.groups as group (group.title)}
 		<a
 			href="#{anchor(group.title)}"
-			class="border-border text-text-secondary hover:border-border-hover rounded-full border px-2.5 py-1 text-[12px]"
+			class="border-border text-text-secondary hover:border-border-hover text-12 rounded-full border px-2.5 py-1"
 			>{group.title}</a
 		>
 	{/each}
@@ -19,7 +19,7 @@
 		<a
 			href="#everything-else"
 			onclick={() => document.getElementById('everything-else')?.setAttribute('open', '')}
-			class="border-border text-text-secondary hover:border-border-hover rounded-full border px-2.5 py-1 text-[12px]"
+			class="border-border text-text-secondary hover:border-border-hover text-12 rounded-full border px-2.5 py-1"
 			>Everything else</a
 		>
 	{/if}
@@ -30,7 +30,7 @@
 		<h2 id={anchor(group.title)} class="text-text scroll-mt-20 text-[18px] font-semibold">
 			{group.title}
 		</h2>
-		<p class="text-text-secondary mt-1 mb-3 text-[14px]">{group.blurb}</p>
+		<p class="text-text-secondary text-14 mt-1 mb-3">{group.blurb}</p>
 		<ul
 			class="bg-surface-raised divide-border border-border divide-y overflow-hidden rounded-lg border"
 		>
@@ -42,12 +42,12 @@
 					>
 						<span class="min-w-0">
 							<span
-								class="text-text group-hover:text-accent-hover block truncate font-mono text-[13px] font-semibold"
+								class="text-text group-hover:text-accent-hover text-13 block truncate font-mono font-semibold"
 								>{pick.record.name}</span
 							>
-							<span class="text-text-secondary block text-[13px]">{pick.why}</span>
+							<span class="text-text-secondary text-13 block">{pick.why}</span>
 						</span>
-						<span class="text-text-tertiary shrink-0 text-[12px] tabular-nums"
+						<span class="text-text-tertiary text-12 shrink-0 tabular-nums"
 							>↓ {formatNumber(pick.record.download_count)}</span
 						>
 					</a>
@@ -62,7 +62,7 @@
 		id="everything-else"
 		class="bg-surface-raised border-border mt-9 scroll-mt-20 rounded-lg border px-3.5 py-3"
 	>
-		<summary class="text-text cursor-pointer text-[14px] font-semibold">
+		<summary class="text-text text-14 cursor-pointer font-semibold">
 			Everything else · {guide.rest.length} more, by downloads
 		</summary>
 		<ul class="mt-2 gap-x-7 sm:columns-2">
@@ -70,12 +70,12 @@
 				<li class="break-inside-avoid">
 					<a
 						href="/extensions/{r.id}"
-						class="group border-border flex justify-between gap-2 border-b py-1.5 text-[13px]"
+						class="group border-border text-13 flex justify-between gap-2 border-b py-1.5"
 					>
 						<span class="text-text group-hover:text-accent-hover truncate font-mono text-[12.5px]"
 							>{r.name}</span
 						>
-						<span class="text-text-tertiary shrink-0 text-[12px] tabular-nums"
+						<span class="text-text-tertiary text-12 shrink-0 tabular-nums"
 							>↓ {formatNumber(r.download_count)}</span
 						>
 					</a>

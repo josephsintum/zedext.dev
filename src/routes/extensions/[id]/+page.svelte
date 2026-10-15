@@ -128,7 +128,7 @@
 
 <div class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Breadcrumb -->
-	<nav aria-label="Breadcrumb" class="text-text-tertiary mb-6 text-[13px]">
+	<nav aria-label="Breadcrumb" class="text-text-tertiary text-13 mb-6">
 		<a href="/extensions" class="hit-y hover:text-text transition-colors">Extensions</a>
 		<span class="mx-2" aria-hidden="true">/</span>
 		<span class="text-text" aria-current="page">{extension.name}</span>
@@ -141,25 +141,25 @@
 				<div class="flex items-center gap-3">
 					<h1 class="text-text font-mono text-2xl font-bold">{extension.name}</h1>
 					<span
-						class="bg-surface-hover text-text-tertiary rounded-md px-2 py-0.5 font-mono text-[13px]"
+						class="bg-surface-hover text-text-tertiary text-13 rounded-md px-2 py-0.5 font-mono"
 					>
 						v{extension.version}
 					</span>
 					{#if badge}
 						<span
 							title={badge.title}
-							class="border-accent/40 text-accent rounded-md border px-2 py-0.5 text-[11px] font-semibold"
+							class="border-accent/40 text-accent text-11 rounded-md border px-2 py-0.5 font-semibold"
 						>
 							{badge.label}
 						</span>
 					{/if}
 				</div>
 				{#if extension.description}
-					<p class="text-text-secondary mt-2 text-[15px] leading-relaxed">
+					<p class="text-text-secondary text-15 mt-2 leading-relaxed">
 						{extension.description}
 					</p>
 				{/if}
-				<div class="mt-3 flex flex-wrap gap-1.5 text-[12px]">
+				<div class="text-12 mt-3 flex flex-wrap gap-1.5">
 					{#each pills as pill (pill.label)}
 						<span
 							class="rounded-full px-2.5 py-0.5 {pill.tone === 'warning'
@@ -172,7 +172,7 @@
 				</div>
 				<!-- Below lg the sidebar comes after the README, so the key numbers go here too -->
 				<div
-					class="text-text-secondary mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] tabular-nums lg:hidden"
+					class="text-text-secondary text-13 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 tabular-nums lg:hidden"
 				>
 					<span>{countOf(extension.download_count, 'download')}</span>
 					{#if content?.github}
@@ -213,7 +213,7 @@
 						aria-selected={pageTab === t.id}
 						aria-controls="page-tab-{t.id}"
 						tabindex={pageTab === t.id ? 0 : -1}
-						class="-mb-px px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
+						class="text-13 -mb-px px-3 py-2 font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
 						t.id
 							? 'border-accent text-text border-b-2'
 							: 'text-text-tertiary hover:text-text-secondary'}"
@@ -263,7 +263,7 @@
 								aria-selected={activeTab === 'docs'}
 								aria-controls="tabpanel-docs"
 								tabindex={activeTab === 'docs' ? 0 : -1}
-								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
+								class="text-13 px-4 py-2 font-medium transition-colors {activeTab === 'docs'
 									? 'border-accent text-text border-b-2'
 									: 'text-text-tertiary hover:text-text-secondary'}"
 								onclick={() => (activeTab = 'docs')}
@@ -276,7 +276,7 @@
 								aria-selected={activeTab === 'readme'}
 								aria-controls="tabpanel-readme"
 								tabindex={activeTab === 'readme' ? 0 : -1}
-								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
+								class="text-13 px-4 py-2 font-medium transition-colors {activeTab === 'readme'
 									? 'border-accent text-text border-b-2'
 									: 'text-text-tertiary hover:text-text-secondary'}"
 								onclick={() => (activeTab = 'readme')}
@@ -323,7 +323,7 @@
 										href={extension.repository}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="text-accent mt-2 inline-block text-[13px] font-medium hover:underline"
+										class="text-accent text-13 mt-2 inline-block font-medium hover:underline"
 									>
 										View on GitHub
 									</a>
@@ -333,7 +333,7 @@
 					{/if}
 				{:catch}
 					<div
-						class="border-border bg-surface-raised rounded-lg border p-6 text-center text-[14px] md:p-8"
+						class="border-border bg-surface-raised text-14 rounded-lg border p-6 text-center md:p-8"
 					>
 						<p class="text-text-secondary">Couldn’t load the README.</p>
 						{#if extension.repository}
@@ -341,7 +341,7 @@
 								href={extension.repository}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="text-accent mt-2 inline-block text-[13px] font-medium hover:underline"
+								class="text-accent text-13 mt-2 inline-block font-medium hover:underline"
 							>
 								View on GitHub
 							</a>
@@ -363,16 +363,14 @@
 							href={changelog.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="text-accent mt-3 inline-block text-[13px] hover:underline"
+							class="text-accent text-13 mt-3 inline-block hover:underline"
 						>
 							Full changelog on GitHub →
 						</a>
 					{:else if changelog?.id === extension.id && changelog.status === 'none'}
-						<p class="text-text-tertiary text-[13px]">
-							This extension doesn’t have a changelog yet.
-						</p>
+						<p class="text-text-tertiary text-13">This extension doesn’t have a changelog yet.</p>
 					{:else if changelog?.id === extension.id && changelog.status === 'error'}
-						<div class="flex flex-wrap items-center gap-3 text-[13px]" role="alert">
+						<div class="text-13 flex flex-wrap items-center gap-3" role="alert">
 							<span class="text-text-secondary">Couldn’t load the changelog.</span>
 							<button
 								type="button"

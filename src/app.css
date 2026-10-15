@@ -102,6 +102,15 @@
 	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
 
+	/* Small font sizes, named by their size in px at the default 16px root because each is used
+	   for mixed roles. In rem so they follow the reader's browser font size. No line-height of
+	   their own: the text inherits it, as it did with text-[13px]. */
+	--text-11: 0.6875rem;
+	--text-12: 0.75rem;
+	--text-13: 0.8125rem;
+	--text-14: 0.875rem;
+	--text-15: 0.9375rem;
+
 	--color-accent: oklch(0.53 0.21 260);
 	--color-accent-soft: oklch(0.9 0.06 260);
 	--color-accent-hover: oklch(0.48 0.22 260);

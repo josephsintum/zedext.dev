@@ -19,7 +19,7 @@
 			<h1 class="text-text text-4xl font-bold tracking-tight text-balance">
 				{data.category.title}
 			</h1>
-			<p class="text-text-secondary mt-3 text-[15px] leading-relaxed">
+			<p class="text-text-secondary text-15 mt-3 leading-relaxed">
 				{countOf(data.total, 'extension')}. {data.category.description}
 			</p>
 		</div>

@@ -57,7 +57,7 @@
 		<h2 class="text-text-tertiary mb-4 text-sm font-semibold tracking-widest uppercase">
 			What ZedExt is
 		</h2>
-		<div class="text-text-secondary space-y-4 text-[15px] leading-relaxed">
+		<div class="text-text-secondary text-15 space-y-4 leading-relaxed">
 			<p>
 				ZedExt is an <strong class="text-text">alternative extension marketplace</strong>
 				for the Zed editor. Zed’s official extension page at
@@ -100,7 +100,7 @@
 		<h2 class="text-text-tertiary mb-4 text-sm font-semibold tracking-widest uppercase">
 			What ZedExt is not
 		</h2>
-		<div class="text-text-secondary space-y-4 text-[15px] leading-relaxed">
+		<div class="text-text-secondary text-15 space-y-4 leading-relaxed">
 			<p>
 				<strong class="text-text">Not a registry.</strong>
 				ZedExt doesn’t host or publish extensions. Authors continue to publish via PR to
@@ -124,7 +124,7 @@
 		<h2 class="text-text-tertiary mb-4 text-sm font-semibold tracking-widest uppercase">
 			How it works
 		</h2>
-		<div class="text-text-secondary space-y-4 text-[15px] leading-relaxed">
+		<div class="text-text-secondary text-15 space-y-4 leading-relaxed">
 			<p>
 				ZedExt has <strong class="text-text">no database</strong>. All data is fetched on-demand
 				from the
@@ -181,8 +181,8 @@
 		>
 			{#each [{ name: 'SvelteKit', desc: 'Framework' }, { name: 'Tailwind CSS v4', desc: 'Styling' }, { name: 'MiniSearch', desc: 'Search' }, { name: 'Shiki', desc: 'Syntax highlighting' }, { name: 'Vercel', desc: 'Hosting' }, { name: 'GitHub API', desc: 'Extension data' }] as item}
 				<div class="bg-surface px-4 py-3">
-					<div class="text-text text-[13px] font-medium">{item.name}</div>
-					<div class="text-text-tertiary text-[12px]">{item.desc}</div>
+					<div class="text-text text-13 font-medium">{item.name}</div>
+					<div class="text-text-tertiary text-12">{item.desc}</div>
 				</div>
 			{/each}
 		</div>
@@ -193,11 +193,11 @@
 		<h2 class="text-text-tertiary mb-4 text-sm font-semibold tracking-widest uppercase">
 			Contributors
 		</h2>
-		<div class="text-text-secondary space-y-4 text-[15px] leading-relaxed">
+		<div class="text-text-secondary text-15 space-y-4 leading-relaxed">
 			<p>ZedExt is open source and built by the community.</p>
 			<a
 				href="https://github.com/josephsintum/zedext.dev"
-				class="border-border bg-surface text-text hover:border-border-hover hover:bg-surface-hover inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-[13px] font-medium transition-colors"
+				class="border-border bg-surface text-text hover:border-border-hover hover:bg-surface-hover text-13 inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 font-medium transition-colors"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -208,7 +208,7 @@
 				</svg>
 				View on GitHub
 			</a>
-			<p class="text-text-tertiary text-[13px]">
+			<p class="text-text-tertiary text-13">
 				Contributions, issues, and feature requests are welcome.
 			</p>
 		</div>
@@ -234,8 +234,8 @@
 				</svg>
 			</div>
 			<div>
-				<h3 class="text-text mb-1 text-[14px] font-semibold">Open Source</h3>
-				<p class="text-text-secondary text-[13px] leading-relaxed">
+				<h3 class="text-text text-14 mb-1 font-semibold">Open Source</h3>
+				<p class="text-text-secondary text-13 leading-relaxed">
 					ZedExt is fully open source under the MIT license. The source code, sync pipeline, and
 					infrastructure are all publicly available on GitHub.
 				</p>

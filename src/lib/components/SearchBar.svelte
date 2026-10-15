@@ -163,7 +163,7 @@
 				if (to) preloadCode(to).catch(() => {});
 			}}
 			onblur={() => (focused = false)}
-			class="bg-surface-raised text-text placeholder:text-text-tertiary w-full py-3.5 pr-4 pl-12 font-sans text-[16px] focus:outline-none sm:text-[15px]"
+			class="bg-surface-raised text-text placeholder:text-text-tertiary sm:text-15 w-full py-3.5 pr-4 pl-12 font-sans text-[16px] focus:outline-none"
 		/>
 		<div class="absolute top-1/2 right-4 -translate-y-1/2">
 			{#if busy}
@@ -174,7 +174,7 @@
 				></span>
 			{:else if !focused}
 				<kbd
-					class="border-border bg-surface text-text-tertiary hidden rounded-md border px-1.5 py-0.5 font-mono text-[11px] sm:inline-block"
+					class="border-border bg-surface text-text-tertiary text-11 hidden rounded-md border px-1.5 py-0.5 font-mono sm:inline-block"
 					>/</kbd
 				>
 			{/if}
