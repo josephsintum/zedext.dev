@@ -23,7 +23,7 @@
 		role="progressbar"
 		aria-label="Loading page"
 	>
-		<div class="nav-progress h-full w-full origin-left bg-[var(--color-accent)]"></div>
+		<div class="nav-progress h-full w-full origin-left bg-accent"></div>
 	</div>
 {/if}
 

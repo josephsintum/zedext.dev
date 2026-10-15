@@ -75,12 +75,12 @@
 <section class="mb-6" aria-label="Icon theme preview">
 	<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 	{#if variants.length > 8}
-		<label class="mb-3 flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+		<label class="mb-3 flex items-center gap-2 text-12 text-text-secondary">
 			{variants.length} variants
 			<select
 				bind:value={selected}
 				aria-label="Icon theme variant"
-				class="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2 py-1 text-[12px] text-[var(--color-text)]"
+				class="rounded-md border border-border bg-surface-raised px-2 py-1 text-12 text-text"
 			>
 				{#each variants as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 			</select>
@@ -92,9 +92,9 @@
 					type="button"
 					aria-pressed={selected === i}
 					onclick={() => (selected = i)}
-					class="rounded-full border px-3 py-1 text-[12px] transition-colors {selected === i
-						? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'
-						: 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]'}"
+					class="rounded-full border px-3 py-1 text-12 transition-colors {selected === i
+						? 'border-accent font-semibold text-accent'
+						: 'border-border text-text-secondary hover:border-border-hover'}"
 				>
 					{variant.name}
 				</button>
@@ -104,7 +104,7 @@
 
 	<!-- A Zed window: project panel on the left, an open file on the right -->
 	<div
-		class="overflow-hidden rounded-lg border text-[11px] shadow-sm"
+		class="overflow-hidden rounded-lg border text-11 shadow-sm"
 		style:border-color={c.border}
 		style:color={c.text}
 	>
@@ -126,7 +126,7 @@
 
 		<div class="flex">
 			<ul
-				class="w-full shrink-0 border-r py-1.5 text-[13px] sm:w-60"
+				class="w-full shrink-0 border-r py-1.5 text-13 sm:w-60"
 				style:background-color={c.panel}
 				style:border-color={c.border}
 				aria-label="Project files"
@@ -162,7 +162,7 @@
 				aria-hidden="true"
 			>
 				<div
-					class="flex overflow-hidden border-b text-[12px]"
+					class="flex overflow-hidden border-b text-12"
 					style:background-color={c.panel}
 					style:border-color={c.border}
 				>
@@ -178,7 +178,7 @@
 						</span>
 					{/each}
 				</div>
-				<div class="py-3 font-mono text-[12px] leading-[22px]">
+				<div class="py-3 font-mono text-12 leading-[22px]">
 					{#each CODE as [indent, width], i (i)}
 						<div class="flex items-center">
 							<span class="w-10 shrink-0 pr-3 text-right" style:color={c.muted}>{i + 1}</span>

@@ -128,12 +128,10 @@
 
 <div class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Breadcrumb -->
-	<nav aria-label="Breadcrumb" class="mb-6 text-[13px] text-[var(--color-text-tertiary)]">
-		<a href="/extensions" class="hit-y transition-colors hover:text-[var(--color-text)]"
-			>Extensions</a
-		>
+	<nav aria-label="Breadcrumb" class="mb-6 text-13 text-text-tertiary">
+		<a href="/extensions" class="hit-y transition-colors hover:text-text">Extensions</a>
 		<span class="mx-2" aria-hidden="true">/</span>
-		<span class="text-[var(--color-text)]" aria-current="page">{extension.name}</span>
+		<span class="text-text" aria-current="page">{extension.name}</span>
 	</nav>
 
 	<!-- Header -->
@@ -141,32 +139,32 @@
 		<div class="flex flex-wrap items-start gap-4">
 			<div class="flex-1">
 				<div class="flex items-center gap-3">
-					<h1 class="font-mono text-2xl font-bold text-[var(--color-text)]">{extension.name}</h1>
+					<h1 class="font-mono text-2xl font-bold text-text">{extension.name}</h1>
 					<span
-						class="rounded-md bg-[var(--color-surface-hover)] px-2 py-0.5 font-mono text-[13px] text-[var(--color-text-tertiary)]"
+						class="rounded-md bg-surface-hover px-2 py-0.5 font-mono text-13 text-text-tertiary"
 					>
 						v{extension.version}
 					</span>
 					{#if badge}
 						<span
 							title={badge.title}
-							class="rounded-md border border-[var(--color-accent)]/40 px-2 py-0.5 text-[11px] font-semibold text-[var(--color-accent)]"
+							class="rounded-md border border-accent/40 px-2 py-0.5 text-11 font-semibold text-accent"
 						>
 							{badge.label}
 						</span>
 					{/if}
 				</div>
 				{#if extension.description}
-					<p class="mt-2 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+					<p class="mt-2 text-15 leading-relaxed text-text-secondary">
 						{extension.description}
 					</p>
 				{/if}
-				<div class="mt-3 flex flex-wrap gap-1.5 text-[12px]">
+				<div class="mt-3 flex flex-wrap gap-1.5 text-12">
 					{#each pills as pill (pill.label)}
 						<span
 							class="rounded-full px-2.5 py-0.5 {pill.tone === 'warning'
 								? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400'
-								: 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]'}"
+								: 'bg-surface-hover text-text-secondary'}"
 						>
 							{pill.label}
 						</span>
@@ -174,7 +172,7 @@
 				</div>
 				<!-- Below lg the sidebar comes after the README, so the key numbers go here too -->
 				<div
-					class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[var(--color-text-secondary)] tabular-nums lg:hidden"
+					class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-13 text-text-secondary tabular-nums lg:hidden"
 				>
 					<span>{countOf(extension.download_count, 'download')}</span>
 					{#if content?.github}
@@ -185,7 +183,7 @@
 							href={extension.repository}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="hit-y text-[var(--color-accent)] hover:underline">Repository ↗</a
+							class="hit-y text-accent hover:underline">Repository ↗</a
 						>
 					{/if}
 				</div>
@@ -203,7 +201,7 @@
 		<!-- Main content -->
 		<div class="min-w-0 flex-1">
 			<div
-				class="mb-5 flex gap-1 border-b border-[var(--color-border)]"
+				class="mb-5 flex gap-1 border-b border-border"
 				role="tablist"
 				aria-label="Extension sections"
 				{@attach tabKeys}
@@ -215,10 +213,10 @@
 						aria-selected={pageTab === t.id}
 						aria-controls="page-tab-{t.id}"
 						tabindex={pageTab === t.id ? 0 : -1}
-						class="-mb-px px-3 py-2 text-[13px] font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
+						class="-mb-px px-3 py-2 text-13 font-medium whitespace-nowrap transition-colors sm:px-4 {pageTab ===
 						t.id
-							? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
-							: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+							? 'border-b-2 border-accent text-text'
+							: 'text-text-tertiary hover:text-text-secondary'}"
 						onclick={() => choose(t.id)}
 					>
 						{t.label}
@@ -242,19 +240,19 @@
 				{/key}
 				{#await data.content}
 					<div
-						class="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 motion-safe:animate-pulse md:p-8"
+						class="space-y-3 rounded-lg border border-border bg-surface-raised p-6 motion-safe:animate-pulse md:p-8"
 						role="status"
 						aria-label="Loading"
 					>
-						<div class="h-5 w-1/3 rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3 w-5/6 rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3 w-2/3 rounded bg-[var(--color-surface-hover)]"></div>
+						<div class="h-5 w-1/3 rounded bg-surface-hover"></div>
+						<div class="h-3 w-full rounded bg-surface-hover"></div>
+						<div class="h-3 w-5/6 rounded bg-surface-hover"></div>
+						<div class="h-3 w-2/3 rounded bg-surface-hover"></div>
 					</div>
 				{:then { readmeHtml, zedDocsHtml }}
 					{#if zedDocsHtml && readmeHtml}
 						<div
-							class="mb-4 flex gap-1 border-b border-[var(--color-border)]"
+							class="mb-4 flex gap-1 border-b border-border"
 							role="tablist"
 							aria-label="Documentation source"
 							{@attach tabKeys}
@@ -265,9 +263,9 @@
 								aria-selected={activeTab === 'docs'}
 								aria-controls="tabpanel-docs"
 								tabindex={activeTab === 'docs' ? 0 : -1}
-								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'docs'
-									? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
-									: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+								class="px-4 py-2 text-13 font-medium transition-colors {activeTab === 'docs'
+									? 'border-b-2 border-accent text-text'
+									: 'text-text-tertiary hover:text-text-secondary'}"
 								onclick={() => (activeTab = 'docs')}
 							>
 								Zed Docs
@@ -278,9 +276,9 @@
 								aria-selected={activeTab === 'readme'}
 								aria-controls="tabpanel-readme"
 								tabindex={activeTab === 'readme' ? 0 : -1}
-								class="px-4 py-2 text-[13px] font-medium transition-colors {activeTab === 'readme'
-									? 'border-b-2 border-[var(--color-accent)] text-[var(--color-text)]'
-									: 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'}"
+								class="px-4 py-2 text-13 font-medium transition-colors {activeTab === 'readme'
+									? 'border-b-2 border-accent text-text'
+									: 'text-text-tertiary hover:text-text-secondary'}"
 								onclick={() => (activeTab = 'readme')}
 							>
 								README
@@ -290,7 +288,7 @@
 							id="tabpanel-{activeTab}"
 							role="tabpanel"
 							aria-labelledby="tab-{activeTab}"
-							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
+							class="rounded-lg border border-border bg-surface-raised p-6 md:p-8"
 						>
 							{#if activeTab === 'docs'}
 								<ReadmeRenderer html={zedDocsHtml} />
@@ -299,40 +297,33 @@
 							{/if}
 						</div>
 					{:else if zedDocsHtml}
-						<div
-							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-						>
+						<div class="rounded-lg border border-border bg-surface-raised p-6 md:p-8">
 							<ReadmeRenderer html={zedDocsHtml} />
 						</div>
 					{:else if readmeHtml}
-						<div
-							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-						>
+						<div class="rounded-lg border border-border bg-surface-raised p-6 md:p-8">
 							<ReadmeRenderer html={readmeHtml} />
 						</div>
 					{:else}
-						<div
-							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-8 text-center"
-						>
+						<div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
 							{#if isMonorepo}
-								<p class="text-[var(--color-text-secondary)]">
+								<p class="text-text-secondary">
 									This extension is maintained as part of the
 									<a
 										href="https://github.com/zed-industries/zed"
 										target="_blank"
 										rel="noopener noreferrer"
-										class="font-medium text-[var(--color-accent)] hover:underline"
-										>core Zed repository</a
+										class="font-medium text-accent hover:underline">core Zed repository</a
 									>.
 								</p>
 							{:else}
-								<p class="text-[var(--color-text-tertiary)]">No README available</p>
+								<p class="text-text-tertiary">No README available</p>
 								{#if extension.repository}
 									<a
 										href={extension.repository}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="mt-2 inline-block text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+										class="mt-2 inline-block text-13 font-medium text-accent hover:underline"
 									>
 										View on GitHub
 									</a>
@@ -342,15 +333,15 @@
 					{/if}
 				{:catch}
 					<div
-						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 text-center text-[14px] md:p-8"
+						class="rounded-lg border border-border bg-surface-raised p-6 text-center text-14 md:p-8"
 					>
-						<p class="text-[var(--color-text-secondary)]">Couldn’t load the README.</p>
+						<p class="text-text-secondary">Couldn’t load the README.</p>
 						{#if extension.repository}
 							<a
 								href={extension.repository}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="mt-2 inline-block text-[13px] font-medium text-[var(--color-accent)] hover:underline"
+								class="mt-2 inline-block text-13 font-medium text-accent hover:underline"
 							>
 								View on GitHub
 							</a>
@@ -365,30 +356,26 @@
 			{:else if pageTab === 'changelog'}
 				<div id="page-tab-changelog" role="tabpanel" aria-labelledby="page-tab-changelog-label">
 					{#if changelog?.id === extension.id && changelog.status === 'ready' && changelog.html}
-						<div
-							class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 md:p-8"
-						>
+						<div class="rounded-lg border border-border bg-surface-raised p-6 md:p-8">
 							<ReadmeRenderer html={changelog.html} />
 						</div>
 						<a
 							href={changelog.url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="mt-3 inline-block text-[13px] text-[var(--color-accent)] hover:underline"
+							class="mt-3 inline-block text-13 text-accent hover:underline"
 						>
 							Full changelog on GitHub →
 						</a>
 					{:else if changelog?.id === extension.id && changelog.status === 'none'}
-						<p class="text-[13px] text-[var(--color-text-tertiary)]">
-							This extension doesn’t have a changelog yet.
-						</p>
+						<p class="text-13 text-text-tertiary">This extension doesn’t have a changelog yet.</p>
 					{:else if changelog?.id === extension.id && changelog.status === 'error'}
-						<div class="flex flex-wrap items-center gap-3 text-[13px]" role="alert">
-							<span class="text-[var(--color-text-secondary)]">Couldn’t load the changelog.</span>
+						<div class="flex flex-wrap items-center gap-3 text-13" role="alert">
+							<span class="text-text-secondary">Couldn’t load the changelog.</span>
 							<button
 								type="button"
 								onclick={() => loadChangelog(extension.id)}
-								class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+								class="min-h-11 rounded-md border border-border px-3 font-medium text-text hover:bg-surface-hover"
 							>
 								Try Again
 							</button>
@@ -397,19 +384,19 @@
 									href={extension.repository}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="text-[var(--color-accent)] hover:underline">View on GitHub →</a
+									class="text-accent hover:underline">View on GitHub →</a
 								>
 							{/if}
 						</div>
 					{:else}
 						<div
-							class="space-y-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 motion-safe:animate-pulse md:p-8"
+							class="space-y-3 rounded-lg border border-border bg-surface-raised p-6 motion-safe:animate-pulse md:p-8"
 							role="status"
 							aria-label="Loading"
 						>
-							<div class="h-5 w-1/4 rounded bg-[var(--color-surface-hover)]"></div>
-							<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
-							<div class="h-3 w-5/6 rounded bg-[var(--color-surface-hover)]"></div>
+							<div class="h-5 w-1/4 rounded bg-surface-hover"></div>
+							<div class="h-3 w-full rounded bg-surface-hover"></div>
+							<div class="h-3 w-5/6 rounded bg-surface-hover"></div>
 						</div>
 					{/if}
 				</div>

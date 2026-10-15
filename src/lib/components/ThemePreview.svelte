@@ -24,8 +24,8 @@
 	}: { variants: ThemeVariant[]; size?: 'md' | 'lg'; halo?: boolean } = $props();
 
 	// The theme picker shows one big preview; extension pages keep the compact size
-	const codeSize = $derived(size === 'lg' ? 'text-[15px]' : 'text-[13px]');
-	const chromeSize = $derived(size === 'lg' ? 'text-[12px]' : 'text-[11px]');
+	const codeSize = $derived(size === 'lg' ? 'text-15' : 'text-13');
+	const chromeSize = $derived(size === 'lg' ? 'text-12' : 'text-11');
 
 	// Light/dark first, then a variant of that appearance. Starts on the first variant's
 	// appearance (the author's order); the toggle only shows when a theme ships both.
@@ -81,7 +81,7 @@
 		<div class="mb-3 flex flex-wrap items-center gap-3">
 			{#if appearances.length > 1}
 				<div
-					class="inline-flex rounded-md border border-[var(--color-border)] p-0.5 text-[12px]"
+					class="inline-flex rounded-md border border-border p-0.5 text-12"
 					role="group"
 					aria-label="Appearance"
 				>
@@ -90,8 +90,8 @@
 							aria-pressed={activeMode === a}
 							onclick={() => chooseMode(a)}
 							class="rounded px-3 py-1 capitalize transition-colors {activeMode === a
-								? 'bg-[var(--color-text)] text-[var(--color-surface)]'
-								: 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'}"
+								? 'bg-text text-surface'
+								: 'text-text-secondary hover:text-text'}"
 						>
 							{a}
 						</button>
@@ -101,18 +101,18 @@
 
 			<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 			{#if shown.length > 8}
-				<label class="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+				<label class="flex items-center gap-2 text-12 text-text-secondary">
 					{shown.length} variants
 					<span class="relative inline-flex">
 						<select
 							bind:value={picked}
 							aria-label="Theme variant"
-							class="appearance-none rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-1 pr-8 pl-2.5 text-[12px] text-[var(--color-text)]"
+							class="appearance-none rounded-md border border-border bg-surface-raised py-1 pr-8 pl-2.5 text-12 text-text"
 						>
 							{#each shown as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 						</select>
 						<svg
-							class="pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+							class="pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2 text-text-tertiary"
 							fill="none"
 							stroke="currentColor"
 							stroke-width="2"
@@ -128,9 +128,9 @@
 						<button
 							aria-pressed={current === v}
 							onclick={() => (picked = i)}
-							class="rounded-full border px-3 py-1 text-[12px] transition-colors {current === v
-								? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'
-								: 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]'}"
+							class="rounded-full border px-3 py-1 text-12 transition-colors {current === v
+								? 'border-accent font-semibold text-accent'
+								: 'border-border text-text-secondary hover:border-border-hover'}"
 						>
 							{v.name}
 						</button>

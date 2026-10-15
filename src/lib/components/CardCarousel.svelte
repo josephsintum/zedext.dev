@@ -47,7 +47,7 @@
 		type="button"
 		aria-label={dir === 1 ? `Next ${label}` : `Previous ${label}`}
 		onclick={() => page(dir)}
-		class="absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] shadow-md hover:border-[var(--color-border-hover)] hover:text-[var(--color-text)] {dir ===
+		class="absolute top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface-raised text-text-secondary shadow-md hover:border-border-hover hover:text-text {dir ===
 		1
 			? '-right-5'
 			: '-left-5'} {hidden ? '' : 'sm:flex'}"

@@ -29,10 +29,8 @@
 	}
 
 	const classes = $derived(
-		`group block w-full overflow-hidden rounded-lg border bg-[var(--color-surface-raised)] text-left transition-colors ${
-			selected
-				? 'border-[var(--color-accent)] ring-2 ring-[var(--color-accent)]/30'
-				: 'border-[var(--color-border)] hover:border-[var(--color-border-hover)]'
+		`group block w-full overflow-hidden rounded-lg border bg-surface-raised text-left transition-colors ${
+			selected ? 'border-accent ring-2 ring-accent/30' : 'border-border hover:border-border-hover'
 		}`
 	);
 </script>
@@ -57,12 +55,9 @@
 		{/each}
 	</span>
 	<span class="block px-2.5 py-2">
-		<span class="block truncate text-[13px] font-medium text-[var(--color-text)]">{entry.name}</span
-		>
+		<span class="block truncate text-13 font-medium text-text">{entry.name}</span>
 		<!-- Downloads on the right, so they line up down the grid -->
-		<span
-			class="flex justify-between gap-2 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
-		>
+		<span class="flex justify-between gap-2 text-12 text-text-tertiary tabular-nums">
 			<span>{entry.variantCount > 1 ? `${entry.variantCount} variants` : ''}</span>
 			<span>↓ {formatNumber(entry.downloads)}</span>
 		</span>

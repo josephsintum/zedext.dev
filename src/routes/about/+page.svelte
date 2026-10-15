@@ -26,9 +26,7 @@
 	<!-- Hero -->
 	<header class="mb-16">
 		<div class="mb-4 flex items-center gap-3">
-			<div
-				class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--color-text)] text-[var(--color-surface)]"
-			>
+			<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-text text-surface">
 				<svg
 					aria-hidden="true"
 					class="h-5 w-5"
@@ -43,11 +41,11 @@
 			</div>
 			<h1 class="font-mono text-2xl font-bold tracking-tight">ZedExt</h1>
 		</div>
-		<p class="text-lg leading-relaxed text-[var(--color-text-secondary)]">
+		<p class="text-lg leading-relaxed text-text-secondary">
 			A fast, modern extension browser for the
 			<a
 				href="https://zed.dev"
-				class="font-medium text-[var(--color-text)] underline decoration-[var(--color-border)] underline-offset-4 transition-colors hover:decoration-[var(--color-accent)]"
+				class="font-medium text-text underline decoration-border underline-offset-4 transition-colors hover:decoration-accent"
 				target="_blank"
 				rel="noopener noreferrer">Zed editor</a
 			> — with rich READMEs, GitHub stats, and powerful search.
@@ -56,20 +54,16 @@
 
 	<!-- What ZedExt is -->
 	<section class="mb-14">
-		<h2
-			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
-		>
+		<h2 class="mb-4 text-sm font-semibold tracking-widest text-text-tertiary uppercase">
 			What ZedExt is
 		</h2>
-		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+		<div class="space-y-4 text-15 leading-relaxed text-text-secondary">
 			<p>
-				ZedExt is an <strong class="text-[var(--color-text)]"
-					>alternative extension marketplace</strong
-				>
+				ZedExt is an <strong class="text-text">alternative extension marketplace</strong>
 				for the Zed editor. Zed’s official extension page at
 				<a
 					href="https://zed.dev/extensions"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">zed.dev/extensions</a
 				>
@@ -77,26 +71,25 @@
 				history.
 			</p>
 			<p>We believe extension discovery should be better. ZedExt provides:</p>
-			<ul class="ml-1 list-inside list-disc space-y-2 marker:text-[var(--color-border-hover)]">
+			<ul class="ml-1 list-inside list-disc space-y-2 marker:text-border-hover">
 				<li>
-					<strong class="text-[var(--color-text)]">Rich extension pages</strong> — full README rendered
-					with syntax highlighting and properly resolved images
+					<strong class="text-text">Rich extension pages</strong> — full README rendered with syntax highlighting
+					and properly resolved images
 				</li>
 				<li>
-					<strong class="text-[var(--color-text)]">GitHub context</strong> — stars, license, last commit,
-					forks, and open issues so you can assess extension health
+					<strong class="text-text">GitHub context</strong> — stars, license, last commit, forks, and
+					open issues so you can assess extension health
 				</li>
 				<li>
-					<strong class="text-[var(--color-text)]">Better search</strong> — typo-tolerant, faceted search
-					with category filters and multiple sort options
+					<strong class="text-text">Better search</strong> — typo-tolerant, faceted search with category
+					filters and multiple sort options
 				</li>
 				<li>
-					<strong class="text-[var(--color-text)]">Version history</strong> — all published versions with
-					dates
+					<strong class="text-text">Version history</strong> — all published versions with dates
 				</li>
 				<li>
-					<strong class="text-[var(--color-text)]">SEO-friendly</strong> — every extension has a unique,
-					indexable page with proper meta tags
+					<strong class="text-text">SEO-friendly</strong> — every extension has a unique, indexable page
+					with proper meta tags
 				</li>
 			</ul>
 		</div>
@@ -104,24 +97,22 @@
 
 	<!-- What ZedExt is NOT -->
 	<section class="mb-14">
-		<h2
-			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
-		>
+		<h2 class="mb-4 text-sm font-semibold tracking-widest text-text-tertiary uppercase">
 			What ZedExt is not
 		</h2>
-		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+		<div class="space-y-4 text-15 leading-relaxed text-text-secondary">
 			<p>
-				<strong class="text-[var(--color-text)]">Not a registry.</strong>
+				<strong class="text-text">Not a registry.</strong>
 				ZedExt doesn’t host or publish extensions. Authors continue to publish via PR to
 				<a
 					href="https://github.com/zed-industries/extensions"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">zed-industries/extensions</a
 				>. We’re a read-only browser of the official Zed extension registry.
 			</p>
 			<p>
-				<strong class="text-[var(--color-text)]">Not affiliated with Zed Industries.</strong>
+				<strong class="text-text">Not affiliated with Zed Industries.</strong>
 				This is an independent community project. We use publicly available data from the Zed API and
 				GitHub.
 			</p>
@@ -130,25 +121,23 @@
 
 	<!-- How it works -->
 	<section class="mb-14">
-		<h2
-			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
-		>
+		<h2 class="mb-4 text-sm font-semibold tracking-widest text-text-tertiary uppercase">
 			How it works
 		</h2>
-		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+		<div class="space-y-4 text-15 leading-relaxed text-text-secondary">
 			<p>
-				ZedExt has <strong class="text-[var(--color-text)]">no database</strong>. All data is
-				fetched on-demand from the
+				ZedExt has <strong class="text-text">no database</strong>. All data is fetched on-demand
+				from the
 				<a
 					href="https://zed.dev"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">Zed API</a
 				>
 				and
 				<a
 					href="https://github.com"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">GitHub API</a
 				>, then cached in memory. Search runs in your browser over a snapshot of the whole registry,
@@ -158,25 +147,25 @@
 				Built with
 				<a
 					href="https://svelte.dev"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">SvelteKit</a
 				>,
 				<a
 					href="https://tailwindcss.com"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">Tailwind CSS</a
 				>, and deployed on
 				<a
 					href="https://vercel.com"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">Vercel</a
 				>. Inspired by the architecture of
 				<a
 					href="https://npmx.dev"
-					class="text-[var(--color-accent)] hover:underline"
+					class="text-accent hover:underline"
 					target="_blank"
 					rel="noopener noreferrer">npmx.dev</a
 				>.
@@ -186,18 +175,14 @@
 
 	<!-- Tech stack -->
 	<section class="mb-14">
-		<h2
-			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
-		>
-			Stack
-		</h2>
+		<h2 class="mb-4 text-sm font-semibold tracking-widest text-text-tertiary uppercase">Stack</h2>
 		<div
-			class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-3"
+			class="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-3"
 		>
 			{#each [{ name: 'SvelteKit', desc: 'Framework' }, { name: 'Tailwind CSS v4', desc: 'Styling' }, { name: 'MiniSearch', desc: 'Search' }, { name: 'Shiki', desc: 'Syntax highlighting' }, { name: 'Vercel', desc: 'Hosting' }, { name: 'GitHub API', desc: 'Extension data' }] as item}
-				<div class="bg-[var(--color-surface)] px-4 py-3">
-					<div class="text-[13px] font-medium text-[var(--color-text)]">{item.name}</div>
-					<div class="text-[12px] text-[var(--color-text-tertiary)]">{item.desc}</div>
+				<div class="bg-surface px-4 py-3">
+					<div class="text-13 font-medium text-text">{item.name}</div>
+					<div class="text-12 text-text-tertiary">{item.desc}</div>
 				</div>
 			{/each}
 		</div>
@@ -205,16 +190,14 @@
 
 	<!-- Contributors -->
 	<section class="mb-14">
-		<h2
-			class="mb-4 text-sm font-semibold tracking-widest text-[var(--color-text-tertiary)] uppercase"
-		>
+		<h2 class="mb-4 text-sm font-semibold tracking-widest text-text-tertiary uppercase">
 			Contributors
 		</h2>
-		<div class="space-y-4 text-[15px] leading-relaxed text-[var(--color-text-secondary)]">
+		<div class="space-y-4 text-15 leading-relaxed text-text-secondary">
 			<p>ZedExt is open source and built by the community.</p>
 			<a
 				href="https://github.com/josephsintum/zedext.dev"
-				class="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-[13px] font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-hover)]"
+				class="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-13 font-medium text-text transition-colors hover:border-border-hover hover:bg-surface-hover"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -225,19 +208,17 @@
 				</svg>
 				View on GitHub
 			</a>
-			<p class="text-[13px] text-[var(--color-text-tertiary)]">
+			<p class="text-13 text-text-tertiary">
 				Contributions, issues, and feature requests are welcome.
 			</p>
 		</div>
 	</section>
 
 	<!-- Open source -->
-	<section
-		class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6"
-	>
+	<section class="rounded-lg border border-border bg-surface-raised p-6">
 		<div class="flex items-start gap-3">
 			<div
-				class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+				class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent"
 			>
 				<svg
 					aria-hidden="true"
@@ -253,8 +234,8 @@
 				</svg>
 			</div>
 			<div>
-				<h3 class="mb-1 text-[14px] font-semibold text-[var(--color-text)]">Open Source</h3>
-				<p class="text-[13px] leading-relaxed text-[var(--color-text-secondary)]">
+				<h3 class="mb-1 text-14 font-semibold text-text">Open Source</h3>
+				<p class="text-13 leading-relaxed text-text-secondary">
 					ZedExt is fully open source under the MIT license. The source code, sync pipeline, and
 					infrastructure are all publicly available on GitHub.
 				</p>

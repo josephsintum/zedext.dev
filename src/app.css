@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/typography';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -102,6 +101,15 @@
 @theme {
 	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	/* Small font sizes, named by size because each is used for mixed roles. In px like every
+	   other size on the site, so they keep their order with headings and the README. No
+	   line-height of their own: the text inherits it, as it did with text-[13px]. */
+	--text-11: 11px;
+	--text-12: 12px;
+	--text-13: 13px;
+	--text-14: 14px;
+	--text-15: 15px;
 
 	--color-accent: oklch(0.53 0.21 260);
 	--color-accent-soft: oklch(0.9 0.06 260);
@@ -241,34 +249,42 @@ body::before {
 }
 
 /* Scrollable rows that hide their scrollbar (category tabs) */
-.hide-scrollbar {
-	-ms-overflow-style: none;
+@utility hide-scrollbar {
 	scrollbar-width: none;
-}
-.hide-scrollbar::-webkit-scrollbar {
-	display: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
-/* Card hover lift */
-.card-hover {
-	transition:
-		transform 0.2s ease,
-		box-shadow 0.2s ease,
-		border-color 0.2s ease;
-}
-.card-hover:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+/* Card hover lift. In the components layer so utilities on the same card can override it, and
+   behind (hover: hover) like Tailwind's hover: variants so a tap doesn't leave it half-hovered. */
+@layer components {
+	.card-hover {
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease,
+			border-color 0.2s ease;
+	}
+	@media (hover: hover) {
+		.card-hover:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px -8px var(--color-card-shadow);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card-hover {
+			transition: none;
+		}
+		.card-hover:hover {
+			transform: none;
+		}
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.theme-halo {
 		transition: none;
-	}
-	.card-hover {
-		transition: none;
-	}
-	.card-hover:hover {
-		transform: none;
 	}
 }

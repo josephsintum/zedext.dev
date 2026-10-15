@@ -66,10 +66,10 @@
 			data-slug={cat.slug}
 			aria-current={active === cat.slug ? 'page' : undefined}
 			class={clsx(
-				'group relative shrink-0 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors duration-150',
+				'group relative shrink-0 rounded-lg px-3 py-2.5 text-13 font-medium transition-colors duration-150',
 				shown === cat.slug
-					? 'bg-[var(--color-text)] text-[var(--color-surface)] shadow-sm'
-					: 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]'
+					? 'bg-text text-surface shadow-sm'
+					: 'text-text-secondary hover:bg-surface-hover hover:text-text'
 			)}
 		>
 			{cat.label}

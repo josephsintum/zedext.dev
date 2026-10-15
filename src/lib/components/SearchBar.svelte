@@ -128,13 +128,13 @@
 >
 	<div
 		class="relative overflow-hidden rounded-xl border transition-all duration-200 motion-reduce:transition-none {focused
-			? 'border-[var(--color-accent)] shadow-[var(--color-accent)]/10 shadow-lg'
-			: 'border-[var(--color-border)] shadow-sm'}"
+			? 'border-accent shadow-lg shadow-accent/10'
+			: 'border-border shadow-sm'}"
 	>
 		<svg
 			class="absolute top-1/2 left-4 h-[18px] w-[18px] -translate-y-1/2 transition-colors duration-200"
-			class:text-[var(--color-accent)]={focused}
-			class:text-[var(--color-text-tertiary)]={!focused}
+			class:text-accent={focused}
+			class:text-text-tertiary={!focused}
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
@@ -163,18 +163,18 @@
 				if (to) preloadCode(to).catch(() => {});
 			}}
 			onblur={() => (focused = false)}
-			class="w-full bg-[var(--color-surface-raised)] py-3.5 pr-4 pl-12 font-sans text-[16px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none sm:text-[15px]"
+			class="w-full bg-surface-raised py-3.5 pr-4 pl-12 font-sans text-[16px] text-text placeholder:text-text-tertiary focus:outline-none sm:text-15"
 		/>
 		<div class="absolute top-1/2 right-4 -translate-y-1/2">
 			{#if busy}
 				<span
-					class="block h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] motion-reduce:animate-none"
+					class="block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent motion-reduce:animate-none"
 					role="status"
 					aria-label="Searching"
 				></span>
 			{:else if !focused}
 				<kbd
-					class="hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[11px] text-[var(--color-text-tertiary)] sm:inline-block"
+					class="hidden rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-11 text-text-tertiary sm:inline-block"
 					>/</kbd
 				>
 			{/if}

@@ -11,18 +11,18 @@
 	];
 </script>
 
-<footer class="mt-auto border-t border-[var(--color-border)]">
+<footer class="mt-auto border-t border-border">
 	<div
 		class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row"
 	>
-		<div class="text-center text-[13px] text-[var(--color-text-tertiary)] sm:text-left">
+		<div class="text-center text-13 text-text-tertiary sm:text-left">
 			<div class="flex flex-wrap items-center justify-center gap-x-2 sm:justify-start">
 				<span class="font-mono font-medium">ZedExt</span>
-				<span class="text-[var(--color-border)]" aria-hidden="true">/</span>
+				<span class="text-border" aria-hidden="true">/</span>
 				<span>An unofficial community project. Not affiliated with Zed Industries.</span>
 			</div>
 			{#if updatedAt}
-				<p class="mt-1 text-[12px]">
+				<p class="mt-1 text-12">
 					Data from Zed’s extension registry and GitHub · updated
 					<time datetime={updatedAt} title={new Date(updatedAt).toUTCString()}
 						>{timeAgo(updatedAt)}</time
@@ -31,20 +31,18 @@
 			{/if}
 		</div>
 
-		<div
-			class="flex flex-wrap items-center justify-center gap-x-4 text-[12px] text-[var(--color-text-tertiary)]"
-		>
+		<div class="flex flex-wrap items-center justify-center gap-x-4 text-12 text-text-tertiary">
 			<a
 				href="/about"
-				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
 			>
 				About
 			</a>
 			{#each externalLinks as link (link.href)}
-				<span class="text-[var(--color-border)]" aria-hidden="true">&middot;</span>
+				<span class="text-border" aria-hidden="true">&middot;</span>
 				<a
 					href={link.href}
-					class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-[var(--color-text-secondary)]"
+					class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
 					target="_blank"
 					rel="noopener noreferrer"
 				>

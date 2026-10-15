@@ -37,13 +37,10 @@
 		}
 	}
 
-	const panel =
-		'rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4';
-	const panelTitle =
-		'mb-3 text-[12px] font-semibold tracking-wide text-[var(--color-text-tertiary)] uppercase';
-	const row = 'flex items-center justify-between gap-3 py-1 text-[13px]';
-	const link =
-		'text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]';
+	const panel = 'rounded-lg border border-border bg-surface-raised p-4';
+	const panelTitle = 'mb-3 text-12 font-semibold tracking-wide text-text-tertiary uppercase';
+	const row = 'flex items-center justify-between gap-3 py-1 text-13';
+	const link = 'text-text-secondary transition-colors hover:text-accent';
 </script>
 
 <aside class="space-y-6">
@@ -52,7 +49,7 @@
 	<!-- Downloads -->
 	<div class="{panel} flex items-center gap-3">
 		<svg
-			class="h-5 w-5 text-[var(--color-accent)]"
+			class="h-5 w-5 text-accent"
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
@@ -66,10 +63,10 @@
 			/>
 		</svg>
 		<div>
-			<div class="font-mono text-2xl font-bold text-[var(--color-text)]">
+			<div class="font-mono text-2xl font-bold text-text">
 				{formatNumber(extension.download_count)}
 			</div>
-			<div class="text-[11px] text-[var(--color-text-tertiary)]">downloads</div>
+			<div class="text-11 text-text-tertiary">downloads</div>
 		</div>
 	</div>
 
@@ -77,37 +74,33 @@
 	<section class={panel} aria-labelledby="more-info">
 		<h3 id="more-info" class={panelTitle}>More info</h3>
 		<div class={row}>
-			<span class="text-[var(--color-text-tertiary)]">Identifier</span>
+			<span class="text-text-tertiary">Identifier</span>
 			<button
 				onclick={copyId}
 				title="Copy identifier"
-				class="min-w-0 truncate font-mono text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+				class="min-w-0 truncate font-mono text-12 text-text-secondary hover:text-text"
 			>
 				{copied ? 'Copied' : extension.id}
 			</button>
 		</div>
 		<div class={row}>
-			<span class="text-[var(--color-text-tertiary)]">Version</span>
-			<span class="font-mono text-[12px] text-[var(--color-text-secondary)]"
-				>{extension.version}</span
-			>
+			<span class="text-text-tertiary">Version</span>
+			<span class="font-mono text-12 text-text-secondary">{extension.version}</span>
 		</div>
 		{#if firstReleasedAt}
 			<div class={row}>
-				<span class="text-[var(--color-text-tertiary)]">First released</span>
-				<span class="text-[var(--color-text-secondary)]">{formatDate(firstReleasedAt)}</span>
+				<span class="text-text-tertiary">First released</span>
+				<span class="text-text-secondary">{formatDate(firstReleasedAt)}</span>
 			</div>
 		{/if}
 		<div class={row}>
-			<span class="text-[var(--color-text-tertiary)]">Last updated</span>
-			<span class="text-[var(--color-text-secondary)]">{formatDate(extension.published_at)}</span>
+			<span class="text-text-tertiary">Last updated</span>
+			<span class="text-text-secondary">{formatDate(extension.published_at)}</span>
 		</div>
 		{#if github?.license}
 			<div class={row}>
-				<span class="text-[var(--color-text-tertiary)]">License</span>
-				<span class="font-mono text-[12px] text-[var(--color-text-secondary)]"
-					>{github.license.spdx_id}</span
-				>
+				<span class="text-text-tertiary">License</span>
+				<span class="font-mono text-12 text-text-secondary">{github.license.spdx_id}</span>
 			</div>
 		{/if}
 	</section>
@@ -116,7 +109,7 @@
 	{#if extension.repository || zedDocsUrl || repoOwner}
 		<section class={panel} aria-labelledby="resources">
 			<h3 id="resources" class={panelTitle}>Resources</h3>
-			<ul class="space-y-1.5 text-[13px]">
+			<ul class="space-y-1.5 text-13">
 				{#if extension.repository}
 					<li>
 						<a href={extension.repository} target="_blank" rel="noopener noreferrer" class={link}
@@ -132,9 +125,7 @@
 						>
 							Issues
 							{#if github && !isMonorepo}
-								<span class="text-[var(--color-text-tertiary)]"
-									>({formatNumber(github.open_issues_count)})</span
-								>
+								<span class="text-text-tertiary">({formatNumber(github.open_issues_count)})</span>
 							{/if}
 							↗
 						</a>
@@ -159,31 +150,24 @@
 		<section class={panel} aria-labelledby="github-stats">
 			<h3 id="github-stats" class={panelTitle}>GitHub</h3>
 			<div class={row}>
-				<span class="text-[var(--color-text-tertiary)]">Stars</span>
-				<span class="text-[var(--color-text-secondary)] tabular-nums"
-					>{formatNumber(github.stargazers_count)}</span
+				<span class="text-text-tertiary">Stars</span>
+				<span class="text-text-secondary tabular-nums">{formatNumber(github.stargazers_count)}</span
 				>
 			</div>
 			<div class={row}>
-				<span class="text-[var(--color-text-tertiary)]">Forks</span>
-				<span class="text-[var(--color-text-secondary)] tabular-nums"
-					>{formatNumber(github.forks_count)}</span
-				>
+				<span class="text-text-tertiary">Forks</span>
+				<span class="text-text-secondary tabular-nums">{formatNumber(github.forks_count)}</span>
 			</div>
 			<div class={row}>
-				<span class="text-[var(--color-text-tertiary)]">Last commit</span>
-				<span class="text-[var(--color-text-secondary)]">{timeAgo(github.pushed_at)}</span>
+				<span class="text-text-tertiary">Last commit</span>
+				<span class="text-text-secondary">{timeAgo(github.pushed_at)}</span>
 			</div>
 		</section>
 	{/if}
 
 	<!-- Provides -->
 	<div>
-		<h3
-			class="mb-2 text-[13px] font-semibold tracking-wide text-[var(--color-text-tertiary)] uppercase"
-		>
-			Provides
-		</h3>
+		<h3 class="mb-2 text-13 font-semibold tracking-wide text-text-tertiary uppercase">Provides</h3>
 		<div class="flex flex-wrap gap-1.5">
 			{#each extension.provides as provide}
 				<ProvideTag {provide} />
@@ -193,31 +177,27 @@
 
 	<!-- Authors -->
 	<div>
-		<h3
-			class="mb-2 text-[13px] font-semibold tracking-wide text-[var(--color-text-tertiary)] uppercase"
-		>
-			Authors
-		</h3>
+		<h3 class="mb-2 text-13 font-semibold tracking-wide text-text-tertiary uppercase">Authors</h3>
 		<div class="space-y-2">
 			{#each authorNames as name, i}
 				{#if i === 0 && repoOwner}
 					<a
 						href="/authors/{repoOwner}"
-						class="flex items-center gap-2 text-[13px] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-accent)]"
+						class="flex items-center gap-2 text-13 text-text-secondary transition-colors hover:text-accent"
 					>
 						{#if repoOwnerAvatar}
 							<img
 								src={repoOwnerAvatar}
 								alt={name}
-								class="h-6 w-6 rounded-full border border-[var(--color-border)]"
+								class="h-6 w-6 rounded-full border border-border"
 							/>
 						{/if}
 						<span>~{repoOwner}</span>
 					</a>
 				{:else}
-					<div class="flex items-center gap-2 text-[13px] text-[var(--color-text-secondary)]">
+					<div class="flex items-center gap-2 text-13 text-text-secondary">
 						<div
-							class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-surface-hover)] text-[10px] font-medium text-[var(--color-text-tertiary)]"
+							class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-hover text-[10px] font-medium text-text-tertiary"
 						>
 							{name.charAt(0).toUpperCase()}
 						</div>

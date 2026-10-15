@@ -52,16 +52,14 @@
 
 <a
 	href="/extensions/{hit.id}"
-	class="card-hover group bg-surface-raised relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
+	class="card-hover group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-surface-raised p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
-		<h3
-			class="min-w-0 truncate text-[14px] font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent-hover)]"
-		>
+		<h3 class="min-w-0 truncate text-14 font-semibold text-text group-hover:text-accent-hover">
 			{hit.name}
 		</h3>
 		<span
-			class="shrink-0 rounded-md bg-[var(--color-surface)] px-1.5 py-0.5 text-[11px] text-[var(--color-text-tertiary)] {badge ===
+			class="shrink-0 rounded-md bg-surface px-1.5 py-0.5 text-11 text-text-tertiary {badge ===
 			'version'
 				? 'font-mono'
 				: ''}"
@@ -75,9 +73,7 @@
 	</div>
 
 	{#if hit.description}
-		<p
-			class="mb-3 line-clamp-2 min-w-0 text-[13px] leading-relaxed text-[var(--color-text-secondary)]"
-		>
+		<p class="mb-3 line-clamp-2 min-w-0 text-13 leading-relaxed text-text-secondary">
 			{hit.description}
 		</p>
 	{:else}
@@ -90,9 +86,7 @@
 		{/each}
 	</div>
 
-	<div
-		class="mt-3 flex items-center gap-3 border-t border-[var(--color-border)] pt-3 text-[12px] text-[var(--color-text-tertiary)]"
-	>
+	<div class="mt-3 flex items-center gap-3 border-t border-border pt-3 text-12 text-text-tertiary">
 		{#if badge === 'version'}
 			{@render downloads()}
 		{/if}
@@ -118,7 +112,7 @@
 			</span>
 		{/if}
 
-		<span class="ml-auto truncate text-[11px]">
+		<span class="ml-auto truncate text-11">
 			{hit.authors[0] ?? 'Unknown'}
 		</span>
 	</div>
