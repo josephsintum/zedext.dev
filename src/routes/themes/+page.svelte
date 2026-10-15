@@ -189,7 +189,7 @@
 			<!-- Pinned under the header on large windows so a click anywhere in the grid shows up here -->
 			<section
 				bind:this={previewEl}
-				class="z-10 mt-4 scroll-mt-16 border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
+				class="z-10 mt-4 scroll-mt-16 [overflow-y:clip] border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
 				aria-label="Theme preview"
 			>
 				<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
@@ -208,7 +208,7 @@
 						aria-busy={preview.id !== selected.id && !selectedFailed}
 					>
 						{#key `${appearance}:${preview.id}`}
-							<ThemePreview variants={previewVariants} size="lg" />
+							<ThemePreview variants={previewVariants} size="lg" halo />
 						{/key}
 					</div>
 				{/if}
