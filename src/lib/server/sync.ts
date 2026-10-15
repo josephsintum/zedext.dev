@@ -28,6 +28,7 @@ import {
 	previewsShrank,
 	PREVIEWS_PATH
 } from './previews-sync.js';
+import { changedUrls, submitToIndexNow } from './indexnow.js';
 import {
 	defaultDeps,
 	FatalError,
@@ -75,6 +76,8 @@ export interface SyncResult {
 	previewsFailed: number;
 	previewsPending: number;
 	previewsSaved: boolean;
+	/** Changed pages sent to IndexNow (0 when nothing changed or the ping failed) */
+	indexNowSubmitted: number;
 }
 
 interface SyncConfig {
@@ -529,6 +532,10 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 	// failing downloads can only ever cost previews, never the snapshot or history.
 	const previews = await syncPreviews(records, config, start.getTime(), log, deps, write);
 
+	// Last, so pages are as fresh as they'll get when crawlers come, and a failed ping
+	// (it never throws) can't cost anything above
+	const indexNowSubmitted = await submitToIndexNow(changedUrls(records, previous), log, deps);
+
 	const completedAt = new Date();
 	const elapsedSeconds = Number(((completedAt.getTime() - start.getTime()) / 1000).toFixed(1));
 	log(`=== Published ${records.length} extensions in ${elapsedSeconds}s → ${blob.url} ===`);
@@ -546,7 +553,8 @@ async function sync(options: SyncOptions): Promise<SyncResult | SyncSkipped> {
 		previewsDownloaded: previews.downloaded,
 		previewsFailed: previews.failed,
 		previewsPending: previews.pending,
-		previewsSaved: previews.saved
+		previewsSaved: previews.saved,
+		indexNowSubmitted
 	};
 }
 
