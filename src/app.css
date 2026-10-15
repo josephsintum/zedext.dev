@@ -181,6 +181,45 @@ body::before {
 	mix-blend-mode: screen;
 }
 
+/* Theme picker: a soft glow in the shown variant's colors behind the preview window.
+   The colors are registered so a theme or variant change fades instead of jumping. */
+@property --halo-1 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
+@property --halo-2 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
+@property --halo-3 {
+	syntax: '<color>';
+	inherits: true;
+	initial-value: transparent;
+}
+
+.theme-halo {
+	position: absolute;
+	inset: -16px -56px;
+	z-index: -1;
+	pointer-events: none;
+	border-radius: 48px;
+	opacity: 0.6;
+	filter: blur(44px);
+	background:
+		radial-gradient(ellipse 45% 70% at 8% 50%, var(--halo-1), transparent 70%),
+		radial-gradient(ellipse 45% 70% at 92% 45%, var(--halo-2), transparent 70%),
+		radial-gradient(ellipse 60% 45% at 50% 100%, var(--halo-3), transparent 70%);
+	transition:
+		--halo-1 0.6s ease,
+		--halo-2 0.6s ease,
+		--halo-3 0.6s ease;
+}
+.dark .theme-halo {
+	opacity: 0.3;
+}
+
 /* Grows a small text control's touch area to at least 44px tall without changing its look.
    (Doesn't work on overflow-hidden elements like truncate, which clip the area.) */
 @utility hit-y {
@@ -218,6 +257,9 @@ body::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.theme-halo {
+		transition: none;
+	}
 	.card-hover {
 		transition: none;
 	}
