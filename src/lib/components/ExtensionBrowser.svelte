@@ -107,7 +107,7 @@
 </script>
 
 <!-- Hero -->
-<section class="border-b border-[var(--color-border)]">
+<section class="border-border border-b">
 	<div class="mx-auto max-w-6xl px-6 pt-14 pb-8">
 		{@render intro()}
 		<div class="mx-auto mt-6 max-w-2xl">
@@ -117,15 +117,13 @@
 </section>
 
 <!-- Sticky filter bar -->
-<div
-	class="sticky top-14 z-40 border-b border-[var(--color-border)] bg-[var(--color-surface-raised)] backdrop-blur-md"
->
+<div class="border-border bg-surface-raised sticky top-14 z-40 border-b backdrop-blur-md">
 	<div class="mx-auto max-w-6xl px-6 pt-4 pb-3">
 		<div class="flex items-center justify-between gap-4">
 			<CategoryTabs active={category} />
 			<div class="flex shrink-0 items-center gap-3">
 				{#if displayTotalHits > 0}
-					<span class="text-[12px] text-[var(--color-text-tertiary)] tabular-nums">
+					<span class="text-text-tertiary text-[12px] tabular-nums">
 						{formatNumber(displayTotalHits)}
 					</span>
 				{/if}
@@ -136,15 +134,15 @@
 
 <!-- Sort bar + view toggle -->
 <div class="mx-auto max-w-6xl px-6">
-	<div class="flex items-center justify-between py-3 text-[12px] text-[var(--color-text-tertiary)]">
+	<div class="text-text-tertiary flex items-center justify-between py-3 text-[12px]">
 		<span
 			>sort:
 			{#each sortOptions as sf, i}<button
 					onclick={() => selectSort(sf.value)}
 					aria-pressed={sort === sf.value}
 					class="hit-y px-1.5 transition-colors {sort === sf.value
-						? 'font-bold text-[var(--color-accent)]'
-						: 'hover:text-[var(--color-text-secondary)]'}">{sf.label}</button
+						? 'text-accent font-bold'
+						: 'hover:text-text-secondary'}">{sf.label}</button
 				>{#if i < sortOptions.length - 1}<span>/</span>{/if}{/each}
 		</span>
 		<div class="flex items-center gap-1">
@@ -152,8 +150,8 @@
 				onclick={() => setViewMode('grid')}
 				class="flex h-11 w-11 items-center justify-center rounded-md transition-colors sm:h-7 sm:w-7 {viewMode ===
 				'grid'
-					? 'bg-[var(--color-surface-hover)] text-[var(--color-text)]'
-					: 'hover:text-[var(--color-text-secondary)]'}"
+					? 'bg-surface-hover text-text'
+					: 'hover:text-text-secondary'}"
 				aria-label="Grid view"
 				aria-pressed={viewMode === 'grid'}
 			>
@@ -175,8 +173,8 @@
 				onclick={() => setViewMode('list')}
 				class="flex h-11 w-11 items-center justify-center rounded-md transition-colors sm:h-7 sm:w-7 {viewMode ===
 				'list'
-					? 'bg-[var(--color-surface-hover)] text-[var(--color-text)]'
-					: 'hover:text-[var(--color-text-secondary)]'}"
+					? 'bg-surface-hover text-text'
+					: 'hover:text-text-secondary'}"
 				aria-label="List view"
 				aria-pressed={viewMode === 'list'}
 			>
@@ -206,13 +204,13 @@
 				href="https://zed.dev{feature.docsUrl}"
 				target="_blank"
 				rel="noopener noreferrer"
-				class="mb-2 flex items-center justify-between rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface-raised)] px-5 py-3.5 transition-colors hover:border-[var(--color-text-tertiary)]"
+				class="border-border bg-surface-raised hover:border-text-tertiary mb-2 flex items-center justify-between rounded-lg border border-dashed px-5 py-3.5 transition-colors"
 			>
 				<div class="flex items-center gap-3">
-					<span class="text-[13px] font-medium text-[var(--color-text)]">{feature.name}</span>
-					<span class="text-[13px] text-[var(--color-text-tertiary)]">{feature.message}</span>
+					<span class="text-text text-[13px] font-medium">{feature.name}</span>
+					<span class="text-text-tertiary text-[13px]">{feature.message}</span>
 				</div>
-				<span class="shrink-0 text-[12px] text-[var(--color-text-tertiary)]">View docs ↗</span>
+				<span class="text-text-tertiary shrink-0 text-[12px]">View docs ↗</span>
 			</a>
 		{/each}
 	</div>
@@ -234,7 +232,7 @@
 				{@const provides = filterProvides(hit.provides)}
 				{@const owner = parseRepoUrl(hit.repository ?? '')?.owner}
 				<div
-					class="group flex flex-col rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4 transition-colors duration-150 {getHoverBorder(
+					class="group border-border bg-surface-raised flex flex-col rounded-lg border p-4 transition-colors duration-150 {getHoverBorder(
 						hit
 					)}"
 				>
@@ -242,12 +240,12 @@
 						<!-- Name + downloads -->
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
-								class="min-w-0 truncate font-mono text-[14px] font-semibold text-[var(--color-accent)] group-hover:text-[var(--color-accent-hover)]"
+								class="text-accent group-hover:text-accent-hover min-w-0 truncate font-mono text-[14px] font-semibold"
 							>
 								{hit.name}
 							</h3>
 							<span
-								class="flex shrink-0 items-center gap-1 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
+								class="text-text-tertiary flex shrink-0 items-center gap-1 text-[12px] tabular-nums"
 							>
 								<svg
 									class="h-3.5 w-3.5"
@@ -269,9 +267,7 @@
 
 						<!-- Description -->
 						{#if hit.description}
-							<p
-								class="mb-3 line-clamp-2 text-[13px] leading-relaxed text-[var(--color-text-secondary)]"
-							>
+							<p class="text-text-secondary mb-3 line-clamp-2 text-[13px] leading-relaxed">
 								{hit.description}
 							</p>
 						{:else}
@@ -290,7 +286,7 @@
 
 					<!-- Footer: stars + author -->
 					<div
-						class="mt-auto flex items-center gap-3 border-t border-[var(--color-border)] pt-3 text-[12px] text-[var(--color-text-tertiary)]"
+						class="border-border text-text-tertiary mt-auto flex items-center gap-3 border-t pt-3 text-[12px]"
 					>
 						{#if hit.github_stars > 0}
 							<span class="flex items-center gap-1 tabular-nums">
@@ -314,7 +310,7 @@
 						{#if owner}
 							<a
 								href="/authors/{owner}"
-								class="-my-3.5 ml-auto truncate py-3.5 text-[11px] transition-colors hover:text-[var(--color-accent)]"
+								class="hover:text-accent -my-3.5 ml-auto truncate py-3.5 text-[11px] transition-colors"
 							>
 								{hit.authors[0] ?? 'Unknown'}
 							</a>
@@ -336,13 +332,13 @@
 		>
 			<!-- Column headers -->
 			<div
-				class="hidden border-b border-[var(--color-border)] py-2 text-[11px] font-medium text-[var(--color-text-tertiary)] sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
+				class="border-border text-text-tertiary hidden border-b py-2 text-[11px] font-medium sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
 			>
 				<button
 					onclick={() => selectSort('name')}
 					class="text-left tracking-wider uppercase transition-colors {sort === 'name'
-						? 'font-bold text-[var(--color-accent)]'
-						: 'hover:text-[var(--color-text-secondary)]'}"
+						? 'text-accent font-bold'
+						: 'hover:text-text-secondary'}"
 				>
 					Name
 				</button>
@@ -350,24 +346,24 @@
 				<button
 					onclick={() => selectSort('downloads')}
 					class="text-left tracking-wider uppercase transition-colors {sort === 'downloads'
-						? 'font-bold text-[var(--color-accent)]'
-						: 'hover:text-[var(--color-text-secondary)]'}"
+						? 'text-accent font-bold'
+						: 'hover:text-text-secondary'}"
 				>
 					Downloads
 				</button>
 				<button
 					onclick={() => selectSort('stars')}
 					class="text-left tracking-wider uppercase transition-colors {sort === 'stars'
-						? 'font-bold text-[var(--color-accent)]'
-						: 'hover:text-[var(--color-text-secondary)]'}"
+						? 'text-accent font-bold'
+						: 'hover:text-text-secondary'}"
 				>
 					Stars
 				</button>
 				<button
 					onclick={() => selectSort('updated')}
 					class="text-left tracking-wider uppercase transition-colors {sort === 'updated'
-						? 'font-bold text-[var(--color-accent)]'
-						: 'hover:text-[var(--color-text-secondary)]'}"
+						? 'text-accent font-bold'
+						: 'hover:text-text-secondary'}"
 				>
 					Published
 				</button>
@@ -378,16 +374,16 @@
 				<!-- Desktop: grid row -->
 				<a
 					href="/extensions/{hit.id}"
-					class="hidden border-b border-[var(--color-border)]/50 py-2.5 text-[13px] transition-colors hover:bg-[var(--color-surface-hover)] sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
+					class="border-border/50 hover:bg-surface-hover hidden border-b py-2.5 text-[13px] transition-colors sm:grid sm:grid-cols-[1fr_5rem_4.5rem_4.5rem_6rem] sm:items-center sm:gap-4"
 				>
 					<span class="min-w-0 truncate">
-						<span class="font-mono font-semibold text-[var(--color-text)]">{hit.name}</span>
+						<span class="text-text font-mono font-semibold">{hit.name}</span>
 						{#if hit.description}
-							<span class="ml-2 text-[var(--color-text-tertiary)]">{hit.description}</span>
+							<span class="text-text-tertiary ml-2">{hit.description}</span>
 						{/if}
 					</span>
 
-					<span class="flex items-center gap-1.5 text-[12px] text-[var(--color-text-tertiary)]">
+					<span class="text-text-tertiary flex items-center gap-1.5 text-[12px]">
 						{#if provides.length > 0}
 							<span
 								class="inline-block h-2.5 w-2.5 rounded-full {provideDotColor[provides[0]] ??
@@ -397,9 +393,7 @@
 						{/if}
 					</span>
 
-					<span
-						class="flex items-center gap-1 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
-					>
+					<span class="text-text-tertiary flex items-center gap-1 text-[12px] tabular-nums">
 						<svg
 							class="h-3.5 w-3.5"
 							fill="none"
@@ -417,9 +411,7 @@
 						{formatNumber(hit.download_count)}
 					</span>
 
-					<span
-						class="flex items-center gap-1 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
-					>
+					<span class="text-text-tertiary flex items-center gap-1 text-[12px] tabular-nums">
 						{#if hit.github_stars > 0}
 							<svg
 								class="h-3.5 w-3.5"
@@ -441,7 +433,7 @@
 						{/if}
 					</span>
 
-					<span class="text-[12px] text-[var(--color-text-tertiary)]">
+					<span class="text-text-tertiary text-[12px]">
 						{timeAgo(hit.published_at)}
 					</span>
 				</a>
@@ -449,12 +441,10 @@
 				<!-- Mobile: simple row -->
 				<a
 					href="/extensions/{hit.id}"
-					class="flex items-center justify-between gap-4 border-b border-[var(--color-border)]/50 py-2.5 text-[13px] transition-colors hover:bg-[var(--color-surface-hover)] sm:hidden"
+					class="border-border/50 hover:bg-surface-hover flex items-center justify-between gap-4 border-b py-2.5 text-[13px] transition-colors sm:hidden"
 				>
-					<span class="min-w-0 truncate font-mono font-semibold text-[var(--color-text)]"
-						>{hit.name}</span
-					>
-					<span class="shrink-0 text-[11px] text-[var(--color-text-tertiary)] tabular-nums"
+					<span class="text-text min-w-0 truncate font-mono font-semibold">{hit.name}</span>
+					<span class="text-text-tertiary shrink-0 text-[11px] tabular-nums"
 						>{formatNumber(hit.download_count)}</span
 					>
 				</a>
@@ -465,14 +455,14 @@
 	<!-- Empty state -->
 	{#if displayHits.length === 0 && !loading}
 		<div class="flex flex-col items-center gap-3 py-20 text-center">
-			<p class="text-[14px] text-[var(--color-text-secondary)]">
+			<p class="text-text-secondary text-[14px]">
 				{query ? `No extensions match “${query}”.` : 'No extensions found.'}
 			</p>
 			{#if query}
 				<button
 					type="button"
 					onclick={clearSearch}
-					class="min-h-11 rounded-md border border-[var(--color-border)] px-4 text-[13px] font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+					class="border-border text-text hover:bg-surface-hover min-h-11 rounded-md border px-4 text-[13px] font-medium"
 				>
 					Clear Search
 				</button>
@@ -486,11 +476,11 @@
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each Array(16) as _, i}
 					<div
-						class="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3 motion-safe:animate-pulse"
+						class="border-border bg-surface-raised rounded-md border p-3 motion-safe:animate-pulse"
 						style="animation-delay: {i * 25}ms"
 					>
-						<div class="mb-1.5 h-3.5 w-20 rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3 w-full rounded bg-[var(--color-surface-hover)]"></div>
+						<div class="bg-surface-hover mb-1.5 h-3.5 w-20 rounded"></div>
+						<div class="bg-surface-hover h-3 w-full rounded"></div>
 					</div>
 				{/each}
 			</div>
@@ -498,12 +488,12 @@
 			<div class="space-y-0">
 				{#each Array(12) as _, i}
 					<div
-						class="flex items-center gap-4 border-b border-[var(--color-border)]/50 py-2.5 motion-safe:animate-pulse"
+						class="border-border/50 flex items-center gap-4 border-b py-2.5 motion-safe:animate-pulse"
 						style="animation-delay: {i * 25}ms"
 					>
-						<div class="h-3.5 w-24 rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3.5 flex-1 rounded bg-[var(--color-surface-hover)]"></div>
-						<div class="h-3.5 w-12 rounded bg-[var(--color-surface-hover)]"></div>
+						<div class="bg-surface-hover h-3.5 w-24 rounded"></div>
+						<div class="bg-surface-hover h-3.5 flex-1 rounded"></div>
+						<div class="bg-surface-hover h-3.5 w-12 rounded"></div>
 					</div>
 				{/each}
 			</div>
@@ -516,7 +506,7 @@
 			<button
 				onclick={loadMore}
 				disabled={loadingMore}
-				class="rounded-md border border-[var(--color-border)] px-5 py-2 text-[13px] font-medium opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+				class="border-border rounded-md border px-5 py-2 text-[13px] font-medium opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
 			>
 				{#if loadingMore}
 					Loading…

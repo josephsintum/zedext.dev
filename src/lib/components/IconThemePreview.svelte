@@ -75,12 +75,12 @@
 <section class="mb-6" aria-label="Icon theme preview">
 	<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 	{#if variants.length > 8}
-		<label class="mb-3 flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+		<label class="text-text-secondary mb-3 flex items-center gap-2 text-[12px]">
 			{variants.length} variants
 			<select
 				bind:value={selected}
 				aria-label="Icon theme variant"
-				class="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2 py-1 text-[12px] text-[var(--color-text)]"
+				class="border-border bg-surface-raised text-text rounded-md border px-2 py-1 text-[12px]"
 			>
 				{#each variants as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 			</select>
@@ -93,8 +93,8 @@
 					aria-pressed={selected === i}
 					onclick={() => (selected = i)}
 					class="rounded-full border px-3 py-1 text-[12px] transition-colors {selected === i
-						? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'
-						: 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]'}"
+						? 'border-accent text-accent font-semibold'
+						: 'border-border text-text-secondary hover:border-border-hover'}"
 				>
 					{variant.name}
 				</button>

@@ -15,16 +15,16 @@
 />
 
 <div class="mx-auto max-w-6xl px-6 py-10">
-	<nav aria-label="Breadcrumb" class="mb-3 text-[12px] text-[var(--color-text-tertiary)]">
-		<a href="/#guides" class="hover:text-[var(--color-text)]">Guides</a>
+	<nav aria-label="Breadcrumb" class="text-text-tertiary mb-3 text-[12px]">
+		<a href="/#guides" class="hover:text-text">Guides</a>
 		<span aria-hidden="true">›</span>
 		<span aria-current="page">{data.list.title}</span>
 	</nav>
-	<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">
+	<h1 class="text-text text-3xl font-bold tracking-tight">
 		<span aria-hidden="true">{data.list.emoji}</span>
 		{data.list.title}
 	</h1>
-	<p class="mt-2 max-w-3xl text-[15px] text-[var(--color-text-secondary)]">
+	<p class="text-text-secondary mt-2 max-w-3xl text-[15px]">
 		{data.guide?.intro ?? data.list.description}
 	</p>
 
@@ -33,10 +33,8 @@
 			class="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5"
 			class:max-w-3xl={data.guide && data.guide.groups.length > 0}
 		>
-			<h2 class="text-[14px] font-semibold text-[var(--color-text)]">
-				✓ Built into Zed, no extension needed
-			</h2>
-			<ul class="mt-2 list-disc space-y-1 pl-5 text-[13px] text-[var(--color-text-secondary)]">
+			<h2 class="text-text text-[14px] font-semibold">✓ Built into Zed, no extension needed</h2>
+			<ul class="text-text-secondary mt-2 list-disc space-y-1 pl-5 text-[13px]">
 				{#each data.list.builtIn as item (item)}
 					<li>{item}</li>
 				{/each}
@@ -45,7 +43,7 @@
 	{/if}
 
 	{#if data.total > 0}
-		<p class="mt-1 text-[13px] text-[var(--color-text-tertiary)]">
+		<p class="text-text-tertiary mt-1 text-[13px]">
 			{countOf(data.total, 'extension')}{data.total > data.items.length
 				? ` · showing the top ${data.items.length}`
 				: ''}
@@ -62,13 +60,11 @@
 			{/each}
 		</div>
 	{:else}
-		<p class="mt-8 text-[14px] text-[var(--color-text-tertiary)]">
-			These extensions are temporarily unavailable.
-		</p>
+		<p class="text-text-tertiary mt-8 text-[14px]">These extensions are temporarily unavailable.</p>
 	{/if}
 
 	{#if data.browseAll && data.total > data.items.length}
-		<a href={data.browseAll.href} class="mt-6 inline-block text-[13px] text-[var(--color-accent)]"
+		<a href={data.browseAll.href} class="text-accent mt-6 inline-block text-[13px]"
 			>Browse all {data.browseAll.label} →</a
 		>
 	{/if}

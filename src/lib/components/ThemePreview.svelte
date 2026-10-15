@@ -81,7 +81,7 @@
 		<div class="mb-3 flex flex-wrap items-center gap-3">
 			{#if appearances.length > 1}
 				<div
-					class="inline-flex rounded-md border border-[var(--color-border)] p-0.5 text-[12px]"
+					class="border-border inline-flex rounded-md border p-0.5 text-[12px]"
 					role="group"
 					aria-label="Appearance"
 				>
@@ -90,8 +90,8 @@
 							aria-pressed={activeMode === a}
 							onclick={() => chooseMode(a)}
 							class="rounded px-3 py-1 capitalize transition-colors {activeMode === a
-								? 'bg-[var(--color-text)] text-[var(--color-surface)]'
-								: 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'}"
+								? 'bg-text text-surface'
+								: 'text-text-secondary hover:text-text'}"
 						>
 							{a}
 						</button>
@@ -101,18 +101,18 @@
 
 			<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 			{#if shown.length > 8}
-				<label class="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)]">
+				<label class="text-text-secondary flex items-center gap-2 text-[12px]">
 					{shown.length} variants
 					<span class="relative inline-flex">
 						<select
 							bind:value={picked}
 							aria-label="Theme variant"
-							class="appearance-none rounded-md border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-1 pr-8 pl-2.5 text-[12px] text-[var(--color-text)]"
+							class="border-border bg-surface-raised text-text appearance-none rounded-md border py-1 pr-8 pl-2.5 text-[12px]"
 						>
 							{#each shown as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 						</select>
 						<svg
-							class="pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+							class="text-text-tertiary pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2"
 							fill="none"
 							stroke="currentColor"
 							stroke-width="2"
@@ -129,8 +129,8 @@
 							aria-pressed={current === v}
 							onclick={() => (picked = i)}
 							class="rounded-full border px-3 py-1 text-[12px] transition-colors {current === v
-								? 'border-[var(--color-accent)] font-semibold text-[var(--color-accent)]'
-								: 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]'}"
+								? 'border-accent text-accent font-semibold'
+								: 'border-border text-text-secondary hover:border-border-hover'}"
 						>
 							{v.name}
 						</button>

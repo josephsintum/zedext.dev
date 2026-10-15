@@ -7,10 +7,10 @@
 
 <a
 	href="/languages/{hub.slug}"
-	class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-2.5 hover:border-[var(--color-border-hover)]"
+	class="border-border bg-surface-raised hover:border-border-hover rounded-lg border px-3 py-2.5"
 >
-	<span class="block text-[14px] font-medium text-[var(--color-text)]">{hub.emoji} {hub.name}</span>
-	<span class="text-[12px] text-[var(--color-text-tertiary)]">
+	<span class="text-text block text-[14px] font-medium">{hub.emoji} {hub.name}</span>
+	<span class="text-text-tertiary text-[12px]">
 		{hub.builtIn ? 'Built in · ' : ''}{countOf(hub.count, 'extension')}
 	</span>
 </a>

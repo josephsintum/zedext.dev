@@ -11,23 +11,19 @@
 
 <table class="w-full text-[13px]">
 	<thead>
-		<tr
-			class="border-b border-[var(--color-border)] text-left text-[12px] text-[var(--color-text-tertiary)]"
-		>
+		<tr class="border-border text-text-tertiary border-b text-left text-[12px]">
 			<th class="py-2 font-medium">Version</th>
 			<th class="py-2 font-medium">Released</th>
 		</tr>
 	</thead>
 	<tbody>
 		{#each rows as v, i (v.version)}
-			<tr class="border-b border-[var(--color-border)]/60">
-				<td class="py-2.5 font-mono text-[var(--color-text)] tabular-nums">
+			<tr class="border-border/60 border-b">
+				<td class="text-text py-2.5 font-mono tabular-nums">
 					{v.version}
-					{#if i === 0}<span class="ml-1.5 text-[11px] text-[var(--color-text-tertiary)]"
-							>latest</span
-						>{/if}
+					{#if i === 0}<span class="text-text-tertiary ml-1.5 text-[11px]">latest</span>{/if}
 				</td>
-				<td class="py-2.5 text-[var(--color-text-secondary)] tabular-nums">
+				<td class="text-text-secondary py-2.5 tabular-nums">
 					{formatDate(v.published_at)}
 				</td>
 			</tr>
@@ -38,7 +34,7 @@
 	<button
 		type="button"
 		onclick={() => (showAll = true)}
-		class="hit-y mt-3 text-[13px] font-medium text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
+		class="hit-y text-accent hover:text-accent-hover mt-3 text-[13px] font-medium"
 	>
 		Show all {versions.length} versions
 	</button>

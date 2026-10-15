@@ -162,13 +162,13 @@
 	<div class="mx-auto max-w-6xl px-6 py-10">
 		<div class="flex flex-wrap items-end justify-between gap-4">
 			<div>
-				<h1 class="text-3xl font-bold tracking-tight text-[var(--color-text)]">Themes</h1>
-				<p class="mt-2 text-[15px] text-[var(--color-text-secondary)]">
+				<h1 class="text-text text-3xl font-bold tracking-tight">Themes</h1>
+				<p class="text-text-secondary mt-2 text-[15px]">
 					Pick a theme to preview it. The most downloaded Zed themes, dark or light.
 				</p>
 			</div>
 			<div
-				class="inline-flex rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-0.5 text-[13px]"
+				class="border-border bg-surface-raised inline-flex rounded-lg border p-0.5 text-[13px]"
 				role="group"
 				aria-label="Appearance"
 			>
@@ -178,8 +178,8 @@
 						aria-pressed={appearance === a}
 						onclick={() => chooseAppearance(a)}
 						class="rounded-md px-4 py-1.5 transition-colors {appearance === a
-							? 'bg-[var(--color-text)] text-[var(--color-surface)]'
-							: 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)]'}"
+							? 'bg-text text-surface'
+							: 'text-text-secondary hover:text-text'}"
 					>
 						{label}
 					</button>
@@ -192,19 +192,16 @@
 				<!-- Pinned under the header on large windows so a click anywhere in the grid shows up here -->
 				<section
 					bind:this={previewEl}
-					class="z-10 mt-4 scroll-mt-16 [overflow-y:clip] border-b border-[var(--color-border)] bg-[var(--color-surface)] pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
+					class="border-border bg-surface z-10 mt-4 scroll-mt-16 [overflow-y:clip] border-b pt-4 pb-5 [@media(min-width:768px)_and_(min-height:760px)]:sticky [@media(min-width:768px)_and_(min-height:760px)]:top-14"
 					aria-label="Theme preview"
 				>
 					<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-						<p class="text-[13px] text-[var(--color-text-tertiary)]">
-							<span class="text-[16px] font-semibold text-[var(--color-text)]">{selected.name}</span
-							>
+						<p class="text-text-tertiary text-[13px]">
+							<span class="text-text text-[16px] font-semibold">{selected.name}</span>
 							{#if selected.author}by {selected.author} ·{/if}
 							↓ {formatNumber(selected.downloads)}
 						</p>
-						<a href="/extensions/{selected.id}" class="text-[13px] text-[var(--color-accent)]"
-							>View extension →</a
-						>
+						<a href="/extensions/{selected.id}" class="text-accent text-[13px]">View extension →</a>
 					</div>
 					{#if preview && previewVariants.length > 0}
 						<div
@@ -218,19 +215,17 @@
 					{/if}
 					{#if selectedFailed}
 						<div class="mt-2 flex flex-wrap items-center gap-3 text-[13px]" role="alert">
-							<span class="text-[var(--color-text-secondary)]"
-								>Couldn’t load this theme’s colors.</span
-							>
+							<span class="text-text-secondary">Couldn’t load this theme’s colors.</span>
 							<button
 								type="button"
 								onclick={() => show(selected.id)}
-								class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+								class="border-border text-text hover:bg-surface-hover min-h-11 rounded-md border px-3 font-medium"
 							>
 								Try Again
 							</button>
 						</div>
 					{:else if preview && preview.id !== selected.id}
-						<p class="mt-2 text-[13px] text-[var(--color-text-tertiary)]" role="status">
+						<p class="text-text-tertiary mt-2 text-[13px]" role="status">
 							Loading {selected.name}…
 						</p>
 					{/if}
@@ -238,7 +233,7 @@
 			{/if}
 
 			<div class="mt-5 mb-3 flex flex-wrap items-center justify-between gap-3">
-				<p class="text-[13px] text-[var(--color-text-tertiary)]" aria-live="polite">
+				<p class="text-text-tertiary text-[13px]" aria-live="polite">
 					{#if q}
 						{list.length} matching {appearance} themes
 					{:else}
@@ -252,7 +247,7 @@
 					oninput={(e) => filter(e.currentTarget.value)}
 					placeholder="Filter by name or author"
 					aria-label="Filter themes"
-					class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1.5 text-[16px] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none sm:w-64 sm:text-[14px]"
+					class="border-border bg-surface-raised text-text placeholder:text-text-tertiary focus:border-accent w-full rounded-lg border px-3 py-1.5 text-[16px] focus:outline-none sm:w-64 sm:text-[14px]"
 				/>
 			</div>
 			{#if list.length > 0}
@@ -267,13 +262,12 @@
 					{/each}
 				</div>
 			{:else if q && !loading[appearance]}
-				<div class="py-10 text-center text-[14px] text-[var(--color-text-secondary)]">
+				<div class="text-text-secondary py-10 text-center text-[14px]">
 					No {appearance} themes match “{q}”.
 					<button
 						type="button"
 						onclick={() => filter('')}
-						class="ml-1 text-[var(--color-accent)] hover:text-[var(--color-accent-hover)]"
-						>Clear filter</button
+						class="text-accent hover:text-accent-hover ml-1">Clear filter</button
 					>
 				</div>
 			{/if}
@@ -283,7 +277,7 @@
 						type="button"
 						onclick={showAll}
 						disabled={loading[appearance]}
-						class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-4 py-2 text-[13px] text-[var(--color-text)] hover:border-[var(--color-border-hover)] disabled:opacity-60"
+						class="border-border bg-surface-raised text-text hover:border-border-hover rounded-lg border px-4 py-2 text-[13px] disabled:opacity-60"
 					>
 						{loading[appearance] ? 'Loading…' : `Show all ${total} ${appearance} themes`}
 					</button>
@@ -291,24 +285,22 @@
 			{/if}
 			{#if failed[appearance]}
 				<div class="mt-3 flex flex-wrap items-center justify-center gap-3 text-[13px]" role="alert">
-					<span class="text-[var(--color-text-secondary)]">
+					<span class="text-text-secondary">
 						Couldn’t load {q ? 'every theme, so some matches may be missing' : 'the rest'}.
 					</span>
 					<button
 						type="button"
 						onclick={showAll}
-						class="min-h-11 rounded-md border border-[var(--color-border)] px-3 font-medium text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+						class="border-border text-text hover:bg-surface-hover min-h-11 rounded-md border px-3 font-medium"
 					>
 						Try Again
 					</button>
 				</div>
 			{/if}
 		{:else}
-			<p class="mt-8 text-[14px] text-[var(--color-text-tertiary)]">
+			<p class="text-text-tertiary mt-8 text-[14px]">
 				Theme previews are temporarily unavailable.
-				<a href="/extensions?q=theme" class="text-[var(--color-accent)]"
-					>Search themes in All extensions →</a
-				>
+				<a href="/extensions?q=theme" class="text-accent">Search themes in All extensions →</a>
 			</p>
 		{/if}
 	</div>

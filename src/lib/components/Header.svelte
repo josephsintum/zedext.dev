@@ -24,7 +24,7 @@
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
 		<a
 			href="/"
-			class="hit-y font-mono text-sm font-semibold tracking-tight text-[var(--color-text)] transition-colors hover:text-[var(--color-accent)]"
+			class="hit-y text-text hover:text-accent font-mono text-sm font-semibold tracking-tight transition-colors"
 		>
 			ZedExt
 		</a>
@@ -35,9 +35,9 @@
 				<a
 					href={link.href}
 					aria-current={current ? 'page' : undefined}
-					class="hit-y text-[13px] font-medium whitespace-nowrap transition-colors hover:text-[var(--color-text)] {current
-						? 'text-[var(--color-text)]'
-						: 'text-[var(--color-text-secondary)]'} {link.hide}"
+					class="hit-y hover:text-text text-[13px] font-medium whitespace-nowrap transition-colors {current
+						? 'text-text'
+						: 'text-text-secondary'} {link.hide}"
 				>
 					{link.label}
 				</a>
@@ -45,7 +45,7 @@
 			<button
 				onclick={toggleTheme}
 				aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-				class="flex h-11 w-11 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:outline-none sm:h-8 sm:w-8"
+				class="text-text-secondary hover:bg-surface-hover hover:text-text focus-visible:ring-accent flex h-11 w-11 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none sm:h-8 sm:w-8"
 			>
 				{#if isDark}
 					<svg
@@ -88,7 +88,7 @@
 			<button
 				popovertarget="site-menu"
 				aria-label="More links"
-				class="-mr-2 hidden h-11 w-11 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)] max-sm:supports-[selector(:popover-open)]:flex"
+				class="text-text-secondary hover:bg-surface-hover hover:text-text -mr-2 hidden h-11 w-11 items-center justify-center rounded-lg transition-colors max-sm:supports-[selector(:popover-open)]:flex"
 			>
 				<svg
 					aria-hidden="true"
@@ -104,20 +104,20 @@
 				bind:this={menu}
 				id="site-menu"
 				popover
-				class="inset-auto top-14 right-4 m-0 hidden w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-1 text-[14px] shadow-lg max-sm:open:block"
+				class="border-border bg-surface-raised inset-auto top-14 right-4 m-0 hidden w-56 rounded-lg border p-1 text-[14px] shadow-lg max-sm:open:block"
 			>
 				{#each siteLinks as link (link.href)}
 					<a
 						href={link.href}
 						aria-current={page.url.pathname === link.href ? 'page' : undefined}
-						class="flex min-h-11 items-center rounded-md px-3 text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+						class="text-text hover:bg-surface-hover flex min-h-11 items-center rounded-md px-3"
 					>
 						{link.label}
 					</a>
 				{/each}
 				<a
 					href="/about"
-					class="flex min-h-11 items-center rounded-md px-3 text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
+					class="text-text hover:bg-surface-hover flex min-h-11 items-center rounded-md px-3"
 				>
 					About
 				</a>
