@@ -2,7 +2,6 @@
 	import { untrack } from 'svelte';
 	import { afterNavigate, goto, preloadCode } from '$app/navigation';
 	import { navigating, page } from '$app/state';
-	import { formatNumber } from '$lib/utils/format.js';
 	import {
 		carryQuery,
 		currentSearchParams,
@@ -26,7 +25,7 @@
 	} = $props();
 
 	const placeholder = $derived(
-		totalHits > 0 ? `Search ${formatNumber(totalHits)}+ extensions…` : 'Search extensions…'
+		totalHits > 0 ? `Search ${totalHits.toLocaleString('en-US')} extensions…` : 'Search extensions…'
 	);
 
 	let input = $state(untrack(() => value));
