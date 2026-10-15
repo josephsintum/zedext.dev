@@ -8,7 +8,7 @@
 </script>
 
 <NavProgress />
-<div class="flex min-h-screen flex-col bg-[var(--color-surface)]">
+<div class="flex min-h-screen flex-col">
 	<Header />
 	<main id="main" class="flex-1">
 		{@render children()}

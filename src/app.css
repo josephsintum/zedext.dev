@@ -163,6 +163,24 @@
 	}
 }
 
+/* Film grain on the page background. It sits under everything (z-index -1), so cards and text
+   paint over it and stay crisp. The noise is contrast-stretched (slope 3) or it barely shows;
+   above ~10% in light mode it starts to look dirty. Needs the page background on body only. */
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='3' intercept='-1'/%3E%3CfeFuncG type='linear' slope='3' intercept='-1'/%3E%3CfeFuncB type='linear' slope='3' intercept='-1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	opacity: 0.07;
+	mix-blend-mode: multiply;
+}
+.dark body::before {
+	opacity: 0.06;
+	mix-blend-mode: screen;
+}
+
 /* Grows a small text control's touch area to at least 44px tall without changing its look.
    (Doesn't work on overflow-hidden elements like truncate, which clip the area.) */
 @utility hit-y {
