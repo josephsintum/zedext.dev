@@ -40,7 +40,7 @@
 <div class="mx-auto max-w-6xl px-6 pt-12 pb-20">
 	<div class="text-center">
 		<h1 class="text-4xl font-bold tracking-tight text-balance text-[var(--color-text)]">
-			Extensions for <span class="font-mono text-[var(--color-accent)]">Zed</span>
+			Extensions for Zed
 		</h1>
 		<p class="mt-3 text-[15px] text-[var(--color-text-secondary)]">
 			Featured picks, theme previews, the most popular extensions, languages and setup guides.
