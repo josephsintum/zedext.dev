@@ -33,9 +33,17 @@ describe('ThemePaletteCard', () => {
 		expect(body).toContain('background-color: #303446');
 	});
 
+	it('puts the download count on the right when drawing circles', () => {
+		const { body } = render(ThemePaletteCard, { props: { entry, circles: true } });
+		expect(body).toContain('6 variants</span>');
+		expect(body).not.toContain('6 variants ·');
+		expect(body).toMatch(/justify-between[^>]*>.*6 variants<\/span>.*↓ 1\.2M/s);
+	});
+
 	it('keeps the strip by default, as on the homepage', () => {
 		const { body } = render(ThemePaletteCard, { props: { entry } });
 		expect(rings(body)).toBe(0);
 		expect(body).toContain('background-color: #303446');
+		expect(body).toContain('6 variants · ↓ 1.2M');
 	});
 });

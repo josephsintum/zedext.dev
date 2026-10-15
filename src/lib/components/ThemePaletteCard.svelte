@@ -69,11 +69,21 @@
 	<span class="block px-2.5 py-2">
 		<span class="block truncate text-[13px] font-medium text-[var(--color-text)]">{entry.name}</span
 		>
-		<span class="block text-[12px] text-[var(--color-text-tertiary)] tabular-nums">
-			{entry.variantCount > 1 ? `${entry.variantCount} variants · ` : ''}↓ {formatNumber(
-				entry.downloads
-			)}
-		</span>
+		{#if circles}
+			<!-- Downloads on the right, so they line up down the grid -->
+			<span
+				class="flex justify-between gap-2 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
+			>
+				<span>{entry.variantCount > 1 ? `${entry.variantCount} variants` : ''}</span>
+				<span>↓ {formatNumber(entry.downloads)}</span>
+			</span>
+		{:else}
+			<span class="block text-[12px] text-[var(--color-text-tertiary)] tabular-nums">
+				{entry.variantCount > 1 ? `${entry.variantCount} variants · ` : ''}↓ {formatNumber(
+					entry.downloads
+				)}
+			</span>
+		{/if}
 	</span>
 {/snippet}
 
