@@ -33,6 +33,18 @@ export const PALETTE_ROLES = [
 ] as const;
 export type CardPalette = Pick<ThemeColors, 'bg' | (typeof PALETTE_ROLES)[number]>;
 
+/** The card's circles: each syntax color once, in role order. Themes that leave roles out get
+    the text color for them, so without this a card can repeat one color several times. */
+export function cardColors(palette: CardPalette): string[] {
+	const seen = new Set<string>();
+	return PALETTE_ROLES.map((role) => palette[role]).filter((color) => {
+		const key = color.toLowerCase();
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
 function cardPalette(v: ThemeVariant): CardPalette {
 	const c = themeColors(v);
 	return {

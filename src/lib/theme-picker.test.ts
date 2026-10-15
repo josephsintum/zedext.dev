@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	cardColors,
 	filterThemes,
 	pickerState,
 	themeEntries,
@@ -129,5 +130,51 @@ describe('filterThemes', () => {
 
 	it('returns everything for an empty filter', () => {
 		expect(ids('  ')).toEqual(['catppuccin', 'nord', 'one-dark-pro']);
+	});
+});
+
+describe('cardColors', () => {
+	const palette = {
+		bg: '#303446',
+		keyword: '#ca9ee6',
+		function: '#8caaee',
+		string: '#a6d189',
+		type: '#e5c890',
+		number: '#ef9f76',
+		comment: '#949cbb'
+	};
+
+	it('lists the six syntax colors in role order', () => {
+		expect(cardColors(palette)).toEqual([
+			'#ca9ee6',
+			'#8caaee',
+			'#a6d189',
+			'#e5c890',
+			'#ef9f76',
+			'#949cbb'
+		]);
+	});
+
+	it('shows a color once when a theme reuses it', () => {
+		expect(cardColors({ ...palette, number: '#8caaee', comment: '#8CAAEE' })).toEqual([
+			'#ca9ee6',
+			'#8caaee',
+			'#a6d189',
+			'#e5c890'
+		]);
+	});
+
+	it('keeps one color for a theme that sets none (every role falls back to the text color)', () => {
+		const fg = '#d0d0d0';
+		const bare = {
+			bg: '#000000',
+			keyword: fg,
+			function: fg,
+			string: fg,
+			type: fg,
+			number: fg,
+			comment: fg
+		};
+		expect(cardColors(bare)).toEqual([fg]);
 	});
 });

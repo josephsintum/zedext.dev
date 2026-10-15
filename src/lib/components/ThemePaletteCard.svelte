@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PALETTE_ROLES, type ThemeEntry } from '$lib/theme-picker.js';
+	import { cardColors, type ThemeEntry } from '$lib/theme-picker.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
 	let {
@@ -46,10 +46,10 @@
 		aria-hidden="true"
 		style:background-color={entry.palette.bg}
 	>
-		{#each PALETTE_ROLES as role (role)}
+		{#each cardColors(entry.palette) as color (color)}
 			<span
 				class="size-6 rounded-full transition-[margin] duration-200 not-first:-ml-1 group-hover:not-first:ml-0.5 motion-reduce:transition-none"
-				style:background-color={entry.palette[role]}
+				style:background-color={color}
 				style:box-shadow="0 0 0 2px {entry.palette.bg}"
 			></span>
 		{/each}

@@ -39,6 +39,15 @@ describe('ThemePaletteCard', () => {
 		expect(body).toMatch(/justify-between[^>]*>.*6 variants<\/span>.*↓ 1\.2M/s);
 	});
 
+	it('draws each color once when a theme repeats one', () => {
+		const repeats = {
+			...entry,
+			palette: { ...entry.palette, number: '#8caaee', comment: '#8caaee' }
+		};
+		const { body } = render(ThemePaletteCard, { props: { entry: repeats } });
+		expect(rings(body)).toBe(4);
+	});
+
 	it('draws the same card as a link (the homepage Themes row)', () => {
 		const { body } = render(ThemePaletteCard, {
 			props: { entry, href: '/themes?theme=catppuccin' }
