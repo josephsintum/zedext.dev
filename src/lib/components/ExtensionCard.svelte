@@ -52,11 +52,11 @@
 
 <a
 	href="/extensions/{hit.id}"
-	class="card-hover group bg-surface-raised flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
+	class="card-hover group bg-surface-raised relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border)] p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
 		<h3
-			class="min-w-0 truncate font-mono text-[14px] font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent-hover)]"
+			class="min-w-0 truncate text-[14px] font-semibold text-[var(--color-text)] group-hover:text-[var(--color-accent-hover)]"
 		>
 			{hit.name}
 		</h3>
