@@ -13,20 +13,20 @@
 	);
 
 	const borderColor: Record<string, string> = {
-		themes: 'group-hover:border-l-violet-400',
-		'icon-themes': 'group-hover:border-l-fuchsia-400',
-		languages: 'group-hover:border-l-sky-400',
-		'language-servers': 'group-hover:border-l-emerald-400',
-		'context-servers': 'group-hover:border-l-orange-400',
-		'agent-servers': 'group-hover:border-l-amber-400',
-		'debug-adapters': 'group-hover:border-l-rose-400',
-		snippets: 'group-hover:border-l-teal-400'
+		themes: 'hover:border-l-violet-400',
+		'icon-themes': 'hover:border-l-fuchsia-400',
+		languages: 'hover:border-l-sky-400',
+		'language-servers': 'hover:border-l-emerald-400',
+		'context-servers': 'hover:border-l-orange-400',
+		'agent-servers': 'hover:border-l-amber-400',
+		'debug-adapters': 'hover:border-l-rose-400',
+		snippets: 'hover:border-l-teal-400'
 	};
 
 	const accentBorder = $derived(
 		primaryProvides.length > 0
-			? (borderColor[primaryProvides[0]] ?? 'group-hover:border-l-zinc-400')
-			: 'group-hover:border-l-zinc-400'
+			? (borderColor[primaryProvides[0]] ?? 'hover:border-l-zinc-400')
+			: 'hover:border-l-zinc-400'
 	);
 </script>
 
