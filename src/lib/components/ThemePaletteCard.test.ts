@@ -24,8 +24,8 @@ const entry: ThemeEntry = {
 const rings = (html: string) => html.split('box-shadow: 0 0 0 2px #303446').length - 1;
 
 describe('ThemePaletteCard', () => {
-	it('draws the six syntax colors as circles on the theme background when asked', () => {
-		const { body } = render(ThemePaletteCard, { props: { entry, circles: true } });
+	it('draws the six syntax colors as circles on the theme background', () => {
+		const { body } = render(ThemePaletteCard, { props: { entry } });
 		expect(rings(body)).toBe(6);
 		for (const color of ['#ca9ee6', '#8caaee', '#a6d189', '#e5c890', '#ef9f76', '#949cbb']) {
 			expect(body).toContain(`background-color: ${color}`);
@@ -33,17 +33,17 @@ describe('ThemePaletteCard', () => {
 		expect(body).toContain('background-color: #303446');
 	});
 
-	it('puts the download count on the right when drawing circles', () => {
-		const { body } = render(ThemePaletteCard, { props: { entry, circles: true } });
-		expect(body).toContain('6 variants</span>');
+	it('puts the download count on the right', () => {
+		const { body } = render(ThemePaletteCard, { props: { entry } });
 		expect(body).not.toContain('6 variants ·');
 		expect(body).toMatch(/justify-between[^>]*>.*6 variants<\/span>.*↓ 1\.2M/s);
 	});
 
-	it('keeps the strip by default, as on the homepage', () => {
-		const { body } = render(ThemePaletteCard, { props: { entry } });
-		expect(rings(body)).toBe(0);
-		expect(body).toContain('background-color: #303446');
-		expect(body).toContain('6 variants · ↓ 1.2M');
+	it('draws the same card as a link (the homepage Themes row)', () => {
+		const { body } = render(ThemePaletteCard, {
+			props: { entry, href: '/themes?theme=catppuccin' }
+		});
+		expect(body).toContain('href="/themes?theme=catppuccin"');
+		expect(rings(body)).toBe(6);
 	});
 });

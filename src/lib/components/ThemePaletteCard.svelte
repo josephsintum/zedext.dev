@@ -6,15 +6,12 @@
 		entry,
 		href,
 		selected = false,
-		circles = false,
 		onselect,
 		onintent
 	}: {
 		entry: ThemeEntry;
 		href?: string;
 		selected?: boolean;
-		/** The theme picker draws the syntax colors as circles on the theme's background */
-		circles?: boolean;
 		onselect?: () => void;
 		/** Hover or keyboard focus: a hint to start loading this theme */
 		onintent?: () => void;
@@ -41,49 +38,32 @@
 </script>
 
 {#snippet body()}
-	<!-- Colors are validated hex values from the previews bundle -->
-	{#if circles}
-		<!-- Circles ringed in the background so they stay distinct where they overlap; they
-		     spread apart on hover -->
-		<span
-			class="flex h-14 items-center px-3.5"
-			aria-hidden="true"
-			style:background-color={entry.palette.bg}
-		>
-			{#each PALETTE_ROLES as role (role)}
-				<span
-					class="size-6 rounded-full transition-[margin] duration-200 not-first:-ml-1 group-hover:not-first:ml-0.5 motion-reduce:transition-none"
-					style:background-color={entry.palette[role]}
-					style:box-shadow="0 0 0 2px {entry.palette.bg}"
-				></span>
-			{/each}
-		</span>
-	{:else}
-		<span class="flex h-8" aria-hidden="true">
-			<span class="flex-[2.2]" style:background-color={entry.palette.bg}></span>
-			{#each PALETTE_ROLES as role (role)}
-				<span class="flex-1" style:background-color={entry.palette[role]}></span>
-			{/each}
-		</span>
-	{/if}
+	<!-- The syntax colors as circles on the theme's background, ringed in it so they stay
+	     distinct where they overlap; they spread apart on hover. Colors are validated hex
+	     values from the previews bundle -->
+	<span
+		class="flex h-14 items-center px-3.5"
+		aria-hidden="true"
+		style:background-color={entry.palette.bg}
+	>
+		{#each PALETTE_ROLES as role (role)}
+			<span
+				class="size-6 rounded-full transition-[margin] duration-200 not-first:-ml-1 group-hover:not-first:ml-0.5 motion-reduce:transition-none"
+				style:background-color={entry.palette[role]}
+				style:box-shadow="0 0 0 2px {entry.palette.bg}"
+			></span>
+		{/each}
+	</span>
 	<span class="block px-2.5 py-2">
 		<span class="block truncate text-[13px] font-medium text-[var(--color-text)]">{entry.name}</span
 		>
-		{#if circles}
-			<!-- Downloads on the right, so they line up down the grid -->
-			<span
-				class="flex justify-between gap-2 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
-			>
-				<span>{entry.variantCount > 1 ? `${entry.variantCount} variants` : ''}</span>
-				<span>↓ {formatNumber(entry.downloads)}</span>
-			</span>
-		{:else}
-			<span class="block text-[12px] text-[var(--color-text-tertiary)] tabular-nums">
-				{entry.variantCount > 1 ? `${entry.variantCount} variants · ` : ''}↓ {formatNumber(
-					entry.downloads
-				)}
-			</span>
-		{/if}
+		<!-- Downloads on the right, so they line up down the grid -->
+		<span
+			class="flex justify-between gap-2 text-[12px] text-[var(--color-text-tertiary)] tabular-nums"
+		>
+			<span>{entry.variantCount > 1 ? `${entry.variantCount} variants` : ''}</span>
+			<span>↓ {formatNumber(entry.downloads)}</span>
+		</span>
 	</span>
 {/snippet}
 

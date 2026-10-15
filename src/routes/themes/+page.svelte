@@ -260,7 +260,6 @@
 					{#each list as entry (entry.id)}
 						<ThemePaletteCard
 							{entry}
-							circles
 							selected={entry.id === selected?.id}
 							onselect={() => choose(entry.id)}
 							onintent={() => prefetch(entry.id).catch(() => {})}
