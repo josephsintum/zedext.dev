@@ -36,7 +36,14 @@ export type CardPalette = Pick<ThemeColors, 'bg' | (typeof PALETTE_ROLES)[number
 /** One spelling per color: #abc → #aabbcc, and a fully opaque alpha (#aabbccff) is dropped */
 function colorKey(color: string): string {
 	let hex = color.toLowerCase();
-	if (/^#[0-9a-f]{3,4}$/.test(hex)) hex = '#' + [...hex.slice(1)].map((d) => d + d).join('');
+	if (/^#[0-9a-f]{3,4}$/.test(hex))
+		hex =
+			'#' +
+			hex
+				.slice(1)
+				.split('')
+				.map((d) => d + d)
+				.join('');
 	return hex.length === 9 && hex.endsWith('ff') ? hex.slice(0, 7) : hex;
 }
 
