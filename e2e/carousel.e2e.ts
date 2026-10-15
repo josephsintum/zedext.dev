@@ -1,9 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
 
-/** The Featured card that's only partly in the row (it peeks in at the right edge) */
+/**
+ * The Featured card that's only partly in the row (it peeks in at the right edge), or null when
+ * the data gives no such card: no Featured row, or every card fits. Never the first card, so the
+ * Tab test always has one before it.
+ */
 async function peekingCard(page: Page) {
 	return page.evaluate(() => {
-		const row = document.querySelector('section:has(#featured) .snap-x')!;
+		const row = document.querySelector('section:has(#featured) .snap-x');
+		if (!row) return null;
 		row.scrollIntoView({ block: 'center' });
 		const rowBox = row.getBoundingClientRect();
 		const links = [...row.querySelectorAll('a')];
@@ -11,6 +16,7 @@ async function peekingCard(page: Page) {
 			const b = a.getBoundingClientRect();
 			return b.left < rowBox.right - 30 && b.right > rowBox.right;
 		});
+		if (index < 1) return null;
 		const box = links[index].getBoundingClientRect();
 		// Top-left of the card: its middle is under the "next" arrow button
 		return { index, href: links[index].getAttribute('href')!, x: box.left + 20, y: box.top + 24 };
@@ -26,11 +32,13 @@ test.describe('clicking the peeking carousel card', () => {
 			await page.setViewportSize({ width, height: 900 });
 			await page.goto('/', { waitUntil: 'networkidle' });
 			const card = await peekingCard(page);
-			await page.mouse.move(card.x, card.y);
+			test.skip(!card, 'No Featured card peeks past the row edge with the current data');
+			await page.mouse.move(card!.x, card!.y);
 			await page.mouse.down();
 			await page.waitForTimeout(250); // a slow click
 			await page.mouse.up();
-			await expect(page).toHaveURL(new RegExp(`${card.href}$`));
+			// Compared as URLs, not a regex, so ids with '.' or '(' match literally
+			await expect(page).toHaveURL((url) => url.pathname === new URL(card!.href, url).pathname);
 		});
 	}
 });
@@ -39,12 +47,13 @@ test('tabbing onto the peeking carousel card brings it fully into view', async (
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await page.goto('/', { waitUntil: 'networkidle' });
 	const card = await peekingCard(page);
+	test.skip(!card, 'No Featured card peeks past the row edge with the current data');
 	await page.evaluate((index) => {
 		const links = document.querySelectorAll<HTMLAnchorElement>('section:has(#featured) .snap-x a');
 		links[index - 1].focus();
-	}, card.index);
+	}, card!.index);
 	await page.keyboard.press('Tab');
-	await expect(page.locator(':focus')).toHaveAttribute('href', card.href);
+	await expect(page.locator(':focus')).toHaveAttribute('href', card!.href);
 	await expect
 		.poll(() =>
 			page.evaluate(() => {
