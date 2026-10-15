@@ -8,14 +8,6 @@
 	import Seo from '$lib/components/Seo.svelte';
 
 	let { data } = $props();
-
-	const jumps = $derived([
-		...(data.featured.length > 0 ? [{ id: 'featured', label: 'Featured' }] : []),
-		...(data.themes.length > 0 ? [{ id: 'themes', label: 'Themes' }] : []),
-		{ id: 'popular', label: 'Popular' },
-		{ id: 'languages', label: 'Languages' },
-		...(data.guides.length > 0 ? [{ id: 'guides', label: 'Guides' }] : [])
-	]);
 </script>
 
 <Seo
@@ -49,20 +41,6 @@
 		<div class="mx-auto mt-6 max-w-2xl">
 			<SearchBar to="/extensions" totalHits={data.extensionCount} />
 		</div>
-		<nav class="mt-5 flex flex-wrap justify-center gap-1.5" aria-label="Sections">
-			{#each jumps as j (j.id)}
-				<a
-					href="#{j.id}"
-					class="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[12px] text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)]"
-					>{j.label}</a
-				>
-			{/each}
-			<a
-				href="/extensions"
-				class="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[12px] text-[var(--color-accent)] hover:border-[var(--color-border-hover)]"
-				>All extensions →</a
-			>
-		</nav>
 	</div>
 
 	{#if data.featured.length > 0}
