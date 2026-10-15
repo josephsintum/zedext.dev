@@ -180,6 +180,11 @@ body::before {
 	opacity: 0.06;
 	mix-blend-mode: screen;
 }
+@media print {
+	body::before {
+		display: none;
+	}
+}
 
 /* Theme picker: a soft glow in the shown variant's colors behind the preview window.
    The colors are registered so a theme or variant change fades instead of jumping. */
