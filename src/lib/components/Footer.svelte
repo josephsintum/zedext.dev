@@ -11,18 +11,18 @@
 	];
 </script>
 
-<footer class="border-border mt-auto border-t">
+<footer class="mt-auto border-t border-border">
 	<div
 		class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row"
 	>
-		<div class="text-text-tertiary text-13 text-center sm:text-left">
+		<div class="text-center text-13 text-text-tertiary sm:text-left">
 			<div class="flex flex-wrap items-center justify-center gap-x-2 sm:justify-start">
 				<span class="font-mono font-medium">ZedExt</span>
 				<span class="text-border" aria-hidden="true">/</span>
 				<span>An unofficial community project. Not affiliated with Zed Industries.</span>
 			</div>
 			{#if updatedAt}
-				<p class="text-12 mt-1">
+				<p class="mt-1 text-12">
 					Data from Zed’s extension registry and GitHub · updated
 					<time datetime={updatedAt} title={new Date(updatedAt).toUTCString()}
 						>{timeAgo(updatedAt)}</time
@@ -31,10 +31,10 @@
 			{/if}
 		</div>
 
-		<div class="text-text-tertiary text-12 flex flex-wrap items-center justify-center gap-x-4">
+		<div class="flex flex-wrap items-center justify-center gap-x-4 text-12 text-text-tertiary">
 			<a
 				href="/about"
-				class="hover:text-text-secondary inline-flex min-h-11 items-center whitespace-nowrap transition-colors"
+				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
 			>
 				About
 			</a>
@@ -42,7 +42,7 @@
 				<span class="text-border" aria-hidden="true">&middot;</span>
 				<a
 					href={link.href}
-					class="hover:text-text-secondary inline-flex min-h-11 items-center whitespace-nowrap transition-colors"
+					class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
 					target="_blank"
 					rel="noopener noreferrer"
 				>

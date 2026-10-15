@@ -76,7 +76,7 @@
 
 <span
 	class={clsx(
-		'text-11 inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-medium tracking-wide uppercase',
+		'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-11 font-medium tracking-wide uppercase',
 		s.bg,
 		s.text,
 		className

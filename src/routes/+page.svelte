@@ -20,19 +20,19 @@
 {#snippet heading(id: string, title: string, sub: string, href = '', more = '')}
 	<div class="mb-3 flex items-end justify-between gap-4">
 		<div>
-			<h2 {id} class="text-text scroll-mt-20 text-[18px] font-semibold">{title}</h2>
-			<p class="text-text-tertiary text-13">{sub}</p>
+			<h2 {id} class="scroll-mt-20 text-[18px] font-semibold text-text">{title}</h2>
+			<p class="text-13 text-text-tertiary">{sub}</p>
 		</div>
 		{#if href && more}
-			<a {href} class="text-accent text-13 shrink-0">{more} →</a>
+			<a {href} class="shrink-0 text-13 text-accent">{more} →</a>
 		{/if}
 	</div>
 {/snippet}
 
 <div class="mx-auto max-w-6xl px-6 pt-12 pb-20">
 	<div class="text-center">
-		<h1 class="text-text text-4xl font-bold tracking-tight text-balance">Extensions for Zed</h1>
-		<p class="text-text-secondary text-15 mt-3">
+		<h1 class="text-4xl font-bold tracking-tight text-balance text-text">Extensions for Zed</h1>
+		<p class="mt-3 text-15 text-text-secondary">
 			Every extension in Zed’s registry, ranked by downloads, with theme previews and setup guides.
 			Updated nightly.
 		</p>
@@ -105,7 +105,7 @@
 	<div class="mt-14 text-center">
 		<a
 			href="/extensions"
-			class="border-border bg-surface-raised text-text hover:border-border-hover text-14 inline-block rounded-lg border px-4 py-2.5 font-medium"
+			class="inline-block rounded-lg border border-border bg-surface-raised px-4 py-2.5 text-14 font-medium text-text hover:border-border-hover"
 		>
 			Browse all {data.extensionCount.toLocaleString('en-US')} extensions →
 		</a>

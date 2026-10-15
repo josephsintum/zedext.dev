@@ -75,12 +75,12 @@
 <section class="mb-6" aria-label="Icon theme preview">
 	<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 	{#if variants.length > 8}
-		<label class="text-text-secondary text-12 mb-3 flex items-center gap-2">
+		<label class="mb-3 flex items-center gap-2 text-12 text-text-secondary">
 			{variants.length} variants
 			<select
 				bind:value={selected}
 				aria-label="Icon theme variant"
-				class="border-border bg-surface-raised text-text text-12 rounded-md border px-2 py-1"
+				class="rounded-md border border-border bg-surface-raised px-2 py-1 text-12 text-text"
 			>
 				{#each variants as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 			</select>
@@ -92,8 +92,8 @@
 					type="button"
 					aria-pressed={selected === i}
 					onclick={() => (selected = i)}
-					class="text-12 rounded-full border px-3 py-1 transition-colors {selected === i
-						? 'border-accent text-accent font-semibold'
+					class="rounded-full border px-3 py-1 text-12 transition-colors {selected === i
+						? 'border-accent font-semibold text-accent'
 						: 'border-border text-text-secondary hover:border-border-hover'}"
 				>
 					{variant.name}
@@ -104,7 +104,7 @@
 
 	<!-- A Zed window: project panel on the left, an open file on the right -->
 	<div
-		class="text-11 overflow-hidden rounded-lg border shadow-sm"
+		class="overflow-hidden rounded-lg border text-11 shadow-sm"
 		style:border-color={c.border}
 		style:color={c.text}
 	>
@@ -126,7 +126,7 @@
 
 		<div class="flex">
 			<ul
-				class="text-13 w-full shrink-0 border-r py-1.5 sm:w-60"
+				class="w-full shrink-0 border-r py-1.5 text-13 sm:w-60"
 				style:background-color={c.panel}
 				style:border-color={c.border}
 				aria-label="Project files"
@@ -162,7 +162,7 @@
 				aria-hidden="true"
 			>
 				<div
-					class="text-12 flex overflow-hidden border-b"
+					class="flex overflow-hidden border-b text-12"
 					style:background-color={c.panel}
 					style:border-color={c.border}
 				>
@@ -178,7 +178,7 @@
 						</span>
 					{/each}
 				</div>
-				<div class="text-12 py-3 font-mono leading-[22px]">
+				<div class="py-3 font-mono text-12 leading-[22px]">
 					{#each CODE as [indent, width], i (i)}
 						<div class="flex items-center">
 							<span class="w-10 shrink-0 pr-3 text-right" style:color={c.muted}>{i + 1}</span>

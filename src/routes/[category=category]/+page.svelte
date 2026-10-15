@@ -16,10 +16,10 @@
 <ExtensionBrowser initialResults={data.initialResults} category={data.category.provides}>
 	{#snippet intro()}
 		<div class="mx-auto max-w-2xl text-center">
-			<h1 class="text-text text-4xl font-bold tracking-tight text-balance">
+			<h1 class="text-4xl font-bold tracking-tight text-balance text-text">
 				{data.category.title}
 			</h1>
-			<p class="text-text-secondary text-15 mt-3 leading-relaxed">
+			<p class="mt-3 text-15 leading-relaxed text-text-secondary">
 				{countOf(data.total, 'extension')}. {data.category.description}
 			</p>
 		</div>

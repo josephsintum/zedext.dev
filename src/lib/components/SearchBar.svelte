@@ -128,7 +128,7 @@
 >
 	<div
 		class="relative overflow-hidden rounded-xl border transition-all duration-200 motion-reduce:transition-none {focused
-			? 'border-accent shadow-accent/10 shadow-lg'
+			? 'border-accent shadow-lg shadow-accent/10'
 			: 'border-border shadow-sm'}"
 	>
 		<svg
@@ -163,18 +163,18 @@
 				if (to) preloadCode(to).catch(() => {});
 			}}
 			onblur={() => (focused = false)}
-			class="bg-surface-raised text-text placeholder:text-text-tertiary sm:text-15 w-full py-3.5 pr-4 pl-12 font-sans text-[16px] focus:outline-none"
+			class="w-full bg-surface-raised py-3.5 pr-4 pl-12 font-sans text-[16px] text-text placeholder:text-text-tertiary focus:outline-none sm:text-15"
 		/>
 		<div class="absolute top-1/2 right-4 -translate-y-1/2">
 			{#if busy}
 				<span
-					class="border-border border-t-accent block h-4 w-4 animate-spin rounded-full border-2 motion-reduce:animate-none"
+					class="block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent motion-reduce:animate-none"
 					role="status"
 					aria-label="Searching"
 				></span>
 			{:else if !focused}
 				<kbd
-					class="border-border bg-surface text-text-tertiary text-11 hidden rounded-md border px-1.5 py-0.5 font-mono sm:inline-block"
+					class="hidden rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-11 text-text-tertiary sm:inline-block"
 					>/</kbd
 				>
 			{/if}

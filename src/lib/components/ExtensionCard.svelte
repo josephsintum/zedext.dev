@@ -52,14 +52,14 @@
 
 <a
 	href="/extensions/{hit.id}"
-	class="card-hover group bg-surface-raised border-border relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border p-4 {accentBorder}"
+	class="card-hover group relative flex h-full min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-surface-raised p-4 {accentBorder}"
 >
 	<div class="mb-1.5 flex items-start justify-between gap-2">
-		<h3 class="text-text group-hover:text-accent-hover text-14 min-w-0 truncate font-semibold">
+		<h3 class="min-w-0 truncate text-14 font-semibold text-text group-hover:text-accent-hover">
 			{hit.name}
 		</h3>
 		<span
-			class="bg-surface text-text-tertiary text-11 shrink-0 rounded-md px-1.5 py-0.5 {badge ===
+			class="shrink-0 rounded-md bg-surface px-1.5 py-0.5 text-11 text-text-tertiary {badge ===
 			'version'
 				? 'font-mono'
 				: ''}"
@@ -73,7 +73,7 @@
 	</div>
 
 	{#if hit.description}
-		<p class="text-text-secondary text-13 mb-3 line-clamp-2 min-w-0 leading-relaxed">
+		<p class="mb-3 line-clamp-2 min-w-0 text-13 leading-relaxed text-text-secondary">
 			{hit.description}
 		</p>
 	{:else}
@@ -86,7 +86,7 @@
 		{/each}
 	</div>
 
-	<div class="border-border text-text-tertiary text-12 mt-3 flex items-center gap-3 border-t pt-3">
+	<div class="mt-3 flex items-center gap-3 border-t border-border pt-3 text-12 text-text-tertiary">
 		{#if badge === 'version'}
 			{@render downloads()}
 		{/if}
@@ -112,7 +112,7 @@
 			</span>
 		{/if}
 
-		<span class="text-11 ml-auto truncate">
+		<span class="ml-auto truncate text-11">
 			{hit.authors[0] ?? 'Unknown'}
 		</span>
 	</div>

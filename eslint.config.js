@@ -45,6 +45,8 @@ export default ts.config(
 	{
 		settings: {
 			tailwindcss: {
+				// Read the theme from app.css so token utilities like text-text-secondary are known
+				config: new URL('./src/app.css', import.meta.url).pathname,
 				whitelist: ['dot-grid', 'hide-scrollbar', 'card-hover', 'animate-fade-up', 'readme-content']
 			}
 		}

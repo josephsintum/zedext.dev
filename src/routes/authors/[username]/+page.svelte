@@ -33,8 +33,8 @@
 
 <div class="mx-auto max-w-7xl px-6 py-8">
 	<!-- Breadcrumb -->
-	<nav aria-label="Breadcrumb" class="text-text-tertiary text-13 mb-6">
-		<a href="/extensions" class="hit-y hover:text-text transition-colors">Extensions</a>
+	<nav aria-label="Breadcrumb" class="mb-6 text-13 text-text-tertiary">
+		<a href="/extensions" class="hit-y transition-colors hover:text-text">Extensions</a>
 		<span class="mx-2" aria-hidden="true">/</span>
 		<span class="text-text" aria-current="page">{user.login}</span>
 	</nav>
@@ -45,18 +45,18 @@
 			<img
 				src={user.avatar_url}
 				alt={user.name ?? user.login}
-				class="border-border h-20 w-20 shrink-0 rounded-full border"
+				class="h-20 w-20 shrink-0 rounded-full border border-border"
 			/>
 		{/if}
 		<div class="min-w-0">
-			<h1 class="text-text text-xl font-bold">
+			<h1 class="text-xl font-bold text-text">
 				{user.name ?? user.login}
 			</h1>
 			<a
 				href={user.html_url}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="text-text-tertiary hover:text-accent text-13 mt-0.5 inline-flex items-center gap-1 transition-colors"
+				class="mt-0.5 inline-flex items-center gap-1 text-13 text-text-tertiary transition-colors hover:text-accent"
 			>
 				<svg aria-hidden="true" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
 					<path
@@ -66,12 +66,12 @@
 				@{user.login}
 			</a>
 			{#if user.bio}
-				<p class="text-text-secondary text-14 mt-2 leading-relaxed">
+				<p class="mt-2 text-14 leading-relaxed text-text-secondary">
 					{user.bio}
 				</p>
 			{/if}
 			{#if user.location || user.company}
-				<div class="text-text-tertiary text-12 mt-1.5 flex flex-wrap items-center gap-3">
+				<div class="mt-1.5 flex flex-wrap items-center gap-3 text-12 text-text-tertiary">
 					{#if user.company}
 						<span class="flex items-center gap-1">
 							<svg
@@ -122,9 +122,9 @@
 
 	<!-- Extensions section -->
 	<div>
-		<h2 class="text-text-tertiary text-13 mb-4 font-semibold tracking-wide uppercase">
+		<h2 class="mb-4 text-13 font-semibold tracking-wide text-text-tertiary uppercase">
 			Extensions
-			<span class="bg-surface-hover text-11 ml-1 rounded-md px-1.5 py-0.5 font-mono font-normal">
+			<span class="ml-1 rounded-md bg-surface-hover px-1.5 py-0.5 font-mono text-11 font-normal">
 				{extensions.length}
 			</span>
 		</h2>
@@ -135,18 +135,18 @@
 					{@const provides = filterProvides(hit.provides)}
 					<a
 						href="/extensions/{hit.id}"
-						class="group border-border bg-surface-raised flex flex-col rounded-lg border p-4 transition-colors duration-150 {getHoverBorder(
+						class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {getHoverBorder(
 							hit
 						)}"
 					>
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3
-								class="text-accent group-hover:text-accent-hover text-14 min-w-0 truncate font-mono font-semibold"
+								class="min-w-0 truncate font-mono text-14 font-semibold text-accent group-hover:text-accent-hover"
 							>
 								{hit.name}
 							</h3>
 							<span
-								class="text-text-tertiary text-12 flex shrink-0 items-center gap-1 tabular-nums"
+								class="flex shrink-0 items-center gap-1 text-12 text-text-tertiary tabular-nums"
 							>
 								<svg
 									class="h-3.5 w-3.5"
@@ -167,7 +167,7 @@
 						</div>
 
 						{#if hit.description}
-							<p class="text-text-secondary text-13 mb-3 line-clamp-2 leading-relaxed">
+							<p class="mb-3 line-clamp-2 text-13 leading-relaxed text-text-secondary">
 								{hit.description}
 							</p>
 						{:else}
@@ -185,7 +185,7 @@
 				{/each}
 			</div>
 		{:else}
-			<div class="border-border bg-surface-raised rounded-lg border p-8 text-center">
+			<div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
 				<p class="text-text-tertiary">No extensions found for this author.</p>
 			</div>
 		{/if}

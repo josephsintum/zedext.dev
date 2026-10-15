@@ -5,7 +5,7 @@
 <!-- Zed runs on desktops, so phones and tablets (touch-first) don't get an install link -->
 <a
 	href="zed://extension/{extensionId}"
-	class="bg-text text-surface hover:bg-accent-hover text-13 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition-colors pointer-coarse:hidden"
+	class="inline-flex items-center gap-2 rounded-lg bg-text px-4 py-2.5 text-13 font-semibold text-surface transition-colors hover:bg-accent-hover pointer-coarse:hidden"
 >
 	<svg
 		aria-hidden="true"

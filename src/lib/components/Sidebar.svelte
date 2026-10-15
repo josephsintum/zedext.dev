@@ -49,7 +49,7 @@
 	<!-- Downloads -->
 	<div class="{panel} flex items-center gap-3">
 		<svg
-			class="text-accent h-5 w-5"
+			class="h-5 w-5 text-accent"
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
@@ -63,10 +63,10 @@
 			/>
 		</svg>
 		<div>
-			<div class="text-text font-mono text-2xl font-bold">
+			<div class="font-mono text-2xl font-bold text-text">
 				{formatNumber(extension.download_count)}
 			</div>
-			<div class="text-text-tertiary text-11">downloads</div>
+			<div class="text-11 text-text-tertiary">downloads</div>
 		</div>
 	</div>
 
@@ -78,14 +78,14 @@
 			<button
 				onclick={copyId}
 				title="Copy identifier"
-				class="text-text-secondary hover:text-text text-12 min-w-0 truncate font-mono"
+				class="min-w-0 truncate font-mono text-12 text-text-secondary hover:text-text"
 			>
 				{copied ? 'Copied' : extension.id}
 			</button>
 		</div>
 		<div class={row}>
 			<span class="text-text-tertiary">Version</span>
-			<span class="text-text-secondary text-12 font-mono">{extension.version}</span>
+			<span class="font-mono text-12 text-text-secondary">{extension.version}</span>
 		</div>
 		{#if firstReleasedAt}
 			<div class={row}>
@@ -100,7 +100,7 @@
 		{#if github?.license}
 			<div class={row}>
 				<span class="text-text-tertiary">License</span>
-				<span class="text-text-secondary text-12 font-mono">{github.license.spdx_id}</span>
+				<span class="font-mono text-12 text-text-secondary">{github.license.spdx_id}</span>
 			</div>
 		{/if}
 	</section>
@@ -109,7 +109,7 @@
 	{#if extension.repository || zedDocsUrl || repoOwner}
 		<section class={panel} aria-labelledby="resources">
 			<h3 id="resources" class={panelTitle}>Resources</h3>
-			<ul class="text-13 space-y-1.5">
+			<ul class="space-y-1.5 text-13">
 				{#if extension.repository}
 					<li>
 						<a href={extension.repository} target="_blank" rel="noopener noreferrer" class={link}
@@ -167,7 +167,7 @@
 
 	<!-- Provides -->
 	<div>
-		<h3 class="text-text-tertiary text-13 mb-2 font-semibold tracking-wide uppercase">Provides</h3>
+		<h3 class="mb-2 text-13 font-semibold tracking-wide text-text-tertiary uppercase">Provides</h3>
 		<div class="flex flex-wrap gap-1.5">
 			{#each extension.provides as provide}
 				<ProvideTag {provide} />
@@ -177,27 +177,27 @@
 
 	<!-- Authors -->
 	<div>
-		<h3 class="text-text-tertiary text-13 mb-2 font-semibold tracking-wide uppercase">Authors</h3>
+		<h3 class="mb-2 text-13 font-semibold tracking-wide text-text-tertiary uppercase">Authors</h3>
 		<div class="space-y-2">
 			{#each authorNames as name, i}
 				{#if i === 0 && repoOwner}
 					<a
 						href="/authors/{repoOwner}"
-						class="text-text-secondary hover:text-accent text-13 flex items-center gap-2 transition-colors"
+						class="flex items-center gap-2 text-13 text-text-secondary transition-colors hover:text-accent"
 					>
 						{#if repoOwnerAvatar}
 							<img
 								src={repoOwnerAvatar}
 								alt={name}
-								class="border-border h-6 w-6 rounded-full border"
+								class="h-6 w-6 rounded-full border border-border"
 							/>
 						{/if}
 						<span>~{repoOwner}</span>
 					</a>
 				{:else}
-					<div class="text-text-secondary text-13 flex items-center gap-2">
+					<div class="flex items-center gap-2 text-13 text-text-secondary">
 						<div
-							class="bg-surface-hover text-text-tertiary flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium"
+							class="flex h-6 w-6 items-center justify-center rounded-full bg-surface-hover text-[10px] font-medium text-text-tertiary"
 						>
 							{name.charAt(0).toUpperCase()}
 						</div>

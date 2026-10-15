@@ -81,7 +81,7 @@
 		<div class="mb-3 flex flex-wrap items-center gap-3">
 			{#if appearances.length > 1}
 				<div
-					class="border-border text-12 inline-flex rounded-md border p-0.5"
+					class="inline-flex rounded-md border border-border p-0.5 text-12"
 					role="group"
 					aria-label="Appearance"
 				>
@@ -101,18 +101,18 @@
 
 			<!-- Pills for a handful of variants; a dropdown for themes that ship dozens (base16 has 251) -->
 			{#if shown.length > 8}
-				<label class="text-text-secondary text-12 flex items-center gap-2">
+				<label class="flex items-center gap-2 text-12 text-text-secondary">
 					{shown.length} variants
 					<span class="relative inline-flex">
 						<select
 							bind:value={picked}
 							aria-label="Theme variant"
-							class="border-border bg-surface-raised text-text text-12 appearance-none rounded-md border py-1 pr-8 pl-2.5"
+							class="appearance-none rounded-md border border-border bg-surface-raised py-1 pr-8 pl-2.5 text-12 text-text"
 						>
 							{#each shown as variant, i (i)}<option value={i}>{variant.name}</option>{/each}
 						</select>
 						<svg
-							class="text-text-tertiary pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2"
+							class="pointer-events-none absolute top-1/2 right-2.5 h-3 w-3 -translate-y-1/2 text-text-tertiary"
 							fill="none"
 							stroke="currentColor"
 							stroke-width="2"
@@ -128,8 +128,8 @@
 						<button
 							aria-pressed={current === v}
 							onclick={() => (picked = i)}
-							class="text-12 rounded-full border px-3 py-1 transition-colors {current === v
-								? 'border-accent text-accent font-semibold'
+							class="rounded-full border px-3 py-1 text-12 transition-colors {current === v
+								? 'border-accent font-semibold text-accent'
 								: 'border-border text-text-secondary hover:border-border-hover'}"
 						>
 							{v.name}
