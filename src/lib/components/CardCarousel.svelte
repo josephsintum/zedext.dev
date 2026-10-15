@@ -19,6 +19,11 @@
 	}
 
 	$effect(update);
+
+	// Fade whichever edge has more cards past it, so the arrow sits over a faded card, not text
+	const fade = $derived(
+		`linear-gradient(to right, ${atStart ? '#000' : 'transparent'}, #000 48px, #000 calc(100% - 72px), ${atEnd ? '#000' : 'transparent'})`
+	);
 </script>
 
 <svelte:window onresize={update} />
@@ -57,6 +62,7 @@
 	<div
 		bind:this={row}
 		onscroll={update}
+		style:mask-image={fade}
 		class="-mx-6 -my-2 flex snap-x snap-mandatory scroll-px-6 gap-3 overflow-x-auto px-6 py-2 [scrollbar-width:none]"
 	>
 		{#each hits as hit (hit.id)}
