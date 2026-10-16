@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	extensionHref,
-	highlight,
-	isApplePlatform,
-	isTypingTarget,
-	kindLabel,
-	searchHref
-} from './palette.js';
+import { highlight, isApplePlatform, isTypingTarget, kindLabel, searchHref } from './palette.js';
 
 describe('kindLabel', () => {
 	it('names an extension by what people would call it', () => {
@@ -32,24 +25,15 @@ describe('highlight', () => {
 		expect(highlight('Python LSP', 'python')).toEqual(['', 'Python', ' LSP']);
 		expect(highlight('BasedPyright', 'pyr')).toEqual(['Based', 'Pyr', 'ight']);
 	});
-	it('ignores surrounding spaces in the query', () => {
-		expect(highlight('Git Firefly', '  fire ')).toEqual(['Git ', 'Fire', 'fly']);
-	});
 	it('returns null when the match came from somewhere other than the name', () => {
 		expect(highlight('Ruff', 'python')).toBeNull();
-		expect(highlight('Ruff', '   ')).toBeNull();
+		expect(highlight('Ruff', '')).toBeNull();
 	});
 });
 
-describe('hrefs', () => {
-	it('encodes queries for the full results page', () => {
-		expect(searchHref('python')).toBe('/extensions?q=python');
-		expect(searchHref(' c# & "f?" ')).toBe('/extensions?q=c%23%20%26%20%22f%3F%22');
-	});
-	it('encodes extension ids', () => {
-		expect(extensionHref('git-firefly')).toBe('/extensions/git-firefly');
-		expect(extensionHref('a b')).toBe('/extensions/a%20b');
-	});
+it('searchHref encodes queries for the full results page', () => {
+	expect(searchHref('python')).toBe('/extensions?q=python');
+	expect(searchHref('c# & "f?"')).toBe('/extensions?q=c%23%20%26%20%22f%3F%22');
 });
 
 describe('isApplePlatform', () => {

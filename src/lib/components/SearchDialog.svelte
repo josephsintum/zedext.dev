@@ -3,13 +3,7 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { getIndex, getIndexStatus, loadIndex } from '$lib/search/client.svelte.js';
 	import { searchIndex } from '$lib/search/engine.js';
-	import {
-		extensionHref,
-		highlight,
-		kindLabel,
-		QUICK_LIMIT,
-		searchHref
-	} from '$lib/search/palette.js';
+	import { highlight, kindLabel, QUICK_LIMIT, searchHref } from '$lib/search/palette.js';
 	import { readRecent } from '$lib/search/recent.js';
 	import { countOf, formatNumber } from '$lib/utils/format.js';
 	import type { ExtensionRecord } from '$lib/types.js';
@@ -88,7 +82,7 @@
 			e.preventDefault();
 			// Until the index loads (or if it can't), the full results page searches on the server
 			if (query && !index) return goto(searchHref(query));
-			if (active < rows.length) goto(extensionHref(rows[active].id));
+			if (active < rows.length) goto(`/extensions/${rows[active].id}`);
 			else if (seeAll) goto(searchHref(query));
 		}
 	}
@@ -169,7 +163,7 @@
 					{@const parts = highlight(record.name, query)}
 					<a
 						id={optionId(i)}
-						href={extensionHref(record.id)}
+						href="/extensions/{record.id}"
 						role="option"
 						aria-selected={i === active}
 						tabindex="-1"
