@@ -5,13 +5,14 @@ import type { ExtensionRecord } from './types.js';
  * already popular. Refresh every month or two, and don't bring back past picks.
  */
 export const FEATURED_IDS = [
-	'codebook', // code-aware spell checker that knows identifiers from typos
-	'harper', // offline grammar and spelling checker, nothing leaves your machine
-	'tombi', // fast TOML language server and formatter
+	'windows-batch', // Windows Batch/CMD script support
 	'oxc', // Oxlint and Oxfmt: very fast JS/TS linting and formatting
-	'tsgo', // try TypeScript 7's native compiler today
-	'pytest-language-server', // go-to-definition and completions for pytest fixtures
-	'chrome-devtools-mcp', // lets Zed's agent drive and inspect Chrome
+	'codebook', // code-aware spell checker that knows identifiers from typos
+	'markdown-oxide', // Obsidian-style notes: links, backlinks and daily notes in Markdown
+	'mcp-server-sonarqube', // lets Zed's agent check code quality and security issues
+	'emoji-completions', // type ':' and an emoji name to insert it
+	'cargo-appraiser', // shows outdated Cargo.toml dependencies inline
+	'wakatime', // automatic coding-time tracking
 	'discord-presence' // show what you're coding on Discord
 ];
 
