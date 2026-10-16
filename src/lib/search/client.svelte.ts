@@ -38,24 +38,6 @@ export function takeCarriedQuery(path: string): string | null {
 	return found;
 }
 
-/** Focuses the current page's own search box (SearchBar), for the header's shortcuts. */
-let pageSearch: (() => void) | null = null;
-
-/** Called by a page's search box while it's mounted; returns the function that unregisters it. */
-export function registerPageSearch(focus: () => void): () => void {
-	pageSearch = focus;
-	return () => {
-		// A box on the next page may already have registered
-		if (pageSearch === focus) pageSearch = null;
-	};
-}
-
-/** Focus the page's own search box; false when the page has none. */
-export function focusPageSearch(): boolean {
-	pageSearch?.();
-	return pageSearch !== null;
-}
-
 export function getIndex(): SearchIndex | null {
 	return index;
 }

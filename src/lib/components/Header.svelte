@@ -3,7 +3,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
-	import { focusPageSearch, loadIndex } from '$lib/search/client.svelte.js';
+	import { loadIndex } from '$lib/search/client.svelte.js';
 	import { isApplePlatform, isTypingTarget } from '$lib/search/palette.js';
 	import SearchDialog from './SearchDialog.svelte';
 
@@ -33,8 +33,8 @@
 		apple = isApplePlatform(nav.userAgentData?.platform || nav.platform);
 	});
 
-	// ⌘K / Ctrl+K anywhere, and "/" when not typing: the page's own search box if it has one,
-	// otherwise the search window. ⌘K again closes the window
+	// ⌘K / Ctrl+K anywhere, and "/" when not typing: the page's own search box if it has one
+	// (SearchBar's), otherwise the search window. ⌘K again closes the window
 	function handleKeydown(e: KeyboardEvent) {
 		const commandK =
 			e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey;
@@ -43,7 +43,9 @@
 		if (!commandK && !slash) return;
 		e.preventDefault();
 		if (commandK && search.isOpen()) return search.close();
-		if (!focusPageSearch()) search.open();
+		const pageSearch = document.querySelector<HTMLElement>('[data-page-search] input');
+		if (pageSearch) pageSearch.focus();
+		else search.open();
 	}
 </script>
 

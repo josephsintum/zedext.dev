@@ -7,7 +7,6 @@
 		currentSearchParams,
 		dropCarriedQuery,
 		loadIndex,
-		registerPageSearch,
 		setSearchParams,
 		takeCarriedQuery
 	} from '$lib/search/client.svelte.js';
@@ -45,8 +44,6 @@
 					!navigating.to.url.searchParams.has('page')
 	);
 
-	// The header's shortcuts ("/" and ⌘K) focus this box instead of opening the search window
-	$effect(() => registerPageSearch(() => field.focus()));
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	// Follow outside URL changes (back button, links), but never overwrite what's being typed
@@ -113,6 +110,7 @@
 	}
 </script>
 
+<!-- The marker hides the header's search button (app.css) and sends its shortcuts here -->
 <div
 	data-page-search
 	class="relative w-full transition-all duration-200 motion-reduce:transition-none"
