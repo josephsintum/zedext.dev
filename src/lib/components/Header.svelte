@@ -51,6 +51,18 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+{#snippet magnifier(size: string)}
+	<svg
+		aria-hidden="true"
+		class="{size} shrink-0"
+		fill="none"
+		stroke="currentColor"
+		viewBox="0 0 24 24"
+		stroke-width="2"
+		stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
+	>
+{/snippet}
+
 <header class="sticky top-0 z-50 border-b border-border bg-surface-raised/90 backdrop-blur-md">
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
 		<div class="flex min-w-0 flex-1 items-center gap-6">
@@ -68,15 +80,7 @@
 				aria-keyshortcuts="Meta+K Control+K /"
 				class="header-search flex h-8 w-full max-w-[260px] min-w-0 items-center gap-2 rounded-lg border border-border bg-surface pr-1.5 pl-2.5 text-13 text-text-tertiary transition-colors hover:border-border-hover hover:text-text-secondary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none max-sm:hidden"
 			>
-				<svg
-					aria-hidden="true"
-					class="h-[15px] w-[15px] shrink-0"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					stroke-width="2"
-					stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
-				>
+				{@render magnifier('h-[15px] w-[15px]')}
 				<span class="flex-1 truncate text-left">Search extensions…</span>
 				<kbd
 					aria-hidden="true"
@@ -105,15 +109,7 @@
 				aria-label="Search extensions"
 				class="header-search flex h-11 w-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-hover hover:text-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:hidden"
 			>
-				<svg
-					aria-hidden="true"
-					class="h-[18px] w-[18px]"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					stroke-width="2"
-					stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
-				>
+				{@render magnifier('h-[18px] w-[18px]')}
 			</button>
 			<button
 				onclick={toggleTheme}
