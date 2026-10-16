@@ -28,8 +28,6 @@
 	let recentIds = $state<string[]>([]);
 	/** For screen readers: the result count, once typing pauses */
 	let announcement = $state('');
-	/** Where focus goes back to when the window closes without opening anything */
-	let returnFocus: HTMLElement | null = null;
 
 	const index = $derived(getIndex());
 	const query = $derived(q.trim());
@@ -47,7 +45,6 @@
 
 	export function open(): void {
 		if (dialog.open) return;
-		returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 		q = '';
 		active = 0;
 		recentIds = readRecent();
@@ -65,16 +62,14 @@
 		return dialog?.open ?? false;
 	}
 
-	/** Every way of closing ends here: Esc, the buttons, the backdrop, ⌘K, opening a result */
+	// Every way of closing ends here: Esc, the buttons, the backdrop, ⌘K, opening a result.
+	// The browser has already put focus back where it was before the window opened
 	function handleClose() {
 		document.documentElement.style.overflow = '';
 		q = '';
-		returnFocus?.focus();
-		returnFocus = null;
 	}
 
 	function go(href: string) {
-		returnFocus = null; // the next page decides where focus goes
 		close();
 		goto(href);
 	}
