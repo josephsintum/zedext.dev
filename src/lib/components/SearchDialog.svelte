@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { afterNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { getIndex, getIndexStatus, loadIndex } from '$lib/search/client.svelte.js';
 	import { searchIndex } from '$lib/search/engine.js';
 	import {
@@ -69,13 +69,9 @@
 		q = '';
 	}
 
-	function go(href: string) {
-		close();
-		goto(href);
-	}
-
-	// Back, forward or any other navigation while the window is open
-	afterNavigate(() => close());
+	// Opening a result (the rows are plain links, so ⌘-click opens a tab), back, forward or any
+	// other navigation closes the window, right away rather than once the next page has loaded
+	beforeNavigate(close);
 
 	function move(step: 1 | -1) {
 		if (count === 0) return;
@@ -92,17 +88,10 @@
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			// Until the index loads (or if it can't), the full results page searches on the server
-			if (query && !index) return go(searchHref(query));
-			if (active < rows.length) go(extensionHref(rows[active].id));
-			else if (seeAll) go(searchHref(query));
+			if (query && !index) return goto(searchHref(query));
+			if (active < rows.length) goto(extensionHref(rows[active].id));
+			else if (seeAll) goto(searchHref(query));
 		}
-	}
-
-	/** Plain clicks open here; ⌘/Ctrl/Shift-clicks open a new tab or window, as links do */
-	function handleClick(e: MouseEvent, href: string) {
-		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-		e.preventDefault();
-		go(href);
 	}
 
 	$effect(() => {
@@ -186,7 +175,6 @@
 						role="option"
 						aria-selected={i === active}
 						tabindex="-1"
-						onclick={(e) => handleClick(e, extensionHref(record.id))}
 						onmousemove={() => (active = i)}
 						class="flex min-h-12 items-center gap-3 rounded-lg px-2.5 py-2 max-sm:min-h-14 {i ===
 						active
@@ -223,7 +211,6 @@
 						role="option"
 						aria-selected={active === rows.length}
 						tabindex="-1"
-						onclick={(e) => handleClick(e, searchHref(query))}
 						onmousemove={() => (active = rows.length)}
 						class="mt-1 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2.5 text-13 font-medium text-accent {active ===
 						rows.length
@@ -248,7 +235,6 @@
 						Search couldn't load.
 						<a
 							href={searchHref(query)}
-							onclick={(e) => handleClick(e, searchHref(query))}
 							class="text-accent hover:underline">See all results for “{query}”</a
 						>
 					{:else}
