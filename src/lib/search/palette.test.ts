@@ -2,21 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { highlight, isApplePlatform, isTypingTarget, kindLabel, searchHref } from './palette.js';
 
 describe('kindLabel', () => {
-	it('names an extension by what people would call it', () => {
-		expect(kindLabel(['themes'])).toBe('Theme');
-		expect(kindLabel(['icon-themes'])).toBe('Icon theme');
-		expect(kindLabel(['context-servers'])).toBe('MCP server');
-		expect(kindLabel(['snippets'])).toBe('Snippets');
-	});
-	it('prefers the language over its server and debugger (Java provides all three)', () => {
-		expect(kindLabel(['languages', 'grammars', 'language-servers', 'debug-adapters'])).toBe(
-			'Language'
-		);
-		expect(kindLabel(['language-servers', 'debug-adapters'])).toBe('Language server');
-	});
-	it('never shows grammars, and has no label for nothing it knows', () => {
-		expect(kindLabel(['grammars'])).toBeNull();
-		expect(kindLabel([])).toBeNull();
+	it.each([
+		[['themes'], 'Theme'],
+		[['icon-themes'], 'Icon theme'],
+		[['context-servers'], 'MCP server'],
+		[['snippets'], 'Snippets'],
+		// The language beats its server and debugger (Java provides all three)
+		[['languages', 'grammars', 'language-servers', 'debug-adapters'], 'Language'],
+		[['language-servers', 'debug-adapters'], 'Language server'],
+		// Grammars never show, and nothing known means no label
+		[['grammars'], null],
+		[[], null]
+	])('%j is %s', (provides, label) => {
+		expect(kindLabel(provides)).toBe(label);
 	});
 });
 
@@ -50,15 +48,11 @@ describe('isTypingTarget', () => {
 	const el = (tagName: string, isContentEditable = false) =>
 		({ tagName, isContentEditable }) as unknown as EventTarget;
 	it('is true in text fields and editable content', () => {
-		expect(isTypingTarget(el('INPUT'))).toBe(true);
-		expect(isTypingTarget(el('TEXTAREA'))).toBe(true);
-		expect(isTypingTarget(el('SELECT'))).toBe(true);
-		expect(isTypingTarget(el('DIV', true))).toBe(true);
+		for (const t of [el('INPUT'), el('TEXTAREA'), el('SELECT'), el('DIV', true)])
+			expect(isTypingTarget(t)).toBe(true);
 	});
 	it('is false elsewhere', () => {
-		expect(isTypingTarget(el('BODY'))).toBe(false);
-		expect(isTypingTarget(el('A'))).toBe(false);
-		expect(isTypingTarget(null)).toBe(false);
-		expect(isTypingTarget({} as EventTarget)).toBe(false);
+		for (const t of [el('BODY'), el('A'), null, {} as EventTarget])
+			expect(isTypingTarget(t)).toBe(false);
 	});
 });
