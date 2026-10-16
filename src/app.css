@@ -288,3 +288,9 @@ body::before {
 		transition: none;
 	}
 }
+
+/* Pages with their own search box (SearchBar marks it) don't show the header's search button.
+   Unlayered so it beats the button's display utilities; plain CSS, so it's right before hydration */
+body:has([data-page-search]) .header-search {
+	display: none;
+}

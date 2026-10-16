@@ -11,6 +11,7 @@
 	import VersionTable from '$lib/components/VersionTable.svelte';
 	import { badgeFor, healthPills } from '$lib/extension-page.js';
 	import { countOf } from '$lib/utils/format.js';
+	import { recordRecent } from '$lib/search/recent.js';
 	import type { DetailContent } from './+page.server.js';
 
 	let { data } = $props();
@@ -18,6 +19,9 @@
 	const versions = $derived(data.versions);
 	const isMonorepo = $derived(data.isMonorepo);
 	const repoOwner = $derived(data.repoOwner);
+
+	// For the search window's "Recently viewed" (effects only run in the browser)
+	$effect(() => recordRecent(extension.id));
 	let activeTab = $state<'docs' | 'readme'>('docs');
 
 	// The section tab lives in the URL (?tab=), so it can be linked to and survives a reload.

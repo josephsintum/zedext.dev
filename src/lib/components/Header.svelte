@@ -1,15 +1,18 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
-	import { focusPageSearch } from '$lib/search/client.svelte.js';
-	import { isTypingTarget } from '$lib/search/palette.js';
+	import { focusPageSearch, loadIndex } from '$lib/search/client.svelte.js';
+	import { isApplePlatform, isTypingTarget } from '$lib/search/palette.js';
+	import SearchDialog from './SearchDialog.svelte';
 
 	const isDark = $derived(getTheme() === 'dark');
-	// Phones show what fits in the bar (`hide` drops the rest); the phone menu lists them all
+	// Phones show what fits in the bar (`hide` drops the rest); the phone menu lists them all.
+	// Below 400px Themes, and below 360px All extensions, make room for the search button
 	const siteLinks = [
-		{ href: '/extensions', label: 'All extensions', hide: '' },
-		{ href: '/themes', label: 'Themes', hide: 'max-[359px]:hidden' },
+		{ href: '/extensions', label: 'All extensions', hide: 'max-[359px]:hidden' },
+		{ href: '/themes', label: 'Themes', hide: 'max-[399px]:hidden' },
 		{ href: '/languages', label: 'Languages', hide: 'max-sm:hidden' }
 	];
 
@@ -21,26 +24,65 @@
 	}
 	afterNavigate(closeMenu);
 
-	// ⌘K / Ctrl+K anywhere, and "/" when not typing, go to the page's own search box
+	let search: ReturnType<typeof SearchDialog>;
+
+	// ⌘K until hydration; Windows and Linux then show Ctrl K
+	let apple = $state(true);
+	onMount(() => {
+		const nav = navigator as Navigator & { userAgentData?: { platform: string } };
+		apple = isApplePlatform(nav.userAgentData?.platform || nav.platform);
+	});
+
+	// ⌘K / Ctrl+K anywhere, and "/" when not typing: the page's own search box if it has one,
+	// otherwise the search window. ⌘K again closes the window
 	function handleKeydown(e: KeyboardEvent) {
 		const commandK =
 			e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey;
 		const slash =
 			e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target);
-		if ((commandK || slash) && focusPageSearch()) e.preventDefault();
+		if (!commandK && !slash) return;
+		e.preventDefault();
+		if (commandK && search.isOpen()) return search.close();
+		if (!focusPageSearch()) search.open();
 	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 <header class="sticky top-0 z-50 border-b border-border bg-surface-raised/90 backdrop-blur-md">
-	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-		<a
-			href="/"
-			class="hit-y font-mono text-sm font-semibold tracking-tight text-text transition-colors hover:text-accent"
-		>
-			ZedExt
-		</a>
+	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between gap-6 px-6">
+		<div class="flex min-w-0 flex-1 items-center gap-6">
+			<a
+				href="/"
+				class="hit-y font-mono text-sm font-semibold tracking-tight text-text transition-colors hover:text-accent"
+			>
+				ZedExt
+			</a>
+			<button
+				type="button"
+				onclick={() => search.open()}
+				onpointerenter={() => loadIndex()}
+				onfocus={() => loadIndex()}
+				aria-keyshortcuts="Meta+K Control+K /"
+				class="header-search flex h-8 w-full max-w-[260px] min-w-0 items-center gap-2 rounded-lg border border-border bg-surface pr-1.5 pl-2.5 text-13 text-text-tertiary transition-colors hover:border-border-hover hover:text-text-secondary focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none max-sm:hidden"
+			>
+				<svg
+					aria-hidden="true"
+					class="h-[15px] w-[15px] shrink-0"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
+				>
+				<span class="flex-1 truncate text-left">Search extensions…</span>
+				<kbd
+					aria-hidden="true"
+					class="shrink-0 rounded border border-border bg-surface-raised px-1.5 font-mono text-11 text-text-tertiary"
+					>{apple ? '⌘K' : 'Ctrl K'}</kbd
+				>
+			</button>
+		</div>
 
 		<nav class="flex items-center gap-3 sm:gap-5">
 			{#each siteLinks as link (link.href)}
@@ -55,6 +97,22 @@
 					{link.label}
 				</a>
 			{/each}
+			<button
+				type="button"
+				onclick={() => search.open()}
+				aria-label="Search extensions"
+				class="header-search flex h-11 w-11 items-center justify-center rounded-lg text-text-secondary transition-colors hover:bg-surface-hover hover:text-text focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none sm:hidden"
+			>
+				<svg
+					aria-hidden="true"
+					class="h-[18px] w-[18px]"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg
+				>
+			</button>
 			<button
 				onclick={toggleTheme}
 				aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -138,3 +196,5 @@
 		</nav>
 	</div>
 </header>
+
+<SearchDialog bind:this={search} />
