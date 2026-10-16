@@ -55,11 +55,11 @@
 	}
 
 	export function close(): void {
-		if (dialog.open) dialog.close();
+		dialog.close();
 	}
 
 	export function isOpen(): boolean {
-		return dialog?.open ?? false;
+		return dialog.open;
 	}
 
 	// Every way of closing ends here: Esc, the buttons, the backdrop, ⌘K, opening a result.
@@ -95,12 +95,11 @@
 	}
 
 	$effect(() => {
-		const text =
-			!query || !results
-				? ''
-				: results.nbHits === 0
-					? `No extensions match ${query}`
-					: countOf(results.nbHits, 'result');
+		const text = !results
+			? ''
+			: results.nbHits === 0
+				? `No extensions match ${query}`
+				: countOf(results.nbHits, 'result');
 		const timer = setTimeout(() => (announcement = text), 300);
 		return () => clearTimeout(timer);
 	});
