@@ -9,10 +9,10 @@
 
 	const isDark = $derived(getTheme() === 'dark');
 	// Phones show what fits in the bar (`hide` drops the rest); the phone menu lists them all.
-	// Below 400px Themes, and below 360px All extensions, make room for the search button
+	// Below 420px Themes, and below 360px All extensions, make room for the search button
 	const siteLinks = [
 		{ href: '/extensions', label: 'All extensions', hide: 'max-[359px]:hidden' },
-		{ href: '/themes', label: 'Themes', hide: 'max-[399px]:hidden' },
+		{ href: '/themes', label: 'Themes', hide: 'max-[420px]:hidden' },
 		{ href: '/languages', label: 'Languages', hide: 'max-sm:hidden' }
 	];
 
@@ -33,11 +33,15 @@
 		apple = isApplePlatform(nav.userAgentData?.platform || nav.platform);
 	});
 
-	// ⌘K / Ctrl+K anywhere, and "/" when not typing: the page's own search box if it has one
-	// (SearchBar's), otherwise the search window. ⌘K again closes the window
+	// ⌘K (Ctrl+K off Apple platforms, where Ctrl+K deletes to the end of a line) anywhere, and "/"
+	// when not typing: the page's own search box if it has one (SearchBar's), otherwise the search
+	// window. ⌘K again closes the window. Autofill picks fire keydowns without a key
 	function handleKeydown(e: KeyboardEvent) {
 		const commandK =
-			e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey;
+			e.key?.toLowerCase() === 'k' &&
+			(apple ? e.metaKey : e.metaKey || e.ctrlKey) &&
+			!e.altKey &&
+			!e.shiftKey;
 		const slash =
 			e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target);
 		if (!commandK && !slash) return;

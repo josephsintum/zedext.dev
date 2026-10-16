@@ -21,8 +21,9 @@ for (const path of paths) {
 
 // Squeezed headers don't scroll sideways, they overlap: the links slid under the logo when the
 // search button first joined them on phones
-for (const width of [320, 360, 390]) {
-	test(`the header's logo and links don't overlap at ${width}px`, async ({ page }) => {
+// 399–414 px: Themes once stayed on at 399 and up and squeezed the logo to 0–15 px (iPhone 16 Pro: 402)
+for (const width of [320, 360, 390, 399, 402, 414, 420]) {
+	test(`the header's logo and links keep apart at ${width}px`, async ({ page }) => {
 		await page.setViewportSize({ width, height: 800 });
 		await page.goto('/extensions/catppuccin');
 		const { logoRight, navLeft, navRight } = await page.evaluate(() => {
@@ -30,7 +31,7 @@ for (const width of [320, 360, 390]) {
 			const nav = document.querySelector('header nav')!.getBoundingClientRect();
 			return { logoRight: logo.right, navLeft: nav.left, navRight: nav.right };
 		});
-		expect(navLeft).toBeGreaterThanOrEqual(logoRight);
+		expect(navLeft - logoRight).toBeGreaterThanOrEqual(12);
 		expect(navRight).toBeLessThanOrEqual(width);
 	});
 }

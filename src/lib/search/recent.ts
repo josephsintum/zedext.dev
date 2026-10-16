@@ -20,7 +20,8 @@ export function readRecent(store: RecentStore | null = browserStore()): string[]
 	try {
 		const parsed: unknown = JSON.parse(store?.getItem(RECENT_KEY) ?? '[]');
 		if (!Array.isArray(parsed)) return [];
-		return parsed.filter((id): id is string => typeof id === 'string').slice(0, RECENT_LIMIT);
+		const ids = parsed.filter((id): id is string => typeof id === 'string');
+		return [...new Set(ids)].slice(0, RECENT_LIMIT); // repeats would break the window's keyed list
 	} catch {
 		return [];
 	}

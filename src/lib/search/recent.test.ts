@@ -46,6 +46,8 @@ describe('recently viewed', () => {
 		expect(readRecent(memory('{oops'))).toEqual([]);
 		expect(readRecent(memory('{"a":1}'))).toEqual([]);
 		expect(readRecent(memory('["oxc",3,null]'))).toEqual(['oxc']);
+		// Repeats would crash the window's keyed list
+		expect(readRecent(memory('["oxc","java","oxc"]'))).toEqual(['oxc', 'java']);
 	});
 
 	it('never throws when storage is blocked or missing', () => {
