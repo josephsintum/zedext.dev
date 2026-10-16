@@ -45,7 +45,6 @@
 
 	export function open(): void {
 		if (dialog.open) return;
-		q = '';
 		active = 0;
 		recentIds = readRecent();
 		loadIndex();
@@ -224,29 +223,24 @@
 				{/if}
 			</div>
 
-			{#if query && results?.nbHits === 0}
+			{#if !results?.nbHits}
 				<p class="px-4 py-7 text-center text-14 text-text-tertiary">
-					No extensions match “{query}”
-				</p>
-			{:else if query && !index}
-				<p class="px-4 py-7 text-center text-14 text-text-tertiary">
-					{#if getIndexStatus() === 'failed'}
+					{#if !query}
+						Type to search
+						{#if index}<strong class="font-medium text-text-secondary"
+								>{index.byDownloads.length.toLocaleString('en-US')}</strong
+							>{/if}
+						extensions
+					{:else if results}
+						No extensions match “{query}”
+					{:else if getIndexStatus() === 'failed'}
 						Search couldn't load.
-						<a
-							href={searchHref(query)}
-							class="text-accent hover:underline">See all results for “{query}”</a
+						<a href={searchHref(query)} class="text-accent hover:underline"
+							>See all results for “{query}”</a
 						>
 					{:else}
 						Searching…
 					{/if}
-				</p>
-			{:else if !query}
-				<p class="px-4 py-7 text-center text-14 text-text-tertiary">
-					Type to search
-					{#if index}<strong class="font-medium text-text-secondary"
-							>{index.byDownloads.length.toLocaleString('en-US')}</strong
-						>{/if}
-					extensions
 				</p>
 			{/if}
 		</div>
