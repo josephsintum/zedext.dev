@@ -2,6 +2,8 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { toggleTheme, getTheme } from '$lib/stores/theme.svelte.js';
+	import { focusPageSearch } from '$lib/search/client.svelte.js';
+	import { isTypingTarget } from '$lib/search/palette.js';
 
 	const isDark = $derived(getTheme() === 'dark');
 	// Phones show what fits in the bar (`hide` drops the rest); the phone menu lists them all
@@ -18,7 +20,18 @@
 		if (menu && 'hidePopover' in menu && menu.matches(':popover-open')) menu.hidePopover();
 	}
 	afterNavigate(closeMenu);
+
+	// ⌘K / Ctrl+K anywhere, and "/" when not typing, go to the page's own search box
+	function handleKeydown(e: KeyboardEvent) {
+		const commandK =
+			e.key.toLowerCase() === 'k' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey;
+		const slash =
+			e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target);
+		if ((commandK || slash) && focusPageSearch()) e.preventDefault();
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <header class="sticky top-0 z-50 border-b border-border bg-surface-raised/90 backdrop-blur-md">
 	<div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">

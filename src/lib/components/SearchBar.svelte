@@ -7,6 +7,7 @@
 		currentSearchParams,
 		dropCarriedQuery,
 		loadIndex,
+		registerPageSearch,
 		setSearchParams,
 		takeCarriedQuery
 	} from '$lib/search/client.svelte.js';
@@ -44,16 +45,8 @@
 					!navigating.to.url.searchParams.has('page')
 	);
 
-	// "/" jumps to search from anywhere on the page, unless you're already typing somewhere
-	function handleGlobalKeydown(e: KeyboardEvent) {
-		if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
-		const target = e.target as HTMLElement;
-		if (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
-			return;
-		}
-		e.preventDefault();
-		field.focus();
-	}
+	// The header's shortcuts ("/" and ⌘K) focus this box instead of opening the search window
+	$effect(() => registerPageSearch(() => field.focus()));
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	// Follow outside URL changes (back button, links), but never overwrite what's being typed
@@ -120,9 +113,8 @@
 	}
 </script>
 
-<svelte:window onkeydown={handleGlobalKeydown} />
-
 <div
+	data-page-search
 	class="relative w-full transition-all duration-200 motion-reduce:transition-none"
 	class:scale-[1.01]={focused}
 >
