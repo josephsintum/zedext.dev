@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const paths = ['/', '/themes', '/themes?appearance=light', '/extensions/catppuccin'];
-const widths = [390, 768, 1024, 1440];
+// 320 and 360: the header's search button has to fit beside the links on small phones
+const widths = [320, 360, 390, 768, 1024, 1440];
 
 // The /themes preview glow spreads sideways; it once made narrow screens scroll horizontally
 for (const path of paths) {
@@ -16,6 +17,22 @@ for (const path of paths) {
 			expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 		});
 	}
+}
+
+// Squeezed headers don't scroll sideways, they overlap: the links slid under the logo when the
+// search button first joined them on phones
+for (const width of [320, 360, 390]) {
+	test(`the header's logo and links don't overlap at ${width}px`, async ({ page }) => {
+		await page.setViewportSize({ width, height: 800 });
+		await page.goto('/extensions/catppuccin');
+		const { logoRight, navLeft, navRight } = await page.evaluate(() => {
+			const logo = document.querySelector('header a[href="/"]')!.getBoundingClientRect();
+			const nav = document.querySelector('header nav')!.getBoundingClientRect();
+			return { logoRight: logo.right, navLeft: nav.left, navRight: nav.right };
+		});
+		expect(navLeft).toBeGreaterThanOrEqual(logoRight);
+		expect(navRight).toBeLessThanOrEqual(width);
+	});
 }
 
 // The accent was once group-hover:border-l-*, on the .group element itself, so it never matched
