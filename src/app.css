@@ -27,6 +27,20 @@
 	font-display: swap;
 }
 
+/*
+ * Shown until Plex Sans arrives: Arial resized to Plex's width and line metrics (hhea ascent
+ * 1025, descent 275 per 1000), so lines wrap the same before and after the swap. With the plain
+ * system font, /themes' header row wrapped until the swap and the page jumped 28 px (CLS 0.175).
+ */
+@font-face {
+	font-family: 'IBM Plex Sans Fallback';
+	src: local('Arial');
+	size-adjust: 100.5%;
+	ascent-override: 102%;
+	descent-override: 27.4%;
+	line-gap-override: 0%;
+}
+
 /* Themes that draw some tokens in italic, or bold italic */
 @font-face {
 	font-family: 'Lilex';
@@ -47,7 +61,7 @@
 }
 
 @theme {
-	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-sans: 'IBM Plex Sans', 'IBM Plex Sans Fallback', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	/* Small font sizes, named by size because each is used for mixed roles. In px like every
