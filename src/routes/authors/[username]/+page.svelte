@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ExtensionGridCard from '$lib/components/ExtensionGridCard.svelte';
+	import { avatarSrcset, avatarUrl } from '$lib/utils/avatar.js';
 
 	let { data } = $props();
 	const user = $derived(data.user);
@@ -43,7 +44,8 @@
 	<div class="mb-8 flex items-start gap-5">
 		{#if user.avatar_url}
 			<img
-				src={user.avatar_url}
+				src={avatarUrl(user.avatar_url, 80)}
+				srcset={avatarSrcset(user.avatar_url, 80)}
 				alt={user.name ?? user.login}
 				class="h-20 w-20 shrink-0 rounded-full border border-border"
 			/>

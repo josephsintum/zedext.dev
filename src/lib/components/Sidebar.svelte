@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { avatarSrcset, avatarUrl } from '$lib/utils/avatar.js';
 	import { copyText } from '$lib/utils/clipboard.js';
 	import type { ZedExtension, GitHubRepo } from '$lib/types.js';
 	import { firstReleased } from '$lib/extension-page.js';
@@ -177,7 +178,8 @@
 					>
 						{#if repoOwnerAvatar}
 							<img
-								src={repoOwnerAvatar}
+								src={avatarUrl(repoOwnerAvatar, 24)}
+								srcset={avatarSrcset(repoOwnerAvatar, 24)}
 								alt={name}
 								class="h-6 w-6 rounded-full border border-border"
 							/>

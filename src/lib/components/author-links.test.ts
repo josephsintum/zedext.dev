@@ -36,3 +36,20 @@ describe('author links', () => {
 		expect(body).toContain('More from Catppuccin');
 	});
 });
+
+// The owner's avatar is shown at 24 px; GitHub's default is 460 px (~24 KB)
+describe('sidebar avatar', () => {
+	it('asks GitHub for the shown size, with a 3× version for sharp phones', () => {
+		const { body } = render(Sidebar, {
+			props: {
+				extension,
+				versions: [extension],
+				github: null,
+				repoOwner: 'Catppuccin',
+				repoOwnerAvatar: 'https://avatars.githubusercontent.com/u/1?v=4'
+			}
+		});
+		expect(body).toContain('src="https://avatars.githubusercontent.com/u/1?v=4&amp;s=48"');
+		expect(body).toContain('&amp;s=72 3x"');
+	});
+});
