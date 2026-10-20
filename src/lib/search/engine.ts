@@ -1,10 +1,12 @@
-import MiniSearch from 'minisearch';
+import type MiniSearch from 'minisearch';
 import type { ExtensionRecord, SearchResults } from '$lib/types.js';
 import { PER_PAGE } from './paging.js';
 
 /**
  * Search over the extension snapshot. Pure and shared by the server (SSR) and
- * the browser, so both always return the same results for the same URL.
+ * the browser, so both always return the same results for the same URL. Building the
+ * index (`create-index.ts`) is the only part that needs MiniSearch's code, so pages
+ * don't carry it until someone searches.
  */
 
 export interface SearchIndex {
@@ -22,32 +24,8 @@ export interface SearchOptions {
 }
 
 /** Allow 2 edits from 6 chars so a swap like "pyhton" still finds "python". */
-function maxEdits(term: string): number | false {
+export function maxEdits(term: string): number | false {
 	return term.length < 4 ? false : term.length < 6 ? 1 : 2;
-}
-
-export function createIndex(records: ExtensionRecord[]): SearchIndex {
-	const byId = new Map(records.map((r) => [r.id, r]));
-
-	const mini = new MiniSearch<ExtensionRecord>({
-		fields: ['name', 'id', 'description', 'authors'],
-		storeFields: [],
-		extractField: (doc, field) => {
-			const value = doc[field as keyof ExtensionRecord];
-			return Array.isArray(value) ? value.join(' ') : ((value as string | null) ?? '');
-		},
-		searchOptions: {
-			boost: { name: 3, id: 2 },
-			prefix: true,
-			fuzzy: maxEdits,
-			combineWith: 'AND'
-		}
-	});
-	mini.addAll(records);
-
-	const byDownloads = [...records].sort((a, b) => b.download_count - a.download_count);
-
-	return { mini, byId, byDownloads };
 }
 
 /**
@@ -105,17 +83,14 @@ function editDistance(a: string, b: string): number {
 
 const sorters: Record<string, (a: ExtensionRecord, b: ExtensionRecord) => number> = {
 	stars: (a, b) => b.github_stars - a.github_stars,
-	updated: (a, b) => lastActivity(b) - lastActivity(a),
+	// The latest release, what reaches people through Zed (commits alone don't)
+	updated: (a, b) => b.published_at.localeCompare(a.published_at),
 	name: (a, b) => sortName(a).localeCompare(sortName(b))
 };
 
 /** Ignore leading emoji/punctuation so "🌌 Dark Pop UI" sorts under D. */
 function sortName(r: ExtensionRecord): string {
 	return r.name.replace(/^[^\p{L}\p{N}]+/u, '');
-}
-
-function lastActivity(r: ExtensionRecord): number {
-	return new Date(r.github_pushed_at ?? r.published_at).getTime();
 }
 
 export function searchIndex(

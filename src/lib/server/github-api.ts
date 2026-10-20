@@ -6,7 +6,7 @@ import type { GitHubRelease, GitHubRepo, GitHubReadme, GitHubUser } from '$lib/t
 const GITHUB_API = 'https://api.github.com';
 const ONE_HOUR = 60 * 60 * 1000;
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-/** A hung GitHub request fails (and the page renders without it) instead of holding the page */
+/** A hung GitHub request fails (the page answers 503 and is retried) instead of holding it */
 const TIMEOUT_MS = 5000;
 
 function headers(): Record<string, string> {
@@ -16,15 +16,22 @@ function headers(): Record<string, string> {
 }
 
 /**
- * null only when GitHub says the thing doesn't exist (404), which is safe to cache.
- * Any other failure (rate limit, 5xx, bad token, network) throws, so it isn't cached
+ * null when GitHub won't ever serve the thing: not found (404), gone (410), blocked for legal
+ * reasons (451) or access blocked (a 403 that isn't a rate limit). Those are safe to cache.
+ * Failures that clear (rate limits, 429, 5xx, bad token, network) throw, so they aren't cached
  * and callers can tell "no README" apart from "GitHub had a hiccup".
  */
 async function fetchOrNull(url: string): Promise<Response | null> {
 	const res = await fetch(url, { headers: headers(), signal: AbortSignal.timeout(TIMEOUT_MS) });
-	if (res.status === 404) return null;
+	if (res.status === 404 || res.status === 410 || res.status === 451) return null;
+	if (res.status === 403 && !isRateLimited(res)) return null;
 	if (!res.ok) throw new Error(`GitHub ${res.status} for ${url}`);
 	return res;
+}
+
+/** GitHub's primary and secondary rate limits both answer 403 with one of these headers */
+function isRateLimited(res: Response): boolean {
+	return res.headers.get('x-ratelimit-remaining') === '0' || res.headers.has('retry-after');
 }
 
 export async function getRepoMetadata(owner: string, repo: string): Promise<GitHubRepo | null> {

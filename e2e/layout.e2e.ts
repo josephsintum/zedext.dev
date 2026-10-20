@@ -57,3 +57,9 @@ test('the film grain is hidden when printing', async ({ page }) => {
 	const display = await page.evaluate(() => getComputedStyle(document.body, '::before').display);
 	expect(display).toBe('none');
 });
+
+// Real visitors' Core Web Vitals go to Vercel Speed Insights (lab numbers come from scripts/perf.ts)
+test('pages load the Speed Insights script', async ({ page }) => {
+	await page.goto('/guides/vim', { waitUntil: 'networkidle' });
+	await expect(page.locator('script[src*="speed-insights"]')).toHaveCount(1);
+});

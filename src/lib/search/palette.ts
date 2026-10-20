@@ -5,22 +5,6 @@
 /** How many matches the window lists before its "See all" row */
 export const QUICK_LIMIT = 8;
 
-/** One label per extension, the kind people would call it. Grammars never: every language has one */
-const KINDS: [provide: string, label: string][] = [
-	['themes', 'Theme'],
-	['icon-themes', 'Icon theme'],
-	['context-servers', 'MCP server'],
-	['agent-servers', 'Agent'],
-	['languages', 'Language'],
-	['language-servers', 'Language server'],
-	['debug-adapters', 'Debugger'],
-	['snippets', 'Snippets']
-];
-
-export function kindLabel(provides: readonly string[]): string | null {
-	return KINDS.find(([provide]) => provides.includes(provide))?.[1] ?? null;
-}
-
 /** `name` split around the first case-insensitive occurrence of the (trimmed) query, or null */
 export function highlight(name: string, query: string): [string, string, string] | null {
 	const at = query ? name.toLowerCase().indexOf(query.toLowerCase()) : -1;

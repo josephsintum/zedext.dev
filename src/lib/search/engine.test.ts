@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createIndex, searchIndex } from './engine.js';
+import { searchIndex } from './engine.js';
+import { createIndex } from './create-index.js';
 import type { ExtensionRecord } from '$lib/types.js';
 
 function record(overrides: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
@@ -92,11 +93,8 @@ describe('searchIndex', () => {
 		expect(ids(page1)).toEqual(['pyright-extra', 'catppuccin']);
 	});
 
-	it('sorts by most recent activity, preferring pushed_at over published_at', () => {
-		expect(ids(searchIndex(index, '', { sort: 'updated' })).slice(0, 2)).toEqual([
-			'catppuccin',
-			'python-lsp'
-		]);
+	it('sorts by latest release; a later commit alone (catppuccin) doesn’t count', () => {
+		expect(ids(searchIndex(index, '', { sort: 'updated' }))[0]).toBe('python-lsp');
 	});
 
 	it('sorts by name, ignoring leading emoji', () => {

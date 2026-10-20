@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import { createIndex, type SearchIndex } from '$lib/search/engine.js';
+import type { SearchIndex } from '$lib/search/engine.js';
+import { createIndex } from '$lib/search/create-index.js';
 import { fetchSnapshot, toRecord } from './sync.js';
 import { getAllExtensions } from './zed-api.js';
 import type { Snapshot } from '$lib/types.js';

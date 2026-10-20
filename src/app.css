@@ -4,88 +4,54 @@
 
 /*
  * Zed's own fonts: IBM Plex Sans for text (".ZedSans" in Zed) and Lilex for code (".ZedMono").
- * Served by Fontsource on jsDelivr, pinned so the site doesn't change unannounced. Browsers only
- * download a face when text uses it (~20 KB each).
+ * Served by Fontsource on jsDelivr, pinned so the site doesn't change unannounced. One variable
+ * file per family covers every upright weight (Plex 46 KB, Lilex 40 KB; the four static Plex
+ * weights alone were 94 KB). Italics stay static: Lilex's variable italic is 44 KB, two static
+ * ones 40 KB, and only theme previews use them. Browsers download a face only when text uses it.
  */
 @font-face {
 	font-family: 'IBM Plex Sans';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-400-normal.woff2')
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans:vf@5.3.0/latin-wght-normal.woff2')
 		format('woff2');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'IBM Plex Sans';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-500-normal.woff2')
-		format('woff2');
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'IBM Plex Sans';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-600-normal.woff2')
-		format('woff2');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'IBM Plex Sans';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/ibm-plex-sans@5.3.0/latin-700-normal.woff2')
-		format('woff2');
-	font-weight: 700;
+	font-weight: 100 700;
 	font-style: normal;
 	font-display: swap;
 }
 
 @font-face {
 	font-family: 'Lilex';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-400-normal.woff2')
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex:vf@5.3.0/latin-wght-normal.woff2')
 		format('woff2');
-	font-weight: 400;
+	font-weight: 100 700;
 	font-style: normal;
 	font-display: swap;
 }
 
+/*
+ * Shown until Plex Sans arrives: Arial resized to Plex's width and line metrics (hhea ascent
+ * 1025, descent 275 per 1000), so lines wrap the same before and after the swap. With the plain
+ * system font, /themes' header row wrapped until the swap and the page jumped 28 px (CLS 0.175).
+ */
+@font-face {
+	font-family: 'IBM Plex Sans Fallback';
+	src: local('Arial');
+	size-adjust: 100.5%;
+	ascent-override: 102%;
+	descent-override: 27.4%;
+	line-gap-override: 0%;
+	/* Only what Plex's latin file covers, so → ↗ and other scripts keep the system font */
+	unicode-range:
+		U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+		U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Themes that draw some tokens in italic, or bold italic */
 @font-face {
 	font-family: 'Lilex';
 	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-400-italic.woff2')
 		format('woff2');
 	font-weight: 400;
 	font-style: italic;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Lilex';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-500-normal.woff2')
-		format('woff2');
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'Lilex';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-600-normal.woff2')
-		format('woff2');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
-
-/* Bold: names in mono, and themes that draw some tokens in bold */
-@font-face {
-	font-family: 'Lilex';
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/lilex@5.3.0/latin-700-normal.woff2')
-		format('woff2');
-	font-weight: 700;
-	font-style: normal;
 	font-display: swap;
 }
 
@@ -99,7 +65,7 @@
 }
 
 @theme {
-	--font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	--font-sans: 'IBM Plex Sans', 'IBM Plex Sans Fallback', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Lilex', ui-monospace, SFMono-Regular, Menlo, monospace;
 
 	/* Small font sizes, named by size because each is used for mixed roles. In px like every
