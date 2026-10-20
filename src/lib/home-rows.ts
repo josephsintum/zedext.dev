@@ -10,9 +10,9 @@ export const FEATURED_IDS = [
 	'codebook', // code-aware spell checker that knows identifiers from typos
 	'markdown-oxide', // Obsidian-style notes: links, backlinks and daily notes in Markdown
 	'mcp-server-sonarqube', // lets Zed's agent check code quality and security issues
-	'emoji-completions', // type ':' and an emoji name to insert it
+	'path-server-lsp', // completes file paths as you type
 	'cargo-appraiser', // shows outdated Cargo.toml dependencies inline
-	'wakatime', // automatic coding-time tracking
+	'depsy-lsp', // dependency version hints, updates and vulnerability warnings
 	'discord-presence' // show what you're coding on Discord
 ];
 
