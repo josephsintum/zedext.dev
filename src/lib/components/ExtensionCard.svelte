@@ -1,32 +1,15 @@
 <script lang="ts">
 	import type { ExtensionHit } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
+	import { primaryKind, shownProvides } from '$lib/kinds.js';
 	import ProvideTag from './ProvideTag.svelte';
 
 	// The homepage rows show downloads where other pages show the version
 	let { hit, badge = 'version' }: { hit: ExtensionHit; badge?: 'version' | 'downloads' } = $props();
 
-	const primaryProvides = $derived(
-		hit.provides.filter(
-			(p) => !['grammars', 'slash-commands', 'indexed-docs-providers'].includes(p)
-		)
-	);
-
-	const borderColor: Record<string, string> = {
-		themes: 'hover:border-l-violet-400',
-		'icon-themes': 'hover:border-l-fuchsia-400',
-		languages: 'hover:border-l-sky-400',
-		'language-servers': 'hover:border-l-emerald-400',
-		'context-servers': 'hover:border-l-orange-400',
-		'agent-servers': 'hover:border-l-amber-400',
-		'debug-adapters': 'hover:border-l-rose-400',
-		snippets: 'hover:border-l-teal-400'
-	};
-
+	const provides = $derived(shownProvides(hit.provides));
 	const accentBorder = $derived(
-		primaryProvides.length > 0
-			? (borderColor[primaryProvides[0]] ?? 'hover:border-l-zinc-400')
-			: 'hover:border-l-zinc-400'
+		primaryKind(hit.provides)?.hoverBorderLeft ?? 'hover:border-l-zinc-400'
 	);
 </script>
 
@@ -81,7 +64,7 @@
 	{/if}
 
 	<div class="mt-auto flex flex-wrap gap-1">
-		{#each primaryProvides.slice(0, 2) as provide}
+		{#each provides.slice(0, 2) as provide}
 			<ProvideTag {provide} />
 		{/each}
 	</div>

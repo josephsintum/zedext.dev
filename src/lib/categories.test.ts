@@ -15,10 +15,10 @@ describe('category pages', () => {
 		expect(categoryPageForSlug('themes')).toBeUndefined();
 		expect(categoryPageForProvides('context-servers')?.slug).toBe('mcp-servers');
 		expect(CATEGORY_PAGES.map((c) => c.slug)).toEqual([
-			'icon-themes',
 			'language-servers',
 			'mcp-servers',
 			'agent-servers',
+			'icon-themes',
 			'debug-adapters',
 			'snippets'
 		]);

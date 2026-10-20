@@ -1,8 +1,7 @@
 <script lang="ts">
 	import clsx from 'clsx';
 	import { navigating } from '$app/state';
-	import { CATEGORIES } from '$lib/utils/constants.js';
-	import { categoryForPath, categoryHref } from '$lib/categories.js';
+	import { CATEGORY_TABS, categoryForPath, categoryHref } from '$lib/categories.js';
 	import { currentSearchParams } from '$lib/search/client.svelte.js';
 
 	let { active = 'all' }: { active?: string } = $props();
@@ -60,19 +59,19 @@
 		moreRight && '[mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)]'
 	)}
 >
-	{#each CATEGORIES as cat (cat.slug)}
+	{#each CATEGORY_TABS as tab (tab.provides)}
 		<a
-			href={categoryHref(cat.provides ?? 'all') + (cat.provides === 'themes' ? '' : keep)}
-			data-slug={cat.slug}
-			aria-current={active === cat.slug ? 'page' : undefined}
+			href={categoryHref(tab.provides) + (tab.provides === 'themes' ? '' : keep)}
+			data-slug={tab.provides}
+			aria-current={active === tab.provides ? 'page' : undefined}
 			class={clsx(
 				'group relative shrink-0 rounded-lg px-3 py-2.5 text-13 font-medium transition-colors duration-150',
-				shown === cat.slug
+				shown === tab.provides
 					? 'bg-text text-surface shadow-sm'
 					: 'text-text-secondary hover:bg-surface-hover hover:text-text'
 			)}
 		>
-			{cat.label}
+			{tab.label}
 		</a>
 	{/each}
 </nav>

@@ -3,7 +3,8 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { getIndex, getIndexStatus, loadIndex } from '$lib/search/client.svelte.js';
 	import { searchIndex } from '$lib/search/engine.js';
-	import { highlight, kindLabel, QUICK_LIMIT, searchHref } from '$lib/search/palette.js';
+	import { highlight, QUICK_LIMIT, searchHref } from '$lib/search/palette.js';
+	import { primaryKind } from '$lib/kinds.js';
 	import { readRecent } from '$lib/search/recent.js';
 	import { countOf, formatNumber } from '$lib/utils/format.js';
 	import type { ExtensionRecord } from '$lib/types.js';
@@ -182,7 +183,7 @@
 				aria-owns={seeAll ? optionId(rows.length) : undefined}
 			>
 				{#each rows as record, i (record.id)}
-					{@const kind = kindLabel(record.provides)}
+					{@const kind = primaryKind(record.provides)?.name}
 					{@const parts = highlight(record.name, query)}
 					<a
 						id={optionId(i)}

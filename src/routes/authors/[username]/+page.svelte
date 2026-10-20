@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ProvideTag from '$lib/components/ProvideTag.svelte';
 	import { formatNumber } from '$lib/utils/format.js';
-	import { filterProvides, getHoverBorder } from '$lib/utils/extension-ui.js';
+	import { primaryKind, shownProvides } from '$lib/kinds.js';
 
 	let { data } = $props();
 	const user = $derived(data.user);
@@ -132,12 +132,12 @@
 		{#if extensions.length > 0}
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each extensions as hit (hit.id)}
-					{@const provides = filterProvides(hit.provides)}
+					{@const provides = shownProvides(hit.provides)}
 					<a
 						href="/extensions/{hit.id}"
-						class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {getHoverBorder(
-							hit
-						)}"
+						class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {primaryKind(
+							hit.provides
+						)?.hoverBorder ?? ''}"
 					>
 						<div class="mb-1.5 flex items-start justify-between gap-2">
 							<h3

@@ -1,22 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { highlight, isApplePlatform, isTypingTarget, kindLabel, searchHref } from './palette.js';
-
-describe('kindLabel', () => {
-	it.each([
-		[['themes'], 'Theme'],
-		[['icon-themes'], 'Icon theme'],
-		[['context-servers'], 'MCP server'],
-		[['snippets'], 'Snippets'],
-		// The language beats its server and debugger (Java provides all three)
-		[['languages', 'grammars', 'language-servers', 'debug-adapters'], 'Language'],
-		[['language-servers', 'debug-adapters'], 'Language server'],
-		// Grammars never show, and nothing known means no label
-		[['grammars'], null],
-		[[], null]
-	])('%j is %s', (provides, label) => {
-		expect(kindLabel(provides)).toBe(label);
-	});
-});
+import { highlight, isApplePlatform, isTypingTarget, searchHref } from './palette.js';
 
 describe('highlight', () => {
 	it('splits the name around the first case-insensitive match', () => {

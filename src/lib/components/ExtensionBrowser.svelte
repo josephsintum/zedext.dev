@@ -18,12 +18,7 @@
 	import { formatNumber, timeAgo } from '$lib/utils/format.js';
 	import { getViewMode, setViewMode } from '$lib/stores/viewMode.svelte.js';
 	import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
-	import {
-		filterProvides,
-		getHoverBorder,
-		provideLabel,
-		provideDotColor
-	} from '$lib/utils/extension-ui.js';
+	import { primaryKind, shownProvides } from '$lib/kinds.js';
 	import { getMatchingBuiltinFeatures } from '$lib/utils/constants.js';
 	import { categoryForPath } from '$lib/categories.js';
 
@@ -229,12 +224,12 @@
 			style="transition: opacity 0.15s ease"
 		>
 			{#each displayHits as hit (hit.id)}
-				{@const provides = filterProvides(hit.provides)}
+				{@const provides = shownProvides(hit.provides)}
 				{@const owner = parseRepoUrl(hit.repository ?? '')?.owner}
 				<div
-					class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {getHoverBorder(
-						hit
-					)}"
+					class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {primaryKind(
+						hit.provides
+					)?.hoverBorder ?? ''}"
 				>
 					<a href="/extensions/{hit.id}" class="block rounded-sm outline-offset-4">
 						<!-- Name + downloads -->
@@ -370,7 +365,7 @@
 			</div>
 
 			{#each displayHits as hit (hit.id)}
-				{@const provides = filterProvides(hit.provides)}
+				{@const kind = primaryKind(hit.provides)}
 				<!-- Desktop: grid row -->
 				<a
 					href="/extensions/{hit.id}"
@@ -384,12 +379,9 @@
 					</span>
 
 					<span class="flex items-center gap-1.5 text-12 text-text-tertiary">
-						{#if provides.length > 0}
-							<span
-								class="inline-block h-2.5 w-2.5 rounded-full {provideDotColor[provides[0]] ??
-									'bg-zinc-400'}"
-							></span>
-							{provideLabel[provides[0]] ?? provides[0]}
+						{#if kind}
+							<span class="inline-block h-2.5 w-2.5 rounded-full {kind.dot}"></span>
+							{kind.tag}
 						{/if}
 					</span>
 

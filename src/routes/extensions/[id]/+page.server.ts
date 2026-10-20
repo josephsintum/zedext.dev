@@ -11,7 +11,7 @@ import { renderMarkdown } from '$lib/server/markdown.js';
 import { getSnapshot } from '$lib/server/snapshot.js';
 import { getPreviews } from '$lib/server/previews.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
-import { isThemeLike } from '$lib/utils/extension-ui.js';
+import { isThemeLike } from '$lib/kinds.js';
 import type { GitHubRepo } from '$lib/types.js';
 
 export interface DetailContent {
