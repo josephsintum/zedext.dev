@@ -35,8 +35,6 @@ export const load: PageServerLoad = async ({ url, setHeaders }) => {
 		hubs: hubSummaries(records),
 		guides,
 		themes,
-		extensionCount: records.length,
-		// Lets the search box fetch this exact snapshot from a long-cached, versioned URL
-		snapshotVersion: snapshot.generatedAt
+		extensionCount: records.length
 	};
 };

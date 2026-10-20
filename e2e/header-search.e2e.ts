@@ -37,6 +37,13 @@ test('⌘K opens the window, and Enter opens the top match', async ({ page }) =>
 	await expect.poll(() => scrollLocked(page)).toBe(false);
 });
 
+test('the window loads the long-cached, versioned search index', async ({ page }) => {
+	await page.goto('/extensions/git-firefly', { waitUntil: 'networkidle' });
+	const index = page.waitForRequest((req) => new URL(req.url()).pathname === '/extensions.json');
+	await page.keyboard.press('ControlOrMeta+k');
+	expect(new URL((await index).url()).searchParams.get('v')).toMatch(/^\d{4}-\d\d-\d\dT/);
+});
+
 test('the last row hands off to the full results page', async ({ page }) => {
 	await page.goto('/extensions/git-firefly', { waitUntil: 'networkidle' });
 	await headerButton(page).click();

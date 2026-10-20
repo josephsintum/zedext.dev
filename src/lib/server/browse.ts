@@ -8,15 +8,11 @@ export function browseData(
 	loaded: LoadedSnapshot,
 	url: URL,
 	category: string
-): { initialResults: SearchResults; snapshotVersion: string } {
+): { initialResults: SearchResults } {
 	const query = url.searchParams.get('q') ?? '';
 	const sort = url.searchParams.get('sort') ?? 'downloads';
 	const hitsPerPage = PER_PAGE * clampPage(url.searchParams.get('page'), MAX_SERVER_PAGES);
-	return {
-		initialResults: searchIndex(loaded.index, query, { category, sort, hitsPerPage }),
-		// Lets the browser fetch this exact snapshot from a long-cached, versioned URL
-		snapshotVersion: loaded.snapshot.generatedAt
-	};
+	return { initialResults: searchIndex(loaded.index, query, { category, sort, hitsPerPage }) };
 }
 
 /** Set after the data loads so errors aren't cached; the fallback snapshot is cached briefly. */

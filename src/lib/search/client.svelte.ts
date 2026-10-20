@@ -48,7 +48,7 @@ export function getIndexStatus(): typeof status {
 
 export function loadIndex(): Promise<void> {
 	if (!browser) return Promise.resolve();
-	const version = page.data.snapshotVersion as string | undefined;
+	const version = page.data.snapshotVersion as string | null | undefined;
 	const url = version ? `/extensions.json?v=${encodeURIComponent(version)}` : '/extensions.json';
 	if (loading) return loading;
 	status = 'loading';

@@ -13,5 +13,5 @@
 	<main id="main" class="flex-1">
 		{@render children()}
 	</main>
-	<Footer updatedAt={data.dataUpdatedAt} />
+	<Footer updatedAt={data.snapshotVersion} />
 </div>
