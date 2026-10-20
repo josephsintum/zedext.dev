@@ -130,6 +130,38 @@ test('when the search index fails, the window links to the full results page', a
 	await expect(link).toHaveAttribute('href', '/extensions?q=rust');
 });
 
+// The search engine's code (MiniSearch, ~7 KB) loads with the index on first search intent, not
+// with every page. This string is in MiniSearch's source and survives minification.
+const MINISEARCH = 'MiniSearch: option "fields" must be provided';
+
+test('pages load without the search engine; opening search loads it', async ({ page }) => {
+	const scripts: Promise<string>[] = [];
+	page.on('response', (res) => {
+		if (res.request().resourceType() === 'script') scripts.push(res.text().catch(() => ''));
+	});
+	await page.goto('/extensions/git-firefly', { waitUntil: 'networkidle' });
+	const onLoad = await Promise.all(scripts);
+	expect(onLoad.some((body) => body.includes(MINISEARCH))).toBe(false);
+
+	await page.keyboard.press('ControlOrMeta+k');
+	await field(page).fill('python');
+	await expect(dialog(page).getByRole('option').first()).toContainText('Python');
+	const all = await Promise.all(scripts);
+	expect(all.some((body) => body.includes(MINISEARCH))).toBe(true);
+});
+
+test('Enter before the search engine arrives goes to the full results page', async ({ page }) => {
+	await page.route(/minisearch/i, async (route) => {
+		await new Promise((resolve) => setTimeout(resolve, 3_000));
+		await route.continue().catch(() => {}); // the page has moved on by then
+	});
+	await page.goto('/extensions/git-firefly', { waitUntil: 'networkidle' });
+	await page.keyboard.press('ControlOrMeta+k');
+	await field(page).fill('python');
+	await page.keyboard.press('Enter');
+	await expect(page).toHaveURL(/\/extensions\?q=python$/);
+});
+
 test('Enter before the index loads goes to the full results page', async ({ page }) => {
 	await page.route('**/extensions.json*', async (route) => {
 		await new Promise((resolve) => setTimeout(resolve, 10_000));

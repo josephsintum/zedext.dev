@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { goto, replaceState } from '$app/navigation';
 import { page } from '$app/state';
-import { createIndex, type SearchIndex } from './engine.js';
+import type { SearchIndex } from './engine.js';
 import type { Snapshot } from '$lib/types.js';
 
 /**
@@ -52,12 +52,15 @@ export function loadIndex(): Promise<void> {
 	const url = version ? `/extensions.json?v=${encodeURIComponent(version)}` : '/extensions.json';
 	if (loading) return loading;
 	status = 'loading';
-	loading = fetch(url)
-		.then((res) => {
+	// The index-building code (MiniSearch) loads alongside the snapshot, not with the page
+	loading = Promise.all([
+		fetch(url).then((res) => {
 			if (!res.ok) throw new Error(`Snapshot fetch failed: ${res.status}`);
 			return res.json() as Promise<Snapshot>;
-		})
-		.then((snapshot) => {
+		}),
+		import('./create-index.js')
+	])
+		.then(([snapshot, { createIndex }]) => {
 			index = createIndex(snapshot.extensions);
 			status = 'ready';
 		})

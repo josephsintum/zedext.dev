@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createIndex, searchIndex } from './engine.js';
+import { searchIndex } from './engine.js';
+import { createIndex } from './create-index.js';
 import type { ExtensionRecord } from '$lib/types.js';
 
 function record(overrides: Partial<ExtensionRecord> & { id: string }): ExtensionRecord {
