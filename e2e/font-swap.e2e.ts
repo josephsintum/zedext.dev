@@ -35,3 +35,21 @@ for (const path of paths) {
 		});
 	}
 }
+
+// The fallback face stands in for Plex only while it loads. Characters Plex doesn't have (→, ↗,
+// non-Latin scripts) must keep falling through to the system font, not to Arial
+test('characters Plex lacks still use the system font once fonts load', async ({ page }) => {
+	await page.goto('/themes', { waitUntil: 'networkidle' });
+	await page.evaluate(() => document.fonts.ready);
+	const cdp = await page.context().newCDPSession(page);
+	await cdp.send('DOM.enable');
+	await cdp.send('CSS.enable');
+	const { root } = await cdp.send('DOM.getDocument');
+	const { nodeId } = await cdp.send('DOM.querySelector', {
+		nodeId: root.nodeId,
+		selector: 'a[href^="/extensions/"].text-accent'
+	});
+	const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+	expect(fonts.map((f) => f.familyName)).toContain('IBM Plex Sans');
+	expect(fonts.map((f) => f.familyName)).not.toContain('Arial');
+});

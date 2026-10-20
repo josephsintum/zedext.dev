@@ -3,6 +3,8 @@
 
 	let { data } = $props();
 	const user = $derived(data.user);
+	// Other spellings redirect here, so this is the URL to declare
+	const url = $derived(`https://zedext.dev/authors/${data.user.login.toLowerCase()}`);
 	const extensions = $derived(data.extensions);
 </script>
 
@@ -12,10 +14,10 @@
 		name="description"
 		content={user.bio ?? `Extensions by ${user.name ?? user.login} on ZedExt`}
 	/>
-	<link rel="canonical" href={`https://zedext.dev/authors/${user.login}`} />
+	<link rel="canonical" href={url} />
 	<meta property="og:type" content="profile" />
 	<meta property="og:site_name" content="ZedExt" />
-	<meta property="og:url" content={`https://zedext.dev/authors/${user.login}`} />
+	<meta property="og:url" content={url} />
 	<meta property="og:title" content={`${user.name ?? user.login} — ZedExt`} />
 	<meta
 		property="og:description"

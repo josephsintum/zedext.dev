@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
-const { getChangelog } = await import('./github-api.js');
+const { getChangelog, getReadme } = await import('./github-api.js');
 
 type Route = (url: string) => Response;
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
@@ -50,12 +50,43 @@ describe('getChangelog', () => {
 	});
 
 	it('throws on a GitHub failure instead of caching "no changelog"', async () => {
-		const failing = stubFetch(() => json({ message: 'rate limited' }, 403));
+		const failing = stubFetch(
+			() =>
+				new Response(JSON.stringify({ message: 'API rate limit exceeded' }), {
+					status: 403,
+					headers: { 'x-ratelimit-remaining': '0' }
+				})
+		);
 		await expect(getChangelog('d', 'r')).rejects.toThrow(/GitHub 403/);
 		expect(failing).toHaveBeenCalledTimes(1);
 		// Not cached: the next call asks GitHub again
 		const working = stubFetch((url) => (url.includes('/releases') ? json([]) : json({}, 404)));
 		await expect(getChangelog('d', 'r')).resolves.toBeNull();
 		expect(working).toHaveBeenCalled();
+	});
+});
+
+// Pages that need GitHub fail with 503 on a GitHub error, so the error must be one that clears:
+// a repo GitHub refuses for good would otherwise be a 503 forever
+describe('getReadme', () => {
+	it.each([
+		[410, {}],
+		[451, {}],
+		[403, {}] // "Repository access blocked": no rate-limit headers
+	])('reads a permanent %i as no README', async (status, headers) => {
+		stubFetch(() => new Response('{}', { status, headers }));
+		await expect(getReadme(`gone-${status}`, 'r')).resolves.toBeNull();
+	});
+
+	it.each([
+		[403, { 'x-ratelimit-remaining': '0' }],
+		[403, { 'retry-after': '60' }],
+		[429, {}],
+		[502, {}]
+	])('throws on a %i that will clear', async (status, headers) => {
+		stubFetch(() => new Response('{}', { status, headers: headers as Record<string, string> }));
+		await expect(getReadme(`busy-${status}-${Object.keys(headers)[0]}`, 'r')).rejects.toThrow(
+			new RegExp(`GitHub ${status}`)
+		);
 	});
 });
