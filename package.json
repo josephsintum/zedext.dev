@@ -17,7 +17,8 @@
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"perf": "bun run scripts/perf.ts"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
