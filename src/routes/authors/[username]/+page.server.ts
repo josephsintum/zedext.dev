@@ -4,21 +4,21 @@ import { getGitHubUser } from '$lib/server/github-api.js';
 import { requireSnapshot } from '$lib/server/snapshot.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 import type { GitHubUser } from '$lib/types.js';
+import type { Config } from '@sveltejs/adapter-vercel';
+
+// Cached by Vercel ISR like extension pages, refreshed in the background once a day. A profile
+// that fell back to the username alone (GitHub failed) stays until the next refresh.
+export const config: Config = { isr: { expiration: 86400, allowQuery: [] } };
 
 export type AuthorProfile = Pick<
 	GitHubUser,
 	'login' | 'name' | 'html_url' | 'bio' | 'company' | 'location'
 > & { avatar_url: string | null };
 
-const COMPLETE_CACHE = 'public, s-maxage=3600, stale-while-revalidate=86400';
-// A username-only profile: refresh it soon rather than keep it for an hour
-const PARTIAL_CACHE = 'public, s-maxage=600, stale-while-revalidate=86400';
-const DEGRADED_CACHE = 'public, s-maxage=60';
-
-export const load: PageServerLoad = async ({ params, setHeaders }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	const username = params.username.toLowerCase();
 
-	const [lookup, { snapshot, degraded }] = await Promise.all([
+	const [lookup, { snapshot }] = await Promise.all([
 		getGitHubUser(username).then(
 			(user) => ({ ok: true as const, user }),
 			(err) => {
@@ -41,9 +41,6 @@ export const load: PageServerLoad = async ({ params, setHeaders }) => {
 	}
 
 	const user = lookup.user ? pickProfile(lookup.user) : usernameOnly(username);
-	setHeaders({
-		'cache-control': degraded ? DEGRADED_CACHE : lookup.user ? COMPLETE_CACHE : PARTIAL_CACHE
-	});
 	return { user, extensions };
 };
 

@@ -13,6 +13,13 @@ import { getPreviews } from '$lib/server/previews.js';
 import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 import { isThemeLike } from '$lib/kinds.js';
 import type { GitHubRepo } from '$lib/types.js';
+import type { Config } from '@sveltejs/adapter-vercel';
+
+// Cached by Vercel ISR: kept for the whole deployment and shared by every region (the CDN
+// cache alone is per region and drops pages few people visit), refreshed in the background
+// once a day. Only ?tab= changes the page; other query strings share the cached copy.
+// A failed GitHub request is cached like any other page until the next refresh.
+export const config: Config = { isr: { expiration: 86400, allowQuery: ['tab'] } };
 
 export interface DetailContent {
 	github: GitHubRepo | null;
@@ -20,19 +27,9 @@ export interface DetailContent {
 	zedDocsHtml: string | null;
 	zedDocsUrl: string | null;
 	repoOwnerAvatar: string | null;
-	/** False when a GitHub request failed (as opposed to "no README"), so the page isn't cached long. */
-	complete: boolean;
 }
 
-// Fresh for a day (READMEs and stats change slowly; the snapshot syncs daily), then served
-// stale for up to 30 days while refreshing in the background, so visitors rarely wait
-const COMPLETE_CACHE = 'public, s-maxage=86400, stale-while-revalidate=2592000';
-// Streamed pages send headers before GitHub answers, so a failed README could be cached;
-// a short fresh window bounds that, while stale-while-revalidate keeps visits instant
-const STREAMED_CACHE = 'public, s-maxage=600, stale-while-revalidate=2592000';
-const DEGRADED_CACHE = 'public, s-maxage=60';
-
-export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }) => {
+export const load: PageServerLoad = async ({ params }) => {
 	const extensionRequest = getExtensionWithVersions(params.id);
 	// Handled when awaited below; this only stops an early rejection being reported as unhandled
 	extensionRequest.catch(() => {});
@@ -76,30 +73,17 @@ export const load: PageServerLoad = async ({ params, setHeaders, isDataRequest }
 	// Only themes and icon themes need the (cached) previews bundle; it never fails the page
 	const hasPreview = isThemeLike(extension.provides);
 	const previews = hasPreview ? await getPreviews() : null;
-	// A theme page without its preview shouldn't be cached for a day
-	const missingPreview = hasPreview && !previews;
 
-	const base = {
+	return {
 		extension,
 		versions,
 		isMonorepo,
 		repoOwner: parsed?.owner ?? null,
 		themePreview: previews?.themes[extension.id]?.variants ?? null,
 		iconPreview: previews?.icons[extension.id]?.variants ?? null,
-		hasChangelog: await changelogRequest
+		hasChangelog: await changelogRequest,
+		content: await content
 	};
-
-	// In-app navigation streams the GitHub content; full page loads (and crawlers) get it inline
-	if (isDataRequest) {
-		setHeaders({ 'cache-control': missingPreview ? DEGRADED_CACHE : STREAMED_CACHE });
-		return { ...base, content };
-	}
-
-	const resolved = await content;
-	setHeaders({
-		'cache-control': resolved.complete && !missingPreview ? COMPLETE_CACHE : DEGRADED_CACHE
-	});
-	return { ...base, content: resolved };
 };
 
 /** Everything that comes from GitHub. Never rejects: failures render as "no README". */
@@ -115,8 +99,9 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		parsed ? getGitHubUser(parsed.owner) : null
 	]);
 	const value = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null);
-	let complete = [langDocs, repoMeta, readme, owner].every((r) => r.status === 'fulfilled');
-	if (!complete) console.error(`GitHub request failed for ${id}`);
+	if ([langDocs, repoMeta, readme, owner].some((r) => r.status === 'rejected')) {
+		console.error(`GitHub request failed for ${id}`);
+	}
 
 	const github = value(repoMeta);
 	let zedDocsHtml: string | null = null;
@@ -146,7 +131,6 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		}
 	} catch (err) {
 		console.error(`Markdown render failed for ${id}:`, err);
-		complete = false;
 	}
 
 	return {
@@ -154,7 +138,6 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		readmeHtml,
 		zedDocsHtml,
 		zedDocsUrl: zedDocsHtml ? `https://zed.dev/docs/languages/${id}` : null,
-		repoOwnerAvatar: value(owner)?.avatar_url ?? null,
-		complete
+		repoOwnerAvatar: value(owner)?.avatar_url ?? null
 	};
 }
