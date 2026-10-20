@@ -11,7 +11,14 @@
 
 import { chromium, type Browser } from '@playwright/test';
 
-const PAGES = ['/', '/extensions', '/extensions/catppuccin', '/themes', '/guides/vim'];
+const PAGES = [
+	'/',
+	'/extensions',
+	'/extensions/catppuccin',
+	'/extensions/git-firefly',
+	'/themes',
+	'/guides/vim'
+];
 const RUNS = 3;
 /** KB transferred per page; lower these when a change makes the pages lighter */
 const BUDGET = { Script: 81, Font: 92 };

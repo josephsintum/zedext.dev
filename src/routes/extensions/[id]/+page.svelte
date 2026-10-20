@@ -6,8 +6,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import ReadmeRenderer from '$lib/components/ReadmeRenderer.svelte';
 	import InstallButton from '$lib/components/InstallButton.svelte';
-	import ThemePreview from '$lib/components/ThemePreview.svelte';
-	import IconThemePreview from '$lib/components/IconThemePreview.svelte';
 	import VersionTable from '$lib/components/VersionTable.svelte';
 	import { badgeFor, healthPills } from '$lib/extension-page.js';
 	import { countOf } from '$lib/utils/format.js';
@@ -215,10 +213,10 @@
 			>
 				<!-- Keyed so light/dark and variant choices reset when moving between themes -->
 				{#key extension.id}
-					{#if data.themePreview?.length}
-						<ThemePreview variants={data.themePreview} />
-					{:else if data.iconPreview?.length}
-						<IconThemePreview variants={data.iconPreview} />
+					{#if data.ThemePreview && data.themePreview}
+						<data.ThemePreview variants={data.themePreview} />
+					{:else if data.IconThemePreview && data.iconPreview}
+						<data.IconThemePreview variants={data.iconPreview} />
 					{/if}
 				{/key}
 				{#if content.zedDocsHtml && content.readmeHtml}
