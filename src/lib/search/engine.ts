@@ -105,17 +105,14 @@ function editDistance(a: string, b: string): number {
 
 const sorters: Record<string, (a: ExtensionRecord, b: ExtensionRecord) => number> = {
 	stars: (a, b) => b.github_stars - a.github_stars,
-	updated: (a, b) => lastActivity(b) - lastActivity(a),
+	// The latest release, what reaches people through Zed (commits alone don't)
+	updated: (a, b) => b.published_at.localeCompare(a.published_at),
 	name: (a, b) => sortName(a).localeCompare(sortName(b))
 };
 
 /** Ignore leading emoji/punctuation so "🌌 Dark Pop UI" sorts under D. */
 function sortName(r: ExtensionRecord): string {
 	return r.name.replace(/^[^\p{L}\p{N}]+/u, '');
-}
-
-function lastActivity(r: ExtensionRecord): number {
-	return new Date(r.github_pushed_at ?? r.published_at).getTime();
 }
 
 export function searchIndex(

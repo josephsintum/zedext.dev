@@ -1,7 +1,5 @@
 <script lang="ts">
-	import ProvideTag from '$lib/components/ProvideTag.svelte';
-	import { formatNumber } from '$lib/utils/format.js';
-	import { primaryKind, shownProvides } from '$lib/kinds.js';
+	import ExtensionGridCard from '$lib/components/ExtensionGridCard.svelte';
 
 	let { data } = $props();
 	const user = $derived(data.user);
@@ -132,56 +130,7 @@
 		{#if extensions.length > 0}
 			<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each extensions as hit (hit.id)}
-					{@const provides = shownProvides(hit.provides)}
-					<a
-						href="/extensions/{hit.id}"
-						class="group flex flex-col rounded-lg border border-border bg-surface-raised p-4 transition-colors duration-150 {primaryKind(
-							hit.provides
-						)?.hoverBorder ?? ''}"
-					>
-						<div class="mb-1.5 flex items-start justify-between gap-2">
-							<h3
-								class="min-w-0 truncate font-mono text-14 font-semibold text-accent group-hover:text-accent-hover"
-							>
-								{hit.name}
-							</h3>
-							<span
-								class="flex shrink-0 items-center gap-1 text-12 text-text-tertiary tabular-nums"
-							>
-								<svg
-									class="h-3.5 w-3.5"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									aria-hidden="true"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-									/>
-								</svg>
-								{formatNumber(hit.download_count)}
-							</span>
-						</div>
-
-						{#if hit.description}
-							<p class="mb-3 line-clamp-2 text-13 leading-relaxed text-text-secondary">
-								{hit.description}
-							</p>
-						{:else}
-							<div class="mb-3"></div>
-						{/if}
-
-						{#if provides.length > 0}
-							<div class="mt-auto flex flex-wrap gap-1">
-								{#each provides.slice(0, 2) as provide}
-									<ProvideTag {provide} />
-								{/each}
-							</div>
-						{/if}
-					</a>
+					<ExtensionGridCard {hit} footer={false} />
 				{/each}
 			</div>
 		{:else}
