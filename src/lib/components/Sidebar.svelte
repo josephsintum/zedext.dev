@@ -127,7 +127,9 @@
 					</li>
 				{/if}
 				{#if repoOwner && !isMonorepo}
-					<li><a href="/authors/{repoOwner}" class={link}>More from {repoOwner}</a></li>
+					<li>
+						<a href="/authors/{repoOwner.toLowerCase()}" class={link}>More from {repoOwner}</a>
+					</li>
 				{/if}
 			</ul>
 		</section>
@@ -170,7 +172,7 @@
 			{#each authorNames as name, i}
 				{#if i === 0 && repoOwner}
 					<a
-						href="/authors/{repoOwner}"
+						href="/authors/{repoOwner.toLowerCase()}"
 						class="flex items-center gap-2 text-13 text-text-secondary transition-colors hover:text-accent"
 					>
 						{#if repoOwnerAvatar}

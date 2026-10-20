@@ -66,7 +66,7 @@
 			{/if}
 			{#if owner}
 				<a
-					href="/authors/{owner}"
+					href="/authors/{owner.toLowerCase()}"
 					class="-my-3.5 ml-auto truncate py-3.5 text-11 transition-colors hover:text-accent"
 				>
 					{hit.authors[0] ?? 'Unknown'}

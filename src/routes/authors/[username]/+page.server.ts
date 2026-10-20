@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { getGitHubUser } from '$lib/server/github-api.js';
 import { requireSnapshot } from '$lib/server/snapshot.js';
@@ -6,8 +6,9 @@ import { parseRepoUrl } from '$lib/utils/parse-repo-url.js';
 import type { GitHubUser } from '$lib/types.js';
 import type { Config } from '@sveltejs/adapter-vercel';
 
-// Cached by Vercel ISR like extension pages, refreshed in the background once a day. A profile
-// that fell back to the username alone (GitHub failed) stays until the next refresh.
+// Cached by Vercel ISR like extension pages, refreshed in the background once a day. ISR never
+// caches a 5xx (it keeps the last good copy and retries), so a failed GitHub lookup or a
+// degraded snapshot fails with 503 rather than being cached for a day.
 export const config: Config = { isr: { expiration: 86400, allowQuery: [] } };
 
 export type AuthorProfile = Pick<
@@ -17,8 +18,10 @@ export type AuthorProfile = Pick<
 
 export const load: PageServerLoad = async ({ params }) => {
 	const username = params.username.toLowerCase();
+	// One URL (and one cache entry) per author, whatever the spelling
+	if (params.username !== username) redirect(308, `/authors/${username}`);
 
-	const [lookup, { snapshot }] = await Promise.all([
+	const [lookup, { snapshot, degraded }] = await Promise.all([
 		getGitHubUser(username).then(
 			(user) => ({ ok: true as const, user }),
 			(err) => {
@@ -33,10 +36,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		.filter((ext) => parseRepoUrl(ext.repository ?? '')?.owner.toLowerCase() === username)
 		.sort((a, b) => b.download_count - a.download_count);
 
-	// The extensions come from the snapshot, so an author with some never needs GitHub to
-	// answer: a failed or missing (e.g. renamed) profile falls back to the username alone
+	if (!lookup.ok || degraded) throw error(503, 'GitHub is temporarily unavailable');
+	// A missing (e.g. renamed) profile with extensions falls back to the username alone
 	if (!lookup.user && extensions.length === 0) {
-		if (!lookup.ok) throw error(503, 'GitHub is temporarily unavailable');
 		throw error(404, `Author "${params.username}" not found`);
 	}
 

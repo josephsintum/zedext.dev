@@ -18,7 +18,8 @@ import type { Config } from '@sveltejs/adapter-vercel';
 // Cached by Vercel ISR: kept for the whole deployment and shared by every region (the CDN
 // cache alone is per region and drops pages few people visit), refreshed in the background
 // once a day. Only ?tab= changes the page; other query strings share the cached copy.
-// A failed GitHub request is cached like any other page until the next refresh.
+// ISR never caches a 5xx (it keeps the last good copy and retries), so a render missing
+// GitHub data or a theme's preview fails with 503 rather than being cached for a day.
 export const config: Config = { isr: { expiration: 86400, allowQuery: ['tab'] } };
 
 export interface DetailContent {
@@ -43,7 +44,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	let started: { repository: string | null; promise: Promise<DetailContent> } | undefined;
 	const contentFor = (repository: string | null) => {
 		if (started?.repository !== repository) {
-			started = { repository, promise: loadContent(params.id, repository) };
+			const promise = loadContent(params.id, repository);
+			// Handled when awaited below; a hint-started request may never be awaited
+			promise.catch(() => {});
+			started = { repository, promise };
 		}
 		return started.promise;
 	};
@@ -73,6 +77,15 @@ export const load: PageServerLoad = async ({ params }) => {
 	// Only themes and icon themes need the (cached) previews bundle; it never fails the page
 	const hasPreview = isThemeLike(extension.provides);
 	const previews = hasPreview ? await getPreviews() : null;
+	if (hasPreview && !previews) throw error(503, 'Theme previews are temporarily unavailable');
+
+	let loaded: DetailContent;
+	try {
+		loaded = await content;
+	} catch (err) {
+		console.error(`GitHub content failed for ${params.id}:`, err);
+		throw error(503, 'GitHub is temporarily unavailable');
+	}
 
 	return {
 		extension,
@@ -82,11 +95,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		themePreview: previews?.themes[extension.id]?.variants ?? null,
 		iconPreview: previews?.icons[extension.id]?.variants ?? null,
 		hasChangelog: await changelogRequest,
-		content: await content
+		content: loaded
 	};
 };
 
-/** Everything that comes from GitHub. Never rejects: failures render as "no README". */
+/** Everything that comes from GitHub. Rejects when any request or render failed. */
 async function loadContent(id: string, repository: string | null): Promise<DetailContent> {
 	const parsed = parseRepoUrl(repository ?? '');
 	const isMonorepo = parsed?.owner === 'zed-industries' && parsed?.repo === 'zed';
@@ -99,9 +112,8 @@ async function loadContent(id: string, repository: string | null): Promise<Detai
 		parsed ? getGitHubUser(parsed.owner) : null
 	]);
 	const value = <T>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : null);
-	if ([langDocs, repoMeta, readme, owner].some((r) => r.status === 'rejected')) {
-		console.error(`GitHub request failed for ${id}`);
-	}
+	const failed = [langDocs, repoMeta, readme, owner].find((r) => r.status === 'rejected');
+	if (failed) throw failed.reason;
 
 	const github = value(repoMeta);
 	let zedDocsHtml: string | null = null;
