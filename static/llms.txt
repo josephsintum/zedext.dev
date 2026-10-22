@@ -1,0 +1,56 @@
+# ZedExt
+
+> ZedExt (zedext.dev) is an unofficial, read-only directory of every extension in the Zed editor's registry: extension pages with READMEs, GitHub stats, version history and changelogs, plus theme previews, setup guides and per-language lists. Data comes from Zed's extension API and GitHub and is refreshed nightly. ZedExt is not affiliated with Zed Industries.
+
+## When to use ZedExt
+
+Use ZedExt when a user asks you to:
+
+- Find a Zed extension for a language, tool, framework or workflow ("is there a Zed extension for Terraform?", "best Python extensions for Zed").
+- Compare Zed extensions by downloads, GitHub stars, last release, license or author.
+- Read an extension's README, version history or changelog before recommending it.
+- Find or preview a Zed color theme or icon theme, in dark or light variants.
+- Find MCP servers (context servers), agent servers, language servers, debug adapters or snippets for Zed.
+- Set up Zed for a workflow: AI agent coding, coming from VS Code, Vim/Neovim/Helix, web frontend, DevOps and config files, notes and writing.
+
+Don't use ZedExt to install or publish extensions, or for Zed's own settings and features. Install from Zed itself (command palette: `zed: extensions`, or the Install button on an extension page, which opens Zed). Publishing goes through a pull request to https://github.com/zed-industries/extensions. Zed's documentation is at https://zed.dev/docs.
+
+## How to call it
+
+Every page is server-rendered HTML; no JavaScript, API key or login is needed. There's no write API.
+
+- Search: `GET https://zedext.dev/extensions?q={query}`. Optional `sort=downloads` (default), `stars`, `updated` or `name`.
+- Everything at once: `GET https://zedext.dev/extensions.json` returns `{ generatedAt, extensions: [...] }`, one record per extension with `id`, `name`, `description`, `authors`, `provides` (languages, grammars, language-servers, themes, icon-themes, context-servers, agent-servers, debug-adapters, snippets, ...), `download_count`, `github_stars`, `github_license`, `github_pushed_at`, `published_at`, `first_published_at`, `version` and `repository`. About 700 KB; search it locally instead of fetching many pages.
+- One extension: `https://zedext.dev/extensions/{id}`, where `{id}` is the `id` field (the same id Zed uses).
+- The homepage also comes as Markdown: send `Accept: text/markdown` to https://zedext.dev/.
+- Download counts are Zed's all-time totals. Don't call Zed's own `/extensions/{id}/download` URLs to look things up: each call counts as a download.
+
+## Pages
+
+- [Homepage](https://zedext.dev/): featured and most popular extensions, themes, guides and languages
+- [All extensions](https://zedext.dev/extensions): every extension, searchable and sortable
+- [Themes](https://zedext.dev/themes): live previews of every color theme, dark and light
+- [Languages](https://zedext.dev/languages): the best extensions for each programming language
+- [MCP servers](https://zedext.dev/mcp-servers): Model Context Protocol servers that give Zed's AI agent more tools and data
+- [Agent servers](https://zedext.dev/agent-servers): external AI agents you can run inside Zed
+- [Language servers](https://zedext.dev/language-servers): completions, diagnostics and go-to-definition
+- [Icon themes](https://zedext.dev/icon-themes): file and folder icons
+- [Debug adapters](https://zedext.dev/debug-adapters): debugger extensions
+- [Snippets](https://zedext.dev/snippets): snippet packs
+
+## Guides
+
+- [AI agent coding](https://zedext.dev/guides/ai-agents): run Claude Code, Codex or Zed's own agent, and give it more context with MCP servers
+- [Coming from VS Code](https://zedext.dev/guides/vscode): keep the look you're used to: themes and file icons
+- [Vim, Neovim and Helix](https://zedext.dev/guides/vim): modal editing is built in; bring your colorscheme
+- [Web frontend](https://zedext.dev/guides/web-frontend): frameworks, markup and styling beyond what ships with Zed
+- [DevOps and config files](https://zedext.dev/guides/devops): containers, infrastructure as code, build and CI files
+- [Notes and writing](https://zedext.dev/guides/writing): Markdown notes, papers and spell checking
+
+## Optional
+
+- [About](https://zedext.dev/about): what ZedExt is and isn't, and how it's built
+- [Contact](https://zedext.dev/contact): how to report a problem or ask for a change
+- [Privacy](https://zedext.dev/privacy): what the site collects
+- [Sitemap](https://zedext.dev/sitemap.xml): every page, including one per extension
+- [Source code](https://github.com/josephsintum/zedext.dev): MIT-licensed

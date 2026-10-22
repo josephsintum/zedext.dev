@@ -6,15 +6,20 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import HubCard from '$lib/components/HubCard.svelte';
 	import Seo from '$lib/components/Seo.svelte';
+	import { siteJsonLd } from '$lib/utils/json-ld.js';
 
 	let { data } = $props();
+
+	const description =
+		'Find extensions for the Zed editor: featured and most popular, theme previews, setup guides for AI agents, VS Code and Vim users, web frontend, DevOps and writing, and the best extensions for each language.';
 </script>
 
 <Seo
 	title="ZedExt — Discover Zed Extensions"
-	description="Find extensions for the Zed editor: featured and most popular, theme previews, setup guides for AI agents, VS Code and Vim users, web frontend, DevOps and writing, and the best extensions for each language."
+	{description}
 	path=""
 	ogTitle="ZedExt"
+	jsonLd={siteJsonLd(description)}
 />
 
 {#snippet heading(id: string, title: string, sub: string, href = '', more = '')}
