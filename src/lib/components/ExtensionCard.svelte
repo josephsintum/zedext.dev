@@ -1,12 +1,13 @@
 <script lang="ts">
-	import type { ExtensionHit } from '$lib/types.js';
+	import type { ExtensionCardData } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
 	import { primaryKind, shownProvides } from '$lib/kinds.js';
 	import ProvideTag from './ProvideTag.svelte';
 	import StatIcon from './StatIcon.svelte';
 
 	// The homepage rows show downloads where other pages show the version
-	let { hit, badge = 'version' }: { hit: ExtensionHit; badge?: 'version' | 'downloads' } = $props();
+	let { hit, badge = 'version' }: { hit: ExtensionCardData; badge?: 'version' | 'downloads' } =
+		$props();
 
 	const provides = $derived(shownProvides(hit.provides));
 	const accentBorder = $derived(

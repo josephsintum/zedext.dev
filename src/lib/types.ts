@@ -109,6 +109,19 @@ export interface GitHubUser {
 
 export type ExtensionHit = ExtensionRecord;
 
+/** What an extension card shows; pages that only list cards ship just these fields */
+export type ExtensionCardData = Pick<
+	ExtensionRecord,
+	| 'id'
+	| 'name'
+	| 'description'
+	| 'authors'
+	| 'provides'
+	| 'download_count'
+	| 'github_stars'
+	| 'version'
+>;
+
 export interface SearchResults {
 	hits: ExtensionHit[];
 	nbHits: number;
