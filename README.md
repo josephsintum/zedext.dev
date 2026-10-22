@@ -58,7 +58,7 @@ See [`GLOSSARY.md`](GLOSSARY.md) for the domain terms and [`DESIGN.md`](DESIGN.m
 - [MiniSearch](https://github.com/lucaong/minisearch) — search
 - [Shiki](https://shiki.style) — syntax highlighting
 - [Satori](https://github.com/vercel/satori) + [resvg](https://github.com/yisibl/resvg-js) — OG images
-- [Vercel](https://vercel.com) — hosting, cron, Blob storage, ISR, Analytics and Speed Insights
+- [Vercel](https://vercel.com) — hosting, cron, Blob storage, ISR and Analytics
 - [IBM Plex Sans](https://github.com/IBM/plex) and [Lilex](https://github.com/mishamyrt/Lilex) — Zed's own fonts, from Fontsource
 - [Vitest](https://vitest.dev) and [Playwright](https://playwright.dev) — tests
 

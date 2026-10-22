@@ -6,7 +6,7 @@
 
 <Seo
 	title="Privacy — ZedExt"
-	description="What ZedExt collects: no accounts and no cookies, cookieless page-view and performance analytics from Vercel, and a few preferences kept in your browser."
+	description="What ZedExt collects: no accounts and no cookies, cookieless page-view analytics from Vercel, and a few preferences kept in your browser."
 	path="/privacy"
 	ogTitle="Privacy"
 />
@@ -33,17 +33,10 @@
 					target="_blank"
 					rel="noopener noreferrer">Vercel Web Analytics</a
 				>
-				to count page views and see which pages and referrers bring people here, and
-				<a
-					href="https://vercel.com/docs/speed-insights/privacy-policy"
-					class={link}
-					target="_blank"
-					rel="noopener noreferrer">Vercel Speed Insights</a
-				>
-				to measure how fast pages load (Core Web Vitals). Both are cookieless. Each page view records
-				the page’s URL (which can include a search query), the referring site, your country, browser and
-				device type. Visitors are counted with a hash of the request that’s discarded after 24 hours,
-				so the numbers are aggregate: they don’t identify you or follow you to other sites.
+				to count page views and see which pages and referrers bring people here. It’s cookieless. Each
+				page view records the page’s URL (which can include a search query), the referring site, your
+				country, browser and device type. Visitors are counted with a hash of the request that’s discarded
+				after 24 hours, so the numbers are aggregate: they don’t identify you or follow you to other sites.
 			</p>
 		</div>
 	</section>
