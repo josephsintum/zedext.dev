@@ -22,6 +22,8 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 	const urls = [
 		{ loc: SITE, changefreq: 'daily', priority: '1.0', lastmod: today },
 		{ loc: `${SITE}/about`, changefreq: 'monthly', priority: '0.3' },
+		{ loc: `${SITE}/contact`, changefreq: 'yearly', priority: '0.2' },
+		{ loc: `${SITE}/privacy`, changefreq: 'yearly', priority: '0.2' },
 		{ loc: `${SITE}/extensions`, changefreq: 'daily', priority: '0.9', lastmod: today },
 		{ loc: `${SITE}/themes`, changefreq: 'daily', priority: '0.9', lastmod: today },
 		...CATEGORY_PAGES.map((c) => ({
