@@ -3,8 +3,15 @@
 	import type { ExtensionRecord } from '$lib/types.js';
 	import { formatNumber } from '$lib/utils/format.js';
 
-	let { list, items, total }: { list: GuideList; items: ExtensionRecord[]; total: number } =
-		$props();
+	let {
+		list,
+		items,
+		total
+	}: {
+		list: Pick<GuideList, 'slug' | 'title' | 'emoji' | 'description' | 'builtIn'>;
+		items: Pick<ExtensionRecord, 'id' | 'name' | 'download_count'>[];
+		total: number;
+	} = $props();
 </script>
 
 <div

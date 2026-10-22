@@ -4,6 +4,12 @@
 	/** When the extension data was last synced; null hides the line */
 	let { updatedAt = null }: { updatedAt?: string | null } = $props();
 
+	const siteLinks = [
+		{ href: '/about', label: 'About' },
+		{ href: '/contact', label: 'Contact' },
+		{ href: '/privacy', label: 'Privacy' }
+	];
+
 	const externalLinks = [
 		{ href: 'https://zed.dev/docs/extensions/developing-extensions', label: 'Create Extension' },
 		{ href: 'https://zed.dev', label: 'Zed Editor' },
@@ -32,12 +38,15 @@
 		</div>
 
 		<div class="flex flex-wrap items-center justify-center gap-x-4 text-12 text-text-tertiary">
-			<a
-				href="/about"
-				class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
-			>
-				About
-			</a>
+			{#each siteLinks as link, i (link.href)}
+				{#if i > 0}<span class="text-border" aria-hidden="true">&middot;</span>{/if}
+				<a
+					href={link.href}
+					class="inline-flex min-h-11 items-center whitespace-nowrap transition-colors hover:text-text-secondary"
+				>
+					{link.label}
+				</a>
+			{/each}
 			{#each externalLinks as link (link.href)}
 				<span class="text-border" aria-hidden="true">&middot;</span>
 				<a

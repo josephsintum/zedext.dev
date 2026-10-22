@@ -1,8 +1,8 @@
 <script lang="ts">
 	import ExtensionCard from './ExtensionCard.svelte';
-	import type { ExtensionRecord } from '$lib/types.js';
+	import type { ExtensionCardData } from '$lib/types.js';
 
-	let { hits, label }: { hits: ExtensionRecord[]; label: string } = $props();
+	let { hits, label }: { hits: ExtensionCardData[]; label: string } = $props();
 
 	let row: HTMLDivElement;
 	let atStart = $state(true);
