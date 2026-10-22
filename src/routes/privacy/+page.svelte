@@ -91,8 +91,8 @@
 			</ul>
 			<p>
 				The extension data itself comes from Zed’s public extension API and GitHub, fetched by our
-				servers, not your browser. Search runs in your browser as you type; a search results page
-				carries your query in its URL, like any link.
+				servers, not your browser. The search window runs in your browser as you type; a search
+				results page carries your query in its URL, so it reaches our server like any link.
 			</p>
 		</div>
 	</section>
